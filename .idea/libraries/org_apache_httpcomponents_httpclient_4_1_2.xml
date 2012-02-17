@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="org.apache.httpcomponents_httpclient_4.1.2">
+    <CLASSES>
+      <root url="jar://C:/play-2.0-beta/repository/local/org.apache.httpcomponents/httpclient/4.1.2/jars/httpclient.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

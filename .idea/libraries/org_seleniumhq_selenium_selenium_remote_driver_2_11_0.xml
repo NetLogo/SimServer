@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="org.seleniumhq.selenium_selenium-remote-driver_2.11.0">
+    <CLASSES>
+      <root url="jar://C:/play-2.0-beta/repository/local/org.seleniumhq.selenium/selenium-remote-driver/2.11.0/jars/selenium-remote-driver.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
