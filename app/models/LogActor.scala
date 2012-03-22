@@ -1,0 +1,93 @@
+package models
+
+import actors.{Actor, TIMEOUT}
+import scala.util.control.Exception
+import java.io.File
+
+class LogActor(id: Long) extends Actor {
+
+  private val logFile = generateFile(id)
+
+  def act() {
+    loop {
+      reactWithin(15000) {
+        case TIMEOUT   => replyCloseConnection(); markLogTimedOut(); exit("Timed out")
+        case s: String =>
+          val LogActor.MessageSplitter(msgType, data) = s
+          msgType match {
+            case "pulse"     => replyOk()
+            case "write"     => appendToFile(data, logFile); replyOk()
+            case "finalize"  => replyCloseConnection(); finalizeLog(); exit("Mission Accomplished")
+            case "abandon"   => replyCloseConnection(); logFile.delete(); exit("Process abandoned; file deleted")
+            case _           => replyConfused();
+          }
+        case _ => replyConfused();
+      }
+    }
+  }
+
+  // Replies are currently not used, but... if I decide to use them in some way, it's not to have them already in place.
+  private def replyOk() {
+    reply("Ok")
+  }
+
+  private def replyCloseConnection() {
+    LoggingHandler.closeLog(id)  //@ This yucky two-way dependency should probably go away somehow
+    reply("Close connection")    // This is insufficient for --^, because no one's really listening for the replies right now, which is difficult for timeouts
+  }
+
+  private def replyConfused() {
+    reply("Unable to process message.")
+  }
+
+  private def generateFile(id: Long) : File = {
+    import java.text.SimpleDateFormat; import java.util.Calendar
+    val timeFormat = new SimpleDateFormat("MM-dd-yy__HH'h'mm'm'ss's'")
+    val filename = "%s__sid%d.xml".format(timeFormat.format(Calendar.getInstance().getTime), id)
+    createFile(filename)
+  }
+
+  private def createFile(name: String) : File = {
+    val file = new File(LogActor.ExpectedLogDir + File.separator + name)
+    file.createNewFile()
+    file
+  }
+
+  private def appendToFile(data: String, file: File) {
+    import java.io.{BufferedWriter, FileWriter}
+    Exception.ignoring(classOf[Exception]) {
+      val out = new BufferedWriter(new FileWriter(file, true))
+      out.write(data)
+      out.close()
+    }
+  }
+
+  // May not function properly with empty/improperly-formed files
+  private def markLogTimedOut() {
+    val terminator = if (!logProperlyTerminated(logFile)) LogActor.LogTerminator else ""
+    val timeOutData = terminator + "\n<!-- Log terminated due to connection with WebStart client timing out -->"
+    appendToFile(timeOutData, logFile)
+  }
+
+  // Right now, we do nothing to finalize logs
+  private def finalizeLog() {
+    val finalData = ""
+    appendToFile(finalData, logFile)
+  }
+
+  private def logProperlyTerminated(file: File) : Boolean = {
+    readLastLineOfText(file).trim() == LogActor.LogTerminator
+  }
+
+  private def readLastLineOfText(file: File) : String = {
+    import scala.io.Source
+    Source.fromFile(file).getLines().foldLeft("") { case (acc, line) => if (line.matches(""".*[\w].*""")) line else acc }
+  }
+
+}
+
+object LogActor {
+  val ExpectedLogDir = "nl_logs"
+  val LogTerminator = "</eventSet>"
+  private val MessageSplitter = """(?s)([\w]+)\|?(.*)""".r  // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
+}

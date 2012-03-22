@@ -2,6 +2,7 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import models.LoggingHandler
 
 object Application extends Controller {
 
@@ -11,6 +12,16 @@ object Application extends Controller {
   
   def ws = Action {
     Ok(views.html.ws())
+  }
+  
+  def startLogging = Action {
+    Ok("/" + LoggingHandler.createNewLog())
+  }
+  
+  def logData(id: String) = Action {
+    request =>
+      LoggingHandler.log(id.toLong, request.body.toString())
+      Ok
   }
   
 }
