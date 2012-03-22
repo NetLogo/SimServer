@@ -3,6 +3,7 @@ package models
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import collection.mutable.{ArrayBuffer, HashMap}
+import io.Source
 
 //@ Pretty sloppy so far...
 object LoggingHandler {
@@ -25,6 +26,17 @@ object LoggingHandler {
   def log(key: Long, data: String) {
     //@ Should we do something here about continuing to push data after the log has been closed?
     idActorMap.get(key) foreach (x => if (x.getState != actors.Actor.State.Terminated) x ! decompressData(data))
+  }
+
+  def retrieveLogText(key: Long) : String = {
+    val logDir = new java.io.File(LogActor.ExpectedLogDir)
+    val arr = logDir.listFiles(new java.io.FilenameFilter() {
+      def accept(file: java.io.File, name: String) : Boolean = {
+        name.toLowerCase.endsWith("sid%d.xml".format(key))
+      }
+    })
+    val file = if (arr.isEmpty) None else Some(arr(0))
+    file map (Source.fromFile(_).getLines().mkString("\n")) getOrElse("Invalid log key given: " + key)
   }
 
   private[models] def closeLog(id: Long) {

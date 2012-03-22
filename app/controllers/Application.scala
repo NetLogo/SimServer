@@ -17,6 +17,12 @@ object Application extends Controller {
   def startLogging = Action {
     Ok("/" + LoggingHandler.createNewLog())
   }
+
+  //@ For testing only.  This has potential for trouble.
+  // In the code that ends up being deployed, people should not be able to see other people's logs!
+  def retrieveData(id: String) = Action {
+    Ok(LoggingHandler.retrieveLogText(id.toLong))
+  }
   
   def logData(id: String) = Action {
     request =>
