@@ -1,6 +1,7 @@
-logs
+*logs
 project/project
 project/target
 target
 tmp
 .history
+private
