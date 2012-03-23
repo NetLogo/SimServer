@@ -55,7 +55,7 @@ class LogActor(id: Long) extends Actor {
 
   private def appendToFile(data: String, file: File) {
     import java.io.{BufferedWriter, FileWriter}
-    Exception.ignoring(classOf[Exception]) {
+    Exception.ignoring(classOf[Exception]) {  //@ Better error handling might be appropriate
       val out = new BufferedWriter(new FileWriter(file, true))
       out.write(data)
       out.close()
