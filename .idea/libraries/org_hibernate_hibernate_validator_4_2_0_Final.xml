@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="org.hibernate_hibernate-validator_4.2.0.Final">
-    <CLASSES>
-      <root url="jar://C:/play-2.0-beta/repository/local/org.hibernate/hibernate-validator/4.2.0.Final/jars/hibernate-validator.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

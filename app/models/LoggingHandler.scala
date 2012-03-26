@@ -23,9 +23,9 @@ object LoggingHandler {
     id
   }
 
-  def log(key: Long, data: String) {
+  def log(key: Long, data: String) : String = {
     //@ Should we do something here about continuing to push data after the log has been closed?
-    idActorMap.get(key) foreach (x => if (x.getState != actors.Actor.State.Terminated) x ! decompressData(data))
+    idActorMap.get(key) map { case x if (x.getState != actors.Actor.State.Terminated) => (x !! decompressData(data))().asInstanceOf[String] } getOrElse("File already closed")
   }
 
   def retrieveLogText(key: Long) : String = {
@@ -35,8 +35,8 @@ object LoggingHandler {
         name.toLowerCase.endsWith("sid%d.xml".format(key))
       }
     })
-    val file = if (arr.isEmpty) None else Some(arr(0))
-    file map (Source.fromFile(_).getLines().mkString("\n")) getOrElse("Invalid log key given: " + key)
+    val file = if (arr.isEmpty) None else Some(arr.last)
+    file map { x => val src = Source.fromFile(x); val lines = src.getLines().mkString("\n"); src.close(); lines } getOrElse("Invalid log key given: " + key)
   }
 
   private[models] def closeLog(id: Long) {
@@ -50,14 +50,15 @@ object LoggingHandler {
 
   private def decompressData(data: String) : String = {
 
-    val in = new GZIPInputStream(new ByteArrayInputStream(data.getBytes(ByteEncoding)))
+    //val in = new GZIPInputStream(new ByteArrayInputStream(data.getBytes(ByteEncoding)))
+    val in = new ByteArrayInputStream(data.getBytes(ByteEncoding))
     val buffer = new ArrayBuffer[Byte]
 
     while (in.available() > 0)
       buffer.append(in.read().toByte)
 
     in.close()
-    buffer.toString()
+    buffer.map(_.toChar).mkString + '\n'
     
   }
   

@@ -56,15 +56,16 @@ class LogActor(id: Long) extends Actor {
   private def appendToFile(data: String, file: File) {
     import java.io.{BufferedWriter, FileWriter}
     Exception.ignoring(classOf[Exception]) {  //@ Better error handling might be appropriate
-      val out = new BufferedWriter(new FileWriter(file, true))
+      val writer = new FileWriter(file, true)
+      val out = new BufferedWriter(writer)
       out.write(data)
-      out.close()
+      out.close(); writer.close()
     }
   }
 
   // May not function properly with empty/improperly-formed files
   private def markLogTimedOut() {
-    val terminator = if (!logProperlyTerminated(logFile)) LogActor.LogTerminator else ""
+    val terminator = "" //@ if (!logProperlyTerminated(logFile)) LogActor.LogTerminator else ""
     val timeOutData = terminator + "\n<!-- Log terminated due to connection with WebStart client timing out -->"
     appendToFile(timeOutData, logFile)
   }
@@ -76,18 +77,22 @@ class LogActor(id: Long) extends Actor {
   }
 
   private def logProperlyTerminated(file: File) : Boolean = {
-    readLastLineOfText(file).trim() == LogActor.LogTerminator
+    //@ readLastLineOfText(file).trim() == LogActor.LogTerminator
+    true
   }
 
   private def readLastLineOfText(file: File) : String = {
     import scala.io.Source
-    Source.fromFile(file).getLines().foldLeft("") { case (acc, line) => if (line.matches(""".*[\w].*""")) line else acc }
+    val src = Source.fromFile(file)
+    val last = src.getLines().foldLeft("") { case (acc, line) => if (line.matches(""".*[\w].*""")) line else acc }
+    src.close()
+    last
   }
 
 }
 
 object LogActor {
   val ExpectedLogDir = "nl_logs"
-  val LogTerminator = "</eventSet>"
+  //@ val LogTerminator = "</eventSet>"
   private val MessageSplitter = """(?s)([\w]+)\|?(.*)""".r  // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
 }

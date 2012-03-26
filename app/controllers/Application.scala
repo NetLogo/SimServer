@@ -2,6 +2,7 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import play.api.mvc.BodyParsers.parse
 import models.LoggingHandler
 
 object Application extends Controller {
@@ -26,8 +27,8 @@ object Application extends Controller {
   
   def logData(id: String) = Action {
     request =>
-      LoggingHandler.log(id.toLong, request.body.toString())
-      Ok
+      val response = LoggingHandler.log(id.toLong, request.body.asMultipartFormData map (_.asFormUrlEncoded("data")(0)) getOrElse("ERROR IN PARSING"))
+      Ok(response)
   }
   
 }
