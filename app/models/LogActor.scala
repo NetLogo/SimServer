@@ -34,6 +34,8 @@ class LogActor(id: Long) extends Actor {
   private def replyCloseConnection() {
     LoggingHandler.closeLog(id)  //@ This yucky two-way dependency should probably go away somehow
     reply("Close connection")    // This is insufficient for --^, because no one's really listening for the replies right now, which is difficult for timeouts
+                                 // Maybe make handler an actor, send it in the constructor, send messages to it?
+                                 //@ Ugh, responsibilities are very unclear here...
   }
 
   private def replyConfused() {

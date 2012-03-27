@@ -2,7 +2,7 @@
 <jnlp spec="1.0+" 
         codebase="http://129.105.107.132:9000/assets/misc" href="demo.jnlp">
     <information>
-        <title>Netlogo Web Start Demo</title>
+        <title>GoGo Extension / WebStart Demo</title>
         <vendor>CCL</vendor>
 		<description>Thing that is NetLogo-y</description>
 		<description kind="short">NetLogo-y</description>
@@ -32,7 +32,7 @@
     </resources>
     <application-desc name="Netlogo Demo Application" main-class="org.nlogo.app.App">
         <argument>--url</argument>
-		<argument>http://129.105.107.132:9000/assets/misc/models/GoGoMonitor.nlogo</argument>
+		<argument>http://129.105.107.132:9000/assets/misc/models/GoGoMonitorReplotting.nlogo</argument>
 	</application-desc>
     <update check="timeout" policy="always"/>
 </jnlp>

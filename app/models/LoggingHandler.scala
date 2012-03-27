@@ -1,14 +1,15 @@
 package models
 
-import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import collection.mutable.{ArrayBuffer, HashMap}
 import io.Source
+import util.Random
+import java.io.{FilenameFilter, ByteArrayInputStream, File}
+import actors.Actor.State._
 
-//@ Pretty sloppy so far...
 object LoggingHandler {
 
-  //@ Will need a better ID-distro system than this, because we need this to persist and not overwrite people's stuff!
+  //@ Will need a better ID-distro system than this, because we need this to persist and not overread people's stuff!
   private var logCount = 0L
 
   private val idActorMap = new HashMap[Long, LogActor]()
@@ -16,7 +17,8 @@ object LoggingHandler {
 
   def createNewLog() : Long = {
     ensureLogDirExists()
-    val id = { logCount += 1; logCount }
+    //@ val id = { logCount += 1; logCount }
+    val id = Random.nextInt().abs.toInt
     val actor = new LogActor(id)
     idActorMap.put(id, actor)
     actor.start()
@@ -24,14 +26,14 @@ object LoggingHandler {
   }
 
   def log(key: Long, data: String) : String = {
-    //@ Should we do something here about continuing to push data after the log has been closed?
-    idActorMap.get(key) map { case x if (x.getState != actors.Actor.State.Terminated) => (x !! decompressData(data))().asInstanceOf[String] } getOrElse("File already closed")
+    idActorMap.get(key) map { case x if (x.getState != Terminated) => (x !? decompressData(data)).asInstanceOf[String] } getOrElse("File already closed")
   }
 
+  //@ This really needs to be wrapped behind a login-/password-check (as does abandoning)
   def retrieveLogText(key: Long) : String = {
-    val logDir = new java.io.File(LogActor.ExpectedLogDir)
-    val arr = logDir.listFiles(new java.io.FilenameFilter() {
-      def accept(file: java.io.File, name: String) : Boolean = {
+    val logDir = new File(LogActor.ExpectedLogDir)
+    val arr = logDir.listFiles(new FilenameFilter() {
+      def accept(file: File, name: String) : Boolean = {
         name.toLowerCase.endsWith("sid%d.xml".format(key))
       }
     })
@@ -44,13 +46,13 @@ object LoggingHandler {
   }
 
   private def ensureLogDirExists() {
-    val logDir = new java.io.File(LogActor.ExpectedLogDir)
+    val logDir = new File(LogActor.ExpectedLogDir)
     if (!logDir.exists()) logDir.mkdir()
   }
 
   private def decompressData(data: String) : String = {
 
-    //val in = new GZIPInputStream(new ByteArrayInputStream(data.getBytes(ByteEncoding)))
+    //@ val in = new GZIPInputStream(new ByteArrayInputStream(data.getBytes(ByteEncoding)))
     val in = new ByteArrayInputStream(data.getBytes(ByteEncoding))
     val buffer = new ArrayBuffer[Byte]
 

@@ -1,0 +1,86 @@
+; Windows 2000, XP and Vista setup File for CCS CDC demo
+; see examples ex_usb_serial.c and ex_usb_serial2.c
+
+[Version]
+Signature="$Windows NT$"
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
+Provider=%CCS%
+LayoutFile=layout.inf
+CatalogFile=cdc_NTXPVista.cat
+DriverVer=01/15/2010
+
+[Manufacturer]
+%CCS%=CCS,NTamd64
+
+[CCS]
+%CCS_CDC%=Reader, USB\VID_0461&PID_0033
+%CCS_CDCBOOT%=Reader, USB\VID_0461&PID_0034
+
+[CCS.NTamd64]
+%CCS_CDC%=Reader, USB\VID_0461&PID_0033
+%CCS_CDCBOOT%=Reader, USB\VID_0461&PID_0034
+
+[Reader_Install.NTx86]
+;Windows2000
+
+[DestinationDirs]
+DefaultDestDir=12
+Reader.NT.Copy=12
+
+;------------------------------------------------------------------------------
+;  Windows 2000/XP/Vista-32bit Sections
+;------------------------------------------------------------------------------
+[Reader.NT]
+Include=mdmcpq.inf
+CopyFiles=Reader.NT.Copy
+AddReg=Reader.NT.AddReg
+
+[Reader.NT.Copy]
+usbser.sys
+
+[Reader.NT.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
+
+[Reader.NT.Services]
+AddService = usbser, 0x00000002, Service_Inst.NT
+
+[Service_Inst.NT]
+DisplayName = %Serial.SvcDesc%
+ServiceType = 1 ; SERVICE_KERNEL_DRIVER
+StartType = 3 ; SERVICE_DEMAND_START
+ErrorControl = 1 ; SERVICE_ERROR_NORMAL
+ServiceBinary = %12%\usbser.sys
+LoadOrderGroup = Base
+
+;------------------------------------------------------------------------------
+;  Vista-64bit Sections
+;------------------------------------------------------------------------------
+[Reader.NTamd64]
+Include=mdmcpq.inf
+CopyFiles=FakeModemCopyFileSection
+AddReg=Reader.NT.AddReg
+
+[Reader.NTamd64.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
+
+[Reader.NTamd64.Services]
+AddService = usbser, 0x00000002, Service_Inst.NTamd64
+
+[Service_Inst.NTamd64]
+DisplayName = %Serial.SvcDesc%
+ServiceType = 1 ; SERVICE_KERNEL_DRIVER
+StartType = 3 ; SERVICE_DEMAND_START
+ErrorControl = 1 ; SERVICE_ERROR_NORMAL
+ServiceBinary = %12%\usbser.sys
+LoadOrderGroup = Base
+
+[Strings]
+CCS = "Custom Computer Services, Inc."
+CCS_CDC = "GoGo Board USB to UART"
+CCS_CDCBOOT = "CCS CDC Bootloader"
+Serial.SvcDesc = "GoGo Board USB Serial emulation driver"
