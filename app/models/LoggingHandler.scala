@@ -4,8 +4,8 @@ import java.util.zip.GZIPInputStream
 import collection.mutable.{ArrayBuffer, HashMap}
 import io.Source
 import util.Random
-import java.io.{FilenameFilter, ByteArrayInputStream, File}
 import actors.Actor.State._
+import java.io.{FilenameFilter, ByteArrayInputStream, File}
 
 object LoggingHandler {
 
@@ -13,7 +13,6 @@ object LoggingHandler {
   private var logCount = 0L
 
   private val idActorMap = new HashMap[Long, LogActor]()
-  val ByteEncoding = "UTF-8"
 
   def createNewLog() : Long = {
     ensureLogDirExists()
@@ -26,7 +25,7 @@ object LoggingHandler {
   }
 
   def log(key: Long, data: String) : String = {
-    idActorMap.get(key) map { case x if (x.getState != Terminated) => (x !? decompressData(data)).asInstanceOf[String] } getOrElse("File already closed")
+    idActorMap.get(key) map { case x if (x.getState != Terminated) => (x !? prepareData(data)).asInstanceOf[String] + '\n' } getOrElse ("File already closed")
   }
 
   //@ This really needs to be wrapped behind a login-/password-check (as does abandoning)
@@ -37,8 +36,8 @@ object LoggingHandler {
         name.toLowerCase.endsWith("sid%d.xml".format(key))
       }
     })
-    val file = if (arr.isEmpty) None else Some(arr.last)
-    file map { x => val src = Source.fromFile(x); val lines = src.getLines().mkString("\n"); src.close(); lines } getOrElse("Invalid log key given: " + key)
+    arr.lastOption map { x => val src = Source.fromFile(x); val lines = src.getLines().mkString("\n"); src.close(); lines } getOrElse
+            ("Invalid log key given: " + key)
   }
 
   private[models] def closeLog(id: Long) {
@@ -50,18 +49,33 @@ object LoggingHandler {
     if (!logDir.exists()) logDir.mkdir()
   }
 
-  private def decompressData(data: String) : String = {
+  private def prepareData(data: String) : String = {
+    decompressData(data) orElse Option(data) flatMap (validateData(_)) getOrElse ("ERROR   DATA MUST BE TEXT OR GZIP COMPRESSED" replaceAll(" ", "_"))
+  }
 
-    //@ val in = new GZIPInputStream(new ByteArrayInputStream(data.getBytes(ByteEncoding)))
-    val in = new ByteArrayInputStream(data.getBytes(ByteEncoding))
-    val buffer = new ArrayBuffer[Byte]
+  /* Some(data)  if valid
+   * None        if invalid
+   */
+  private def validateData(data: String) : Option[String] = {
+    if (data.length() > 2 && data.toLowerCase.matches("""(?s)^[a-z][a-z][a-z].*""")) Some(data) else None  //@ Pretty unmaginificent validation on my part...
+  }
 
-    while (in.available() > 0)
-      buffer.append(in.read().toByte)
+  private def decompressData(data: String) : Option[String] = {
+    try {
 
-    in.close()
-    buffer.map(_.toChar).mkString + '\n'
-    
+      val in = new GZIPInputStream(new ByteArrayInputStream(data.getBytes))  // Don't add an encoding to `getBytes`; it's already encoded as GZIP format
+      val buffer = new ArrayBuffer[Byte]
+
+      while (in.available() > 0)
+        buffer.append(in.read().toByte)
+
+      in.close()
+      Some(buffer.map(_.toChar).mkString)//! dropRight 1 // Drops the '?' that gets added to the end of the string
+
+    }
+    catch {
+      case e => None
+    }
   }
   
 }

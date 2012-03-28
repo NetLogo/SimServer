@@ -7,6 +7,8 @@ import models.LoggingHandler
 
 object Application extends Controller {
 
+  val LoggingDataKey = "logging_data"
+
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
   }
@@ -27,7 +29,10 @@ object Application extends Controller {
   
   def logData(id: String) = Action {
     request =>
-      val response = LoggingHandler.log(id.toLong, request.body.asMultipartFormData map (_.asFormUrlEncoded("data")(0)) getOrElse("ERROR IN PARSING"))
+      val data = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
+                    orElse(request.body.asFormUrlEncoded).
+                    flatMap (_.get(LoggingDataKey)) flatMap (_.headOption) getOrElse ("ERROR_IN_PARSING ")
+      val response = LoggingHandler.log(id.toLong, data)
       Ok(response)
   }
   

@@ -13,15 +13,15 @@ class LogActor(id: Long) extends Actor {
       reactWithin(15000) {
         case TIMEOUT   => replyCloseConnection(); markLogTimedOut(); exit("Timed out")
         case s: String =>
-          val LogActor.MessageSplitter(msgType, data) = s
+          val (msgType,  data) = LogActor.MessageSplitter.findFirstMatchIn(s) map (x => (x.group(1), x.group(2))) getOrElse ("unrecognized_type", "error_data")
           msgType match {
             case "pulse"     => replyOk()
             case "write"     => appendToFile(data, logFile); replyOk()
             case "finalize"  => replyCloseConnection(); finalizeLog(); exit("Mission Accomplished")
             case "abandon"   => replyCloseConnection(); logFile.delete(); exit("Process abandoned; file deleted")
-            case _           => replyConfused();
+            case msg         => replyConfused(msg);
           }
-        case _ => replyConfused();
+        case msg => replyConfused(msg.toString);
       }
     }
   }
@@ -38,8 +38,8 @@ class LogActor(id: Long) extends Actor {
                                  //@ Ugh, responsibilities are very unclear here...
   }
 
-  private def replyConfused() {
-    reply("Unable to process message.")
+  private def replyConfused(msg: String) {
+    reply("Unable to process message: " + msg)
   }
 
   private def generateFile(id: Long) : File = {
