@@ -60,7 +60,7 @@ class LogActor(id: Long) extends Actor {
     Exception.ignoring(classOf[Exception]) {  //@ Better error handling might be appropriate
       val writer = new FileWriter(file, true)
       val out = new BufferedWriter(writer)
-      out.write(data)
+      out.write(data + "\n")
       out.close(); writer.close()
     }
   }

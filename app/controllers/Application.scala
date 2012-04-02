@@ -4,6 +4,7 @@ import play.api._
 import play.api.mvc._
 import play.api.mvc.BodyParsers.parse
 import models.LoggingHandler
+import models.util.RequestUtil
 
 object Application extends Controller {
 
@@ -30,8 +31,11 @@ object Application extends Controller {
   def logData(id: String) = Action {
     request =>
       val data = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
-                    orElse(request.body.asFormUrlEncoded).
-                    flatMap (_.get(LoggingDataKey)) flatMap (_.headOption) getOrElse ("ERROR_IN_PARSING ")
+                    orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
+                    orElse(Option(request.queryString)).
+                    flatMap(_.get(LoggingDataKey)).flatMap(_.headOption).
+                    flatMap(str => if (LoggingHandler.isHandlable(str)) Some(str) else RequestUtil.extractPropertyFromUri(request.uri, LoggingDataKey)).
+                    getOrElse ("ERROR_IN_PARSING ")
       val response = LoggingHandler.log(id.toLong, data)
       Ok(response)
   }

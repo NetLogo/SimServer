@@ -3,7 +3,7 @@ package models
 import java.util.zip.GZIPInputStream
 import collection.mutable.{ArrayBuffer, HashMap}
 import io.Source
-import util.Random
+import scala.util.Random
 import actors.Actor.State._
 import java.io.{FilenameFilter, ByteArrayInputStream, File}
 
@@ -12,6 +12,7 @@ object LoggingHandler {
   //@ Will need a better ID-distro system than this, because we need this to persist and not overread people's stuff!
   private var logCount = 0L
 
+  val DefaultEncoding = "ISO-8859-1"
   private val idActorMap = new HashMap[Long, LogActor]()
 
   def createNewLog() : Long = {
@@ -57,25 +58,64 @@ object LoggingHandler {
    * None        if invalid
    */
   private def validateData(data: String) : Option[String] = {
-    if (data.length() > 2 && data.toLowerCase.matches("""(?s)^[a-z][a-z][a-z].*""")) Some(data) else None  //@ Pretty unmaginificent validation on my part...
+    if (isValid(data)) Option(data) else None
   }
 
-  private def decompressData(data: String) : Option[String] = {
+  private def decompressData(data: String, encoding: String = DefaultEncoding): Option[String] = {
+    unGzip(java.net.URLDecoder.decode(data, encoding).getBytes(encoding))
+  }
+
+  private def unGzip(data: Array[Byte]): Option[String] = {
     try {
 
-      val in = new GZIPInputStream(new ByteArrayInputStream(data.getBytes))  // Don't add an encoding to `getBytes`; it's already encoded as GZIP format
+      val in = new GZIPInputStream(new ByteArrayInputStream(data))
       val buffer = new ArrayBuffer[Byte]
 
       while (in.available() > 0)
         buffer.append(in.read().toByte)
 
       in.close()
-      Some(buffer.map(_.toChar).mkString)//! dropRight 1 // Drops the '?' that gets added to the end of the string
+      Some(buffer.map(_.toChar).mkString.reverse dropWhile (_.toByte < 0) reverse)  // Make string and trim off any nonsense at end
 
     }
     catch {
-      case e => None
+      case _ => None
     }
   }
+
+  def isHandlable(data: String) : Boolean = {
+    isGzipDecodable(data) || isValid(data)
+  }
+
+  private def isValid(data: String) : Boolean = {
+    data.length() > 2 && data.toLowerCase.matches("""(?s)^[a-z][a-z][a-z].*""")  //@ Pretty unmaginificent validation on my part...
+  }
   
+  private def isGzipDecodable(data: String, encoding: String = DefaultEncoding) : Boolean = {
+    /*
+     //@
+     This `try`/`catch` thing actually shouldn't be necessary.  Somehow, "finalize" messages—and _only_ "finalize"
+     messages—are reaching this point and not being able to be decoded by `URLDecoder.decode`.  It complains of
+     invalid hex characters.  However, the "last-ditch effort" code that calls `RequestUtil.extractPropertyFromUri`
+     to read the compressed text out of the URI succeeds, so... it's unclear how this could be going wrong.
+     Fortunately, the code _works_ as is, and I'm not sure that this is big deal.  If someone ends up reading this,
+     though, that probably means that it ended up being a big deal....  --JAB
+     */
+    val decodedData = {
+      try {
+        java.net.URLDecoder.decode(data, encoding).getBytes(encoding)
+      }
+      catch {
+        case _ => data.getBytes(encoding)
+      }
+    }
+    try {
+      new GZIPInputStream(new ByteArrayInputStream(decodedData))
+      true
+    }
+    catch {
+      case _ => false
+    }
+  }
+
 }
