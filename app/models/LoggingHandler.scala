@@ -34,7 +34,7 @@ object LoggingHandler {
     val logDir = new File(LogActor.ExpectedLogDir)
     val arr = logDir.listFiles(new FilenameFilter() {
       def accept(file: File, name: String) : Boolean = {
-        name.toLowerCase.endsWith("sid%d.xml".format(key))
+        name.toLowerCase.endsWith("sid%d%s".format(key, LogActor.LogFileExtension))
       }
     })
     arr.lastOption map { x => val src = Source.fromFile(x); val lines = src.getLines().mkString("\n"); src.close(); lines } getOrElse

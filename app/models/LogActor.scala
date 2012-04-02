@@ -45,7 +45,7 @@ class LogActor(id: Long) extends Actor {
   private def generateFile(id: Long) : File = {
     import java.text.SimpleDateFormat; import java.util.Calendar
     val timeFormat = new SimpleDateFormat("MM-dd-yy__HH'h'mm'm'ss's'")
-    val filename = "%s__sid%d.xml".format(timeFormat.format(Calendar.getInstance().getTime), id)
+    val filename = "%s__sid%d%s".format(timeFormat.format(Calendar.getInstance().getTime), id, LogActor.LogFileExtension)
     createFile(filename)
   }
 
@@ -95,6 +95,7 @@ class LogActor(id: Long) extends Actor {
 
 object LogActor {
   val ExpectedLogDir = "nl_logs"
+  val LogFileExtension = ".txt"
   //@ val LogTerminator = "</eventSet>"
   private val MessageSplitter = """(?s)([\w]+)\|?(.*)""".r  // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
 }
