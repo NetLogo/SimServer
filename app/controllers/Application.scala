@@ -27,7 +27,7 @@ object Application extends Controller {
   def retrieveData(id: String) = Action {
     Ok(LoggingHandler.retrieveLogText(id.toLong))
   }
-  
+
   def logData(id: String) = Action {
     request =>
       val data = request.body.asMultipartFormData.map(_.asFormUrlEncoded).

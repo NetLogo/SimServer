@@ -6,3 +6,4 @@ tmp
 .history
 private
 .idea/workspace.xml
+.idea/ant.xml

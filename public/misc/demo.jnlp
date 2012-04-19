@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" 
-        codebase="http://129.105.107.132:9000/assets/misc" href="demo.jnlp">
+        codebase="http://129.105.107.225:9000/assets/misc" href="demo.jnlp">
     <information>
         <title>GoGo Extension / WebStart Demo</title>
         <vendor>CCL</vendor>
@@ -14,10 +14,12 @@
     </information>
     <security> <all-permissions/> </security>
     <resources>
+
         <!-- Application Resources -->
         <j2se version="1.5+ 1.6+ 1.7+" href="http://java.sun.com/products/autodl/j2se"/>
         <jar href="deps/NetLogo.jar" main="true" />
-		<jar href="deps/extensions.jar"/>
+        <jar href="deps/extensions.jar"/>
+        <jar href="deps/logging.jar"/>
         <jar href="deps/asm-all-3.3.1.jar"/>
         <jar href="deps/gluegen-rt-1.1.1.jar"/>
         <jar href="deps/jhotdraw-6.0b1.jar"/>
@@ -29,10 +31,15 @@
         <jar href="deps/quaqua-7.3.4.jar"/>
         <jar href="deps/scala-library.jar"/>
         <jar href="deps/swing-layout-7.3.4.jar"/>
+
+        <!-- System Properties -->
+        <property name="jnlp.connectpath" value="http://localhost:9000/logging"/>
+
     </resources>
     <application-desc name="Netlogo Demo Application" main-class="org.nlogo.app.App">
+        <argument>--logging</argument>
         <argument>--url</argument>
-		<argument>http://129.105.107.132:9000/assets/misc/models/GoGoMonitorReplotting.nlogo</argument>
+		<argument>http://129.105.107.225:9000/assets/misc/models/circling.nlogo</argument>
 	</application-desc>
     <update check="timeout" policy="always"/>
 </jnlp>
