@@ -88,7 +88,7 @@ object LoggingHandler {
   }
 
   private def isValid(data: String) : Boolean = {
-    data.toLowerCase.matches("""(?s)^[a-z]{%s}.*""".format(3))  //@ Pretty unmaginificent validation on my part...
+    data.toLowerCase.matches("""(?s)^[a-z]{%d}.*""".format(3))  //@ Pretty unmaginificent validation on my part...
   }
   
   private def isGzipDecodable(data: String, encoding: String = DefaultEncoding) : Boolean = {
