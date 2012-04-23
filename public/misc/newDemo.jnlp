@@ -2,7 +2,7 @@
 <jnlp spec="1.0+" 
         codebase="http://abmplus.tech.northwestern.edu:9001/assets/misc" href="newDemo.jnlp">
     <information>
-        <title>GoGo Extension / WebStart Demo</title>
+        <title>Logging / WebStart Demo</title>
         <vendor>CCL</vendor>
 		<description>Thing that is NetLogo-y</description>
 		<description kind="short">NetLogo-y</description>
