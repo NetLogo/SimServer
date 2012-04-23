@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" 
+        codebase="http://abmplus.tech.northwestern.edu:9001/assets/misc" href="newDemo.jnlp">
+    <information>
+        <title>GoGo Extension / WebStart Demo</title>
+        <vendor>CCL</vendor>
+		<description>Thing that is NetLogo-y</description>
+		<description kind="short">NetLogo-y</description>
+		<offline-allowed/>
+		<shortcut online="false">
+		    <desktop/>
+			<menu submenu="Really Cool NetLogo Thing"/>
+		</shortcut>
+    </information>
+    <security> <all-permissions/> </security>
+    <resources>
+
+        <!-- Application Resources -->
+        <j2se version="1.5+ 1.6+ 1.7+" href="http://java.sun.com/products/autodl/j2se"/>
+        <jar href="deps/NetLogo.jar" main="true" />
+        <jar href="deps/extensions.jar"/>
+        <jar href="deps/logging.jar"/>
+        <jar href="deps/asm-all-3.3.1.jar"/>
+        <jar href="deps/gluegen-rt-1.1.1.jar"/>
+        <jar href="deps/jhotdraw-6.0b1.jar"/>
+        <jar href="deps/jmf-2.1.1e.jar"/>
+        <jar href="deps/jogl-1.1.1.jar"/>
+        <jar href="deps/log4j-1.2.16.jar"/>
+        <jar href="deps/mrjadapter-1.2.jar"/>
+        <jar href="deps/picocontainer-2.13.6.jar"/>
+        <jar href="deps/quaqua-7.3.4.jar"/>
+        <jar href="deps/scala-library.jar"/>
+        <jar href="deps/swing-layout-7.3.4.jar"/>
+
+        <!-- System Properties -->
+        <property name="jnlp.connectpath" value="http://abmplus.tech.northwestern.edu:9001/logging"/>
+
+    </resources>
+    <application-desc name="Netlogo Demo Application" main-class="org.nlogo.app.App">
+        <argument>--logging</argument>
+        <argument>--url</argument>
+		<argument>http://abmplus.tech.northwestern.edu:9001/assets/misc/models/circling.nlogo</argument>
+	</application-desc>
+    <update check="timeout" policy="always"/>
+</jnlp>
