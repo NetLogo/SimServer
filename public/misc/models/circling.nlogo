@@ -21,14 +21,12 @@ end
 
 to circle [r]
   ask turtles [ move-along-circle r ]
-  ;if plot? [ update-plots ]
+  if plot? [ update-plots ]
 end
 
 to move-along-circle [r]
   fd (pi * r / 180) * (speed / 50)
   rt speed / 50
-  hatch 1
-  die
 end
 
 to zero-circle
