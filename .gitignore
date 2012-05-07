@@ -7,3 +7,5 @@ tmp
 private
 .idea/workspace.xml
 .idea/ant.xml
+*.swp
+demo.jnlp
