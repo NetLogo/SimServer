@@ -7,8 +7,12 @@ object ApplicationBuild extends Build {
     val appName         = "WebStart Sandbox"
     val appVersion      = "1.0-SNAPSHOT"
 
+    resolvers += (
+      "Scala Tools Snapshots" at "http://scala-tools.org/repo-snapshots/"
+    )
+
     val appDependencies = Seq(
-      // Add your project dependencies here,
+      "org.scalaz" %% "scalaz-core" % "6.0.4"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
