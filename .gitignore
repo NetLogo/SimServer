@@ -10,3 +10,4 @@ private
 *.swp
 demo.jnlp
 .idea/inspectionProfiles/
+/info_file

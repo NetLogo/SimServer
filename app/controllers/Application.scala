@@ -4,9 +4,9 @@ import play.api._
 import play.api.mvc._
 import play.api.mvc.BodyParsers.parse
 import models.log.LoggingHandler
-import models.util.RequestUtil
 import models.hubnet.HubNetServerManager
 import models.JNLPProps
+import models.util.{DecryptionUtil, RequestUtil}
 
 object Application extends Controller {
 
@@ -45,15 +45,16 @@ object Application extends Controller {
   
   def hubnet(hash: String) = Action {
     request =>
-      val (modelNameOpt, username, teacherName, isTeacher) = decodeHashForHubNet(hash) // username => getOrElse "not_found"
-      val portMaybe = {
-        import HubNetServerManager._
-        if (isTeacher) startUpServer(modelNameOpt, teacherName) else getPortByTeacherName(teacherName)
-      }
-      val serverPath = request.uri //@ Does this work?
-      val propsMaybe = portMaybe map (port => JNLPProps(modelNameOpt, Option(username), Option(serverPath), Option(port)))
-      val fileURLMaybe = propsMaybe map ( /* Generate file (name "<hash>.jnlp"); create actor that will destroy it within a minute; return URL */ )
-      fileURLMaybe fold (ExpectationFailed(_), Redirect(_))
+      DecryptionUtil.decodeForHubNet(hash) flatMap {
+        case (modelNameOpt, username, teacherName, isTeacher) =>
+          val portMaybe = {
+            import HubNetServerManager._
+            if (isTeacher) startUpServer(modelNameOpt, teacherName) else getPortByTeacherName(teacherName)
+          }
+          val serverPath = request.uri //@ Does this work?  (Will probably have to trim it, at the very least)
+          val propsMaybe = portMaybe map (port => JNLPProps(modelNameOpt, Option(username), Option(serverPath), Option(port)))
+          propsMaybe map ( /* Generate file (name "<hash>.jnlp"); create actor that will destroy it within a minute; return URL */ )
+      } fold (ExpectationFailed(_), Redirect(_))
   }
   
 }
