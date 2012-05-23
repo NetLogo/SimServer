@@ -5,6 +5,7 @@
 # Home page
 GET     /                           controllers.Application.index
 
+GET     /hubnet/:hash               controllers.Application.hubnet(hash)
 GET     /ws                         controllers.Application.ws
 GET     /logging                    controllers.Application.startLogging
 GET     /logging/:id                controllers.Application.retrieveData(id)
