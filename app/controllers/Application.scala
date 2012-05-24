@@ -6,12 +6,13 @@ import play.api.mvc.BodyParsers.parse
 import models.log.LoggingHandler
 import models.hubnet.HubNetServerManager
 import models.JNLPProps
-import models.util.{DecryptionUtil, RequestUtil}
+import models.util.{TempGenManager, DecryptionUtil, RequestUtil}
 
 object Application extends Controller {
 
   val LoggingDataKey = "logging_data"
-  //@ Do something on startup to clear out autogen files
+
+  TempGenManager.removeAll()  // Clear all temp gen files on startup
 
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
@@ -43,17 +44,25 @@ object Application extends Controller {
       Ok(response)
   }
   
-  def hubnet(input: String) = Action {
+  def handleHubNet(input: String) = Action {
     request =>
       DecryptionUtil.decodeForHubNet(input) flatMap {
         case (modelNameOpt, username, teacherName, isTeacher) =>
+
           val portMaybe = {
             import HubNetServerManager._
             if (isTeacher) startUpServer(modelNameOpt, teacherName) else getPortByTeacherName(teacherName)
           }
-          val serverPath = request.uri //@ Does this work?  (Will probably have to trim it, at the very least)
+
+          // Regex to find the first '/' that is alone and split string there
+          // ( http://www.derpy.com:9000/stupid/crap => (http://www.derpy.com:9000, stupid/crap) )
+          val URISplitter = """(.*?)(?<!/)/(?!/)(.*)""".r
+          val URISplitter(serverPath, _) = request.uri  //@ Does this work?  (Is it even necessary?)
+
           val propsMaybe = portMaybe map (port => JNLPProps(modelNameOpt, Option(username), Option(serverPath), Option(port)))
-          propsMaybe map ( /* Generate file (name "<hash>.jnlp"); create actor that will destroy it within a minute; return URL */ )
+          val fileContentsAndNameMaybe = propsMaybe flatMap ( x => scalaz.Success("", "")/* Generate file (name "<hash>.jnlp") */ ) //@ Do it
+          fileContentsAndNameMaybe map { case (contents, name) => TempGenManager.registerFile(contents, name).toString }
+
       } fold (ExpectationFailed(_), Redirect(_))
   }
 

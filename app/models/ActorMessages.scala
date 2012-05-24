@@ -7,6 +7,9 @@ package models
  * Time: 2:40 PM
  */
 
+sealed trait TempGenMessage
+case object Delete extends TempGenMessage
+
 sealed trait HubNetMessage
 case class Start(modelName: String) extends HubNetMessage
 
