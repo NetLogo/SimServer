@@ -2,12 +2,11 @@ package controllers
 
 import play.api._
 import play.api.mvc._
-import play.api.mvc.BodyParsers.parse
 import models.log.LoggingHandler
 import models.hubnet.HubNetServerManager
 import models.util.{TempGenManager, DecryptionUtil, RequestUtil}
 import java.net.URI
-import models.jnlp.{MainJar, Jar, JNLP}
+import models.jnlp.{MainJar, JNLP}
 
 object Application extends Controller {
 

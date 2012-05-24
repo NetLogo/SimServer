@@ -1,6 +1,5 @@
 package models.hubnet
 
-import akka.pattern.ask
 import models.{Start, Started}
 import akka.util.Timeout
 import akka.util.duration._

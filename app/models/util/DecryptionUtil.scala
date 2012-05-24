@@ -2,7 +2,6 @@ package models.util
 
 import scalaz.{Failure, Success, Validation}
 
-
 /**
  * Created by IntelliJ IDEA.
  * User: Jason
