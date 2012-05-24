@@ -8,6 +8,7 @@ package models
  */
 
 sealed trait TempGenMessage
+case class  Write(contents: String) extends TempGenMessage
 case object Delete extends TempGenMessage
 
 sealed trait HubNetMessage

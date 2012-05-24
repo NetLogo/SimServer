@@ -3,10 +3,10 @@ package models.util
 import java.net.URI
 import java.io.File
 
-import akka.actor.{ActorSystem, Actor}
 import akka.util.duration._
 
-import models.Delete
+import akka.actor.{PoisonPill, ActorSystem, Actor}
+import models.{Write, Delete}
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,16 +23,13 @@ object TempGenManager extends ActorSystem {
 
   def registerFile(contents: String, fileName: String) : URI = {
 
-    val filepath = new File("%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fileName, CharEncoding))) getAbsolutePath()
-    FileUtil.printToFile(filepath)(contents)
-
-    // Create an actor with a handle to the file
-    // The temp gen file is accessible for <LifeSpan> before being deleted
-    val fileURI   = new URI(filepath)
+    // Create an actor with a handle to the file, write the contents to it
+    val fileURI = new URI(new File("%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fileName, CharEncoding))) getAbsolutePath())
     val fileActor = new TempGenActor(fileURI)
-    scheduler.scheduleOnce(LifeSpan) {
-      fileActor ! Delete
-    }
+    fileActor ! Write(contents)
+
+    // The temp gen file is accessible for <LifeSpan> before being deleted
+    scheduler.scheduleOnce(LifeSpan) { fileActor ! Delete }
 
     fileURI
 
@@ -47,6 +44,7 @@ object TempGenManager extends ActorSystem {
 
 class TempGenActor(fileURI: URI) extends Actor {
   override protected def receive = {
-    case Delete => new File(fileURI) delete()
+    case Write(contents) => FileUtil.printToFile(fileURI.toString)(contents)
+    case Delete          => new File(fileURI) delete(); self ! PoisonPill // Terminate self after file is gone
   }
 }
