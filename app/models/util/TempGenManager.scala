@@ -17,14 +17,17 @@ import models.{Write, Delete}
 
 object TempGenManager extends ActorSystem {
 
-  private val TempGenPath  = "public/gen"
+  val PublicPath = "public"
+  val TempGenPath  = "gen"
   private val CharEncoding = "UTF-8"
   private val LifeSpan     = 1 minute
+
+  def formatFilePath(fileName: String) : String = "%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fileName, CharEncoding))
 
   def registerFile(contents: String, fileName: String) : URI = {
 
     // Create an actor with a handle to the file, write the contents to it
-    val fileURI = new URI(new File("%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fileName, CharEncoding))) getAbsolutePath())
+    val fileURI = new URI(new File("%s/%s".format(PublicPath, formatFilePath(fileName))) getAbsolutePath())
     val fileActor = new TempGenActor(fileURI)
     fileActor ! Write(contents)
 
