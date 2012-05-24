@@ -43,9 +43,9 @@ object Application extends Controller {
       Ok(response)
   }
   
-  def hubnet(hash: String) = Action {
+  def hubnet(input: String) = Action {
     request =>
-      DecryptionUtil.decodeForHubNet(hash) flatMap {
+      DecryptionUtil.decodeForHubNet(input) flatMap {
         case (modelNameOpt, username, teacherName, isTeacher) =>
           val portMaybe = {
             import HubNetServerManager._
@@ -56,5 +56,5 @@ object Application extends Controller {
           propsMaybe map ( /* Generate file (name "<hash>.jnlp"); create actor that will destroy it within a minute; return URL */ )
       } fold (ExpectationFailed(_), Redirect(_))
   }
-  
+
 }

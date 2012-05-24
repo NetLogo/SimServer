@@ -13,8 +13,8 @@ object ResourceManager {
 
   private val AccessFileName = "info_file"
 
-  val HubnetDelim = "hubnet_delim"
-  val HubNetCipher = "hubnet_cipher"
+  val HubNetKeyPass = "hubnet_key_pass"
+  val HubnetDelim   = "hubnet_delim"
 
   private lazy val infoMap = readAccessInfo()
 

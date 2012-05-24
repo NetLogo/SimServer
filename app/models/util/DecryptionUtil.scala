@@ -13,28 +13,22 @@ import scalaz.{Failure, Success, Validation}
 object DecryptionUtil {
 
   /**
-   * It's not good cryptography... but it should be enough to stop 99.99% of kids from starting HubNet as the teacher
-   * @param hash The hashed input
-   * @return     (Option[model name], username, teacher name, isTeacher)
+   * This should be enough to stop 99.9999% of kids from starting HubNet as the teacher...
+   * Assumes that the other side is using the same `EncryptionUtil` and resources file/key password
+   * @param encryptedStr The encrypted input
+   * @return            (Option[model name], username, teacher name, isTeacher)
    */
-  def decodeForHubNet(hash: String) : Validation[String, (Option[String], String, String, Boolean)] = {
+  def decodeForHubNet(encryptedStr: String) : Validation[String, (Option[String], String, String, Boolean)] = {
 
-    /*
-      Ciphering technique (requires that `str.length` < `cipher.length`):
-      val str = "thing"
-      new String(str.getBytes zip cipher map xor)
-    */
-    def xor(bytePair: (Byte, Byte)) : Byte = bytePair._1 ^ bytePair._2 toByte
-    
-    val delim  = ResourceManager(ResourceManager.HubnetDelim)
-    val cipher = ResourceManager(ResourceManager.HubNetCipher).getBytes
-    val decrypteds = hash.split(delim) map (x => new String(x.getBytes zip cipher map xor)) toList
+    val keyPass    = ResourceManager(ResourceManager.HubNetKeyPass)
+    val delim      = ResourceManager(ResourceManager.HubnetDelim)
+    val decrypteds = (new EncryptionUtil(keyPass) with PBEWithMF5AndDES) decrypt encryptedStr split delim toList
     
     decrypteds match {
       case username :: teachName :: Nil                         => Success((None, username, teachName, false))
       case username :: teachName :: isTeach :: Nil              => Success((None, username, teachName, isTeach.toBoolean))
       case modelName :: username :: teachName :: isTeach :: Nil => Success((Option(modelName), username, teachName, isTeach.toBoolean))
-      case _                                                    => Failure("Failed to decrypt input hash")
+      case _                                                    => Failure("Failed to interpret input")
     }
 
   }
