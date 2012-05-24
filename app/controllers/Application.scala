@@ -75,7 +75,7 @@ object Application extends Controller {
               modelName = modelNameOpt
             )
           }
-          propsMaybe map ( jnlp => TempGenManager.registerFile(jnlp.toXMLStr, jnlp.jnlpLoc).toString )
+          propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, jnlp.jnlpLoc).toString)
 
       } fold (ExpectationFailed(_), Redirect(_))
   }
