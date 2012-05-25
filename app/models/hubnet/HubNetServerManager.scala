@@ -1,10 +1,11 @@
 package models.hubnet
 
-import models.{Start, Started}
 import akka.util.Timeout
 import akka.util.duration._
 import akka.dispatch.Await
+import akka.pattern.ask
 import scalaz.{Failure, Success, Validation}
+import models.{ServerStatus, Start, Started}
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,8 +27,12 @@ object HubNetServerManager {
 
   def startUpServer(modelNameOpt: Option[String], teacherName: String) : Validation[String, Int] = {
     val modelNameMaybe = modelNameOpt map (Success(_)) getOrElse Failure("No model name given\n")
-    val portMaybeFunc = (m: String) => portServerMap.find { case (port, server) => Await.result((server ? Start(m)), Timeout(3 seconds).duration) == Started }. //@ May need `asInstanceOf[Boolean]
-                                       map { case (port, server) => Success(port) } getOrElse Failure("Unable to start any servers.\n")
+    val portMaybeFunc = (m: String) =>
+      portServerMap find {
+        case (port, server) =>
+          implicit val timeout = Timeout(3 seconds)
+          Await.result(server.self ? Start(m), timeout.duration).asInstanceOf[ServerStatus] == Started
+      } map { case (port, server) => Success(port) } getOrElse Failure("Unable to start any servers.\n")
     modelNameMaybe flatMap (portMaybeFunc(_))
   }
 

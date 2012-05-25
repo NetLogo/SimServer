@@ -5,11 +5,11 @@
 # Home page
 GET     /                           controllers.Application.index
 
-GET     /hubnet/:input              controllers.Application.handleHubNet(input)
 GET     /ws                         controllers.Application.ws
 GET     /logging                    controllers.Application.startLogging
 GET     /logging/:id                controllers.Application.retrieveData(id)
 POST    /logging/:id                controllers.Application.logData(id)
+POST    /hubnet                     controllers.Application.handleHubNet
 
 
 # Map static resources from the /public folder to the /assets URL path

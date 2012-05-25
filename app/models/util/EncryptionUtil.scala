@@ -27,7 +27,8 @@ abstract class EncryptionUtil(keyPass: String) {
   private val Salt    = Array(0xDE, 0x33, 0x10, 0x12, 0xFC, 0x88, 0x4A, 0x90) map (_.toByte)
   private val Iters   = 20
 
-  private val key = SecretKeyFactory.getInstance(algorithm).generateSecret(new PBEKeySpec(keyPass.toCharArray))
+  // Lazy to avoid angering the un-init-ed `algorithm`
+  private lazy val key = SecretKeyFactory.getInstance(algorithm).generateSecret(new PBEKeySpec(keyPass.toCharArray))
 
   def encrypt(entry: String) : String = {
     val cipher = Cipher.getInstance(algorithm)

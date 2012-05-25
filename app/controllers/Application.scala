@@ -11,6 +11,9 @@ import models.jnlp.{MainJar, JNLP}
 object Application extends Controller {
 
   val LoggingDataKey = "logging_data"
+  val HubNetKey      = "hubnet_data"
+  val ModelsSubDir   = "assets/misc/models"
+  val DepsSubDir     = "assets/misc/deps"
 
   TempGenManager.removeAll()  // Clear all temp gen files on startup
 
@@ -44,9 +47,14 @@ object Application extends Controller {
       Ok(response)
   }
   
-  def handleHubNet(input: String) = Action {
+  def handleHubNet = Action {
     request =>
-      DecryptionUtil.decodeForHubNet(input) flatMap {
+      val inputMaybe = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
+                               orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
+                               orElse(Option(request.queryString)).
+                               flatMap(_.get(HubNetKey)).flatMap(_.headOption) map (scalaz.Success(_)) getOrElse (scalaz.Failure("Invalid POST data"))
+      val decryptedMaybe = inputMaybe flatMap (DecryptionUtil.decodeForHubNet(_))
+      decryptedMaybe flatMap {
         case (modelNameOpt, username, teacherName, isTeacher) =>
 
           val portMaybe = {
@@ -63,16 +71,16 @@ object Application extends Controller {
           val propsMaybe = portMaybe map {
             port => JNLP(
               new URI(serverPath),
-              TempGenManager.formatFilePath(input + ".jnlp"),
-              new MainJar(""),                                //@ Must be clarified
+              TempGenManager.formatFilePath(inputMaybe.toOption.get + ".jnlp"), // Impossible for `inputMaybe` to be a `Failure` at this point
+              new MainJar("NetLogo.jar"),  //@ Subject to change
               "%s HubNet Client".format(modelJNLPName),
-              "",                                             //@ Must be clarified
+              "org.nlogo.hubnet.client.App",
               "NetLogo HubNet Client",
               "A HubNet client for %s".format(modelJNLPName),
               "HubNet (%s)".format(modelJNLPName),
               false,
               properties = Seq("hubnet.username" -> username, "hubnet.serverpath" -> serverPath, "hubnet.port" -> port.toString),
-              modelName = modelNameOpt
+              modelName = modelNameOpt map (name => "%s/%s/%s".format(serverPath, ModelsSubDir, name + ".nlogo"))
             )
           }
           propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, jnlp.jnlpLoc).toString)

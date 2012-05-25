@@ -10,7 +10,7 @@ import java.net.URI
  */
 
 case class JNLP(
- /* Required */ serverURI: URI,            // Should just be the 'public' folder
+ /* Required */ serverPublicURI: URI,            // Should just be the 'public' folder
  /* Required */ jnlpLoc: String,
  /* Required */ mainJar: MainJar,
  /* Required */ applicationName: String,
@@ -26,6 +26,8 @@ case class JNLP(
                 arguments: Seq[String]                = Seq()
                ) {
 
+  val DepsDir = "misc/deps"
+
   def toXMLStr : String = {
 
     val jars = mainJar +: otherJars
@@ -33,7 +35,7 @@ case class JNLP(
     val args = modelName.toList ++: arguments
 
     val offlineAllowedStr = if (isOfflineAllowed) "\n" + formatXMLNode("offline-allowed", Map(), 2) else ""
-    val jarsStr = jars map { jar => import jar._; formatXMLNode("jar", Map((Seq("href" -> jarName) ++ (if (isMain) Seq("main" -> "true") else Seq()) ++ (if (isLazy) Seq("download" -> "lazy") else Seq())): _*), 2) } mkString("\n", "\n", "")
+    val jarsStr = jars map { jar => import jar._; formatXMLNode("jar", Map((Seq("href" -> "%s/%s".format(DepsDir, jarName)) ++ (if (isMain) Seq("main" -> "true") else Seq()) ++ (if (isLazy) Seq("download" -> "lazy") else Seq())): _*), 2) } mkString("\n", "\n", "")
     val propsStr = props map { case (key, value) => formatXMLNode("property", Map("name" -> key, "value" -> value), 2) } mkString("\n", "\n", "")
     val argsStr = args map (formatXMLPair("argument", Map(), _, 2)) mkString("", "\n", formatIndentation(1))
     val appDescStr = formatXMLPair("application-desc", Map("name" -> applicationName, "main-class" -> mainClass), "\n" + argsStr, 1)
@@ -41,7 +43,7 @@ case class JNLP(
 // It's tempting to use `String.format` here, but I fear that it would get too confusing
 """
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase=""" + '"' + serverURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
+<jnlp spec="1.0+" codebase=""" + '"' + serverPublicURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
     <information>
         <title>""" + appTitle + """</title>
         <vendor>CCL</vendor>
@@ -57,18 +59,18 @@ case class JNLP(
 
         <!-- Application Resources -->
         <j2se version="1.5+ 1.6+ 1.7+" href="http://java.sun.com/products/autodl/j2se"/>
-        <jar href="misc/deps/extensions.jar" download="lazy"/>
-        <jar href="misc/deps/asm-all-3.3.1.jar"/>
-        <jar href="misc/deps/gluegen-rt-1.1.1.jar"/>
-        <jar href="misc/deps/jhotdraw-6.0b1.jar"/>
-        <jar href="misc/deps/jmf-2.1.1e.jar"/>
-        <jar href="misc/deps/jogl-1.1.1.jar"/>
-        <jar href="misc/deps/log4j-1.2.16.jar"/>
-        <jar href="misc/deps/mrjadapter-1.2.jar"/>
-        <jar href="misc/deps/picocontainer-2.13.6.jar"/>
-        <jar href="misc/deps/quaqua-7.3.4.jar"/>
-        <jar href="misc/deps/scala-library.jar"/>
-        <jar href="misc/deps/swing-layout-7.3.4.jar"/>""" + jarsStr + """
+        <jar href=""" + '"' + DepsDir + """/extensions.jar" download="lazy"/>
+        <jar href=""" + '"' + DepsDir + """/asm-all-3.3.1.jar"/>
+        <jar href=""" + '"' + DepsDir + """/gluegen-rt-1.1.1.jar"/>
+        <jar href=""" + '"' + DepsDir + """/jhotdraw-6.0b1.jar"/>
+        <jar href=""" + '"' + DepsDir + """/jmf-2.1.1e.jar"/>
+        <jar href=""" + '"' + DepsDir + """/jogl-1.1.1.jar"/>
+        <jar href=""" + '"' + DepsDir + """/log4j-1.2.16.jar"/>
+        <jar href=""" + '"' + DepsDir + """/mrjadapter-1.2.jar"/>
+        <jar href=""" + '"' + DepsDir + """/picocontainer-2.13.6.jar"/>
+        <jar href=""" + '"' + DepsDir + """/quaqua-7.3.4.jar"/>
+        <jar href=""" + '"' + DepsDir + """/scala-library.jar"/>
+        <jar href=""" + '"' + DepsDir + """/swing-layout-7.3.4.jar"/>""" + jarsStr + """
 
         <!-- System Properties -->""" + propsStr + """
     </resources>

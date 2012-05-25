@@ -25,8 +25,8 @@ object DecryptionUtil {
     
     decrypteds match {
       case username :: teachName :: Nil                         => Success((None, username, teachName, false))
-      case username :: teachName :: isTeach :: Nil              => Success((None, username, teachName, isTeach.toBoolean))
-      case modelName :: username :: teachName :: isTeach :: Nil => Success((Option(modelName), username, teachName, isTeach.toBoolean))
+      case username :: teachName :: "false" :: Nil              => Success((None, username, teachName, false))
+      case modelName :: username :: teachName :: "true" :: Nil  => Success((Option(modelName), username, teachName, true))
       case _                                                    => Failure("Failed to interpret input")
     }
 
