@@ -1,6 +1,6 @@
 package models.util
 
-import java.io.FileWriter
+import java.io.{PrintWriter, File, FileWriter}
 
 
 /**
@@ -11,6 +11,11 @@ import java.io.FileWriter
  */
 
 object FileUtil {
+
+  def printToFile(f: File)(op: PrintWriter => Unit) {
+    val p = new PrintWriter(f)
+    try { op(p) } finally { p.close() }
+  }
 
   def printToFile(filename: String)(data: String) {
     using (new FileWriter(filename))(fileWriter => fileWriter.write(data))

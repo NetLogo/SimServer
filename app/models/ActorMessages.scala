@@ -10,6 +10,7 @@ package models
 sealed trait TempGenMessage
 case class  Write(contents: String) extends TempGenMessage
 case object Delete extends TempGenMessage
+case object Initialize extends TempGenMessage
 
 sealed trait HubNetMessage
 case class Start(modelName: String) extends HubNetMessage

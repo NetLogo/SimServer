@@ -1,12 +1,11 @@
 package models.util
 
-import java.net.URI
 import java.io.File
 
 import akka.util.duration._
-import akka.actor.{PoisonPill, ActorSystem, Actor}
+import akka.actor.{PoisonPill, ActorSystem, Actor, Props}
+import models.{Initialize, Write, Delete}
 
-import models.{Write, Delete}
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,38 +17,45 @@ import models.{Write, Delete}
 object TempGenManager {
 
   val PublicPath = "public"
+  val AssetPath  = "assets"
   val TempGenPath  = "gen"
   private val CharEncoding = "UTF-8"
   private val LifeSpan     = 1 minute
 
   private val system = ActorSystem("TempGen")
 
-  def formatFilePath(fileName: String) : String = "%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fileName, CharEncoding))
+  // 16 characters should be enough for uniqueness
+  // Play won't route to a file with a '%' in, so I'm just filtering them out (this _should_ be fine)
+  def formatFilePath(fileName: String) : String =
+    "%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fileName, CharEncoding) filterNot (_ == '%') take 16)
 
-  def registerFile(contents: String, fileName: String) : URI = {
+  def registerFile(contents: String, fileName: String, fileExt: String) : String = {
 
     // Create an actor with a handle to the file, write the contents to it
-    val fileURI = new URI(new File("%s/%s".format(PublicPath, formatFilePath(fileName))) getAbsolutePath())
-    val fileActor = new TempGenActor(fileURI)
-    fileActor.self ! Write(contents)
+    val fileAlias = "%s.%s".format(formatFilePath(fileName), fileExt)
+    val file = new File("%s%s%s".format(PublicPath, File.separator, fileAlias))
+    val fileActor = system.actorOf(Props(new TempGenActor(file)))
+    fileActor ! Initialize
+    fileActor ! Write(contents)
 
     // The temp gen file is accessible for <LifeSpan> before being deleted
-    system.scheduler.scheduleOnce(LifeSpan) { fileActor.self ! Delete }
+    system.scheduler.scheduleOnce(LifeSpan) { fileActor ! Delete }
 
-    fileURI
+    file.toString.replace(PublicPath, AssetPath)
 
   }
 
   // Could _easily_ be more efficient (at least for small numbers of files), but I want to stick to having actors manage the files
   def removeAll() {
-    //!(new File(TempGenPath)).listFiles map (file => new TempGenActor(new URI(file.getAbsolutePath))) foreach (_.self ! Delete)
+    (new File(PublicPath + File.separator + TempGenPath)).listFiles foreach { file => system.actorOf(Props(new TempGenActor(file))) ! Delete }
   }
 
 }
 
-class TempGenActor(fileURI: URI) extends Actor {
+class TempGenActor(file: File) extends Actor {
   override protected def receive = {
-    case Write(contents) => FileUtil.printToFile(fileURI.toString)(contents)
-    case Delete          => new File(fileURI) delete(); self ! PoisonPill // Terminate self after file is gone
+    case Initialize      => file.delete(); file.createNewFile()
+    case Write(contents) => FileUtil.printToFile(file)(_.write(contents))
+    case Delete          => file.delete(); self ! PoisonPill // Terminate self after file is gone
   }
 }
