@@ -3,7 +3,6 @@ package controllers
 import play.api._
 import play.api.mvc._
 import models.log.LoggingHandler
-import models.hubnet.HubNetServerManager
 import models.util.{TempGenManager, DecryptionUtil, RequestUtil}
 import java.net.URI
 import models.jnlp.{MainJar, JNLP}
@@ -24,7 +23,12 @@ object Application extends Controller {
   def ws = Action {
     Ok(views.html.ws())
   }
-  
+
+  //@ For testing only
+  def hubTest = Action {
+    Ok(views.html.hubtest())
+  }
+
   def startLogging = Action {
     Ok("/" + LoggingHandler.createNewLog())
   }
@@ -46,7 +50,7 @@ object Application extends Controller {
       val response = LoggingHandler.log(id.toLong, data)
       Ok(response)
   }
-  
+
   def handleHubNet = Action {
     request =>
       val inputMaybe = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
@@ -57,21 +61,23 @@ object Application extends Controller {
       decryptedMaybe flatMap {
         case (modelNameOpt, username, teacherName, isTeacher) =>
 
-          val portMaybe = {
-            import HubNetServerManager._
-            if (isTeacher) startUpServer(modelNameOpt, teacherName) else getPortByTeacherName(teacherName)
-          }
+          //@ This needs to get added back in eventually!
+          //val portMaybe = {
+            //import HubNetServerManager._
+            //if (isTeacher) startUpServer(modelNameOpt, teacherName) else getPortByTeacherName(teacherName)
+          //}
 
-          // Regex to find the first '/' that is alone and split string there
-          // ( http://www.derpy.com:9000/stupid/crap => (http://www.derpy.com:9000, stupid/crap) )
-          val URISplitter = """(.*?)(?<!/)/(?!/)(.*)""".r
-          val URISplitter(serverPath, _) = request.uri
+          val portMaybe: scalaz.Validation[String, Int] = scalaz.Success(100) //!
+
+          val host = "http://" + request.host
           val modelJNLPName = modelNameOpt getOrElse "NetLogo"
+          val filename = inputMaybe.toOption.get  // Impossible for `inputMaybe` to be a `Failure` at this point
+          val fileExt = ".jnlp"
 
           val propsMaybe = portMaybe map {
             port => JNLP(
-              new URI(serverPath),
-              TempGenManager.formatFilePath(inputMaybe.toOption.get + ".jnlp"), // Impossible for `inputMaybe` to be a `Failure` at this point
+              new URI(host),
+              TempGenManager.formatFilePath(filename + fileExt),
               new MainJar("NetLogo.jar"),  //@ Subject to change
               "%s HubNet Client".format(modelJNLPName),
               "org.nlogo.hubnet.client.App",
@@ -79,13 +85,12 @@ object Application extends Controller {
               "A HubNet client for %s".format(modelJNLPName),
               "HubNet (%s)".format(modelJNLPName),
               false,
-              properties = Seq("hubnet.username" -> username, "hubnet.serverpath" -> serverPath, "hubnet.port" -> port.toString),
-              modelName = modelNameOpt map (name => "%s/%s/%s".format(serverPath, ModelsSubDir, name + ".nlogo"))
+              properties = Seq("hubnet.username" -> username, "hubnet.host" -> host, "hubnet.port" -> port.toString),
+              modelName = modelNameOpt map (name => "%s/%s/%s".format(host, ModelsSubDir, name + ".nlogo"))
             )
           }
-          propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, jnlp.jnlpLoc).toString)
-
-      } fold (ExpectationFailed(_), Redirect(_))
+          propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, filename, fileExt drop 1).toString replaceAllLiterally("\\", "/"))
+      } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
   }
 
 }

@@ -8,6 +8,7 @@ GET     /                           controllers.Application.index
 GET     /ws                         controllers.Application.ws
 GET     /logging                    controllers.Application.startLogging
 GET     /logging/:id                controllers.Application.retrieveData(id)
+GET     /hubtest                    controllers.Application.hubTest
 POST    /logging/:id                controllers.Application.logData(id)
 POST    /hubnet                     controllers.Application.handleHubNet
 
