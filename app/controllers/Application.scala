@@ -67,9 +67,10 @@ object Application extends Controller {
             //if (isTeacher) startUpServer(modelNameOpt, teacherName) else getPortByTeacherName(teacherName)
           //}
 
-          val portMaybe: scalaz.Validation[String, Int] = scalaz.Success(100) //!
+          val portMaybe: scalaz.Validation[String, Int] = scalaz.Success(9173) //@
 
           val host = "http://" + request.host
+          val hostIP = "129.105.107.206" //@ Eventually, do this properly
           val modelJNLPName = modelNameOpt getOrElse "NetLogo"
           val filename = inputMaybe.toOption.get  // Impossible for `inputMaybe` to be a `Failure` at this point
           val fileExt = ".jnlp"
@@ -78,15 +79,14 @@ object Application extends Controller {
             port => JNLP(
               new URI(host),
               TempGenManager.formatFilePath(filename + fileExt),
-              new MainJar("NetLogo.jar"),  //@ Subject to change
+              new MainJar("NetLogo.jar"),
               "%s HubNet Client".format(modelJNLPName),
               "org.nlogo.hubnet.client.App",
               "NetLogo HubNet Client",
               "A HubNet client for %s".format(modelJNLPName),
               "HubNet (%s)".format(modelJNLPName),
               false,
-              properties = Seq("hubnet.username" -> username, "hubnet.host" -> host, "hubnet.port" -> port.toString),
-              modelName = modelNameOpt map (name => "%s/%s/%s".format(host, ModelsSubDir, name + ".nlogo"))
+              arguments = Seq("--id", username, "--ip", hostIP, "--port", port.toString)
             )
           }
           propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, filename, fileExt drop 1).toString replaceAllLiterally("\\", "/"))

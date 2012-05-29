@@ -22,7 +22,7 @@ case class JNLP(
                 appNameInMenu: String                 = "NetLogo (WebStart)",
                 otherJars: Seq[Jar]                   = Seq(),
                 properties: Seq[Pair[String, String]] = Seq(),
-                modelName: Option[String]             = None,
+                modelName: Option[String]             = None, //@ Not currently utilized
                 arguments: Seq[String]                = Seq()
                ) {
 
@@ -88,7 +88,8 @@ case class JNLP(
   }
 
   private def formatXMLPair(tagName: String, attrKVs: Map[String, String], data: String, indentationLevel: Int) : String = {
-    "%s<%s %s>%s</%s>".format(formatIndentation(indentationLevel), tagName, formatAttrs(attrKVs), data, tagName)
+    "%s<%s%s>%s</%s>".format(formatIndentation(indentationLevel), tagName,
+                             { val attrs = formatAttrs(attrKVs); if (attrs.isEmpty) "" else " " + attrs } , data, tagName)
   }
 
   private def formatAttrs(attrKVs: Map[String, String]) : String = {
