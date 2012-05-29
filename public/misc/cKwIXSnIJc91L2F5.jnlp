@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://localhost:9000/assets" href="misc/cKwIXSnIJc91L2F5.jnlp">
+    <information>
+        <title>NetLogo HubNet Client</title>
+        <vendor>CCL</vendor>
+        <description>A HubNet client for Critter Designers</description>
+        <description kind="short">HubNet (Critter Designers)</description>
+        <shortcut online="false">
+            <desktop/>
+            <menu submenu="NetLogo (WebStart)"/>
+        </shortcut>
+    </information>
+    <security> <all-permissions/> </security>
+    <resources>
+
+        <!-- Application Resources -->
+        <j2se version="1.5+ 1.6+ 1.7+" href="http://java.sun.com/products/autodl/j2se"/>
+        <jar href="misc/deps/extensions.jar" download="lazy"/>
+        <jar href="misc/deps/asm-all-3.3.1.jar"/>
+        <jar href="misc/deps/gluegen-rt-1.1.1.jar"/>
+        <jar href="misc/deps/jhotdraw-6.0b1.jar"/>
+        <jar href="misc/deps/jmf-2.1.1e.jar"/>
+        <jar href="misc/deps/jogl-1.1.1.jar"/>
+        <jar href="misc/deps/log4j-1.2.16.jar"/>
+        <jar href="misc/deps/mrjadapter-1.2.jar"/>
+        <jar href="misc/deps/picocontainer-2.13.6.jar"/>
+        <jar href="misc/deps/quaqua-7.3.4.jar"/>
+        <jar href="misc/deps/scala-library.jar"/>
+        <jar href="misc/deps/swing-layout-7.3.4.jar"/>
+        <jar href="misc/deps/NetLogo.jar" main="true"/>
+
+        <!-- System Properties -->
+
+    </resources>
+    <application-desc name="Critter Designers HubNet Client" main-class="org.nlogo.hubnet.client.App">
+        <argument>--id</argument>
+        <argument>bizzle</argument>
+        <argument>--ip</argument>
+        <argument>129.105.107.206</argument>
+        <argument>--port</argument>
+        <argument>9173</argument>
+    </application-desc>
+    <update check="timeout" policy="always"/>
+</jnlp>
