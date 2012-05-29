@@ -32,18 +32,18 @@ case class JNLP(
 
     val jars = mainJar +: otherJars
     val props = properties // No additions as of right now
-    val args = modelName.toList ++: arguments
+    val args = arguments   // Currently, no additions
 
     val offlineAllowedStr = if (isOfflineAllowed) "\n" + formatXMLNode("offline-allowed", Map(), 2) else ""
     val jarsStr = jars map { jar => import jar._; formatXMLNode("jar", Map((Seq("href" -> "%s/%s".format(DepsDir, jarName)) ++ (if (isMain) Seq("main" -> "true") else Seq()) ++ (if (isLazy) Seq("download" -> "lazy") else Seq())): _*), 2) } mkString("\n", "\n", "")
     val propsStr = props map { case (key, value) => formatXMLNode("property", Map("name" -> key, "value" -> value), 2) } mkString("\n", "\n", "")
-    val argsStr = args map (formatXMLPair("argument", Map(), _, 2)) mkString("", "\n", formatIndentation(1))
-    val appDescStr = formatXMLPair("application-desc", Map("name" -> applicationName, "main-class" -> mainClass), "\n" + argsStr, 1)
+    val argsStr = args map (formatXMLPair("argument", Map(), _, 2)) mkString("\n", "\n", "\n" + formatIndentation(1))
+    val appDescStr = "\n" + formatXMLPair("application-desc", Map("name" -> applicationName, "main-class" -> mainClass), argsStr, 1)
 
-// It's tempting to use `String.format` here, but I fear that it would get too confusing
-"""
+// It's tempting to use `String.format` here, but I fear that it would get far too confusing
+("""
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase=""" + '"' + serverPublicURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
+<jnlp spec="1.0+" codebase=""" + '"' + serverPublicURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + ".jnlp" + '"' + """>
     <information>
         <title>""" + appTitle + """</title>
         <vendor>CCL</vendor>
@@ -51,7 +51,7 @@ case class JNLP(
         <description kind="short">""" + shortDesc + """</description>""" + offlineAllowedStr + """
         <shortcut online="false">
             <desktop/>
-    		    <menu submenu=""" + '"' + appNameInMenu + '"' + """/>
+            <menu submenu=""" + '"' + appNameInMenu + '"' + """/>
         </shortcut>
     </information>
     <security> <all-permissions/> </security>
@@ -72,12 +72,14 @@ case class JNLP(
         <jar href=""" + '"' + DepsDir + """/scala-library.jar"/>
         <jar href=""" + '"' + DepsDir + """/swing-layout-7.3.4.jar"/>""" + jarsStr + """
 
-        <!-- System Properties -->""" + propsStr + """
-    </resources>
-    """ + appDescStr +
- """<update check="timeout" policy="always"/>
+        <!-- System Properties -->""" +
+        propsStr + """
+
+    </resources>""" +
+    appDescStr + """
+    <update check="timeout" policy="always"/>
 </jnlp>
-"""
+""").trim
 
   }
 
