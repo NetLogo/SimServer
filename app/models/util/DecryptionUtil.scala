@@ -21,7 +21,7 @@ object DecryptionUtil {
 
     val keyPass    = ResourceManager(ResourceManager.HubNetKeyPass)
     val delim      = ResourceManager(ResourceManager.HubnetDelim)
-    val decrypteds = (new EncryptionUtil(keyPass) with PBEWithMF5AndDES) decrypt encryptedStr split delim toList
+    val decrypteds = (new EncryptionUtil(keyPass) with PBEWithMF5AndDES) decrypt encryptedStr split (delim replaceAllLiterally("|", "\\|")) toList
     
     decrypteds match {
       case username :: teachName :: Nil                         => Success((None, username, teachName, false))
