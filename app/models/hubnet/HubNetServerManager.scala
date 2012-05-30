@@ -26,14 +26,26 @@ object HubNetServerManager {
   private val teacherPortMap = collection.mutable.Map[String, Int]()
 
   def startUpServer(modelNameOpt: Option[String], teacherName: String) : Validation[String, Int] = {
+
     val modelNameMaybe = modelNameOpt map (Success(_)) getOrElse Failure("No model name given\n")
+
     val portMaybeFunc = (m: String) =>
       portServerMap find {
         case (port, server) =>
           implicit val timeout = Timeout(3 seconds)
-          Await.result(server.self ? Start(m), timeout.duration).asInstanceOf[ServerStatus] == Started
-      } map { case (port, server) => Success(port) } getOrElse Failure("Unable to start any servers.\n")
-    modelNameMaybe flatMap (portMaybeFunc(_))
+          Await.result(server.self ? Start(m, port), timeout.duration).asInstanceOf[ServerStatus] == Started
+      } map {
+        case (port, server) =>
+          registerTeacherWithPort(teacherName, port)
+          Success(port)
+      } getOrElse Failure("Unable to start any servers at the moment.\n")
+
+    modelNameMaybe flatMap portMaybeFunc
+
+  }
+
+  def registerTeacherWithPort(teacherName: String, port: Int) {
+    teacherPortMap += teacherName -> port
   }
 
   def getPortByTeacherName(teacherName: String) : Validation[String, Int] = {

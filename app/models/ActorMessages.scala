@@ -13,7 +13,9 @@ case object Delete extends TempGenMessage
 case object Initialize extends TempGenMessage
 
 sealed trait HubNetMessage
-case class Start(modelName: String) extends HubNetMessage
+case class Start(modelName: String, portNum: Int) extends HubNetMessage
+case class Run(instance: AnyRef) //@ Change this to use `HeadlessWorkspace`, if we ever go forward with headless HubNet here...
+case object End extends HubNetMessage
 
 sealed trait ServerStatus
 case object Started extends ServerStatus
