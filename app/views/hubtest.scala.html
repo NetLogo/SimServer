@@ -1,10 +1,13 @@
 @main("HubNet JNLP Test Page!") {
+
+    <body onload="getIP()">
+    <input id="textbox" readonly="readonly" /><br>
     <button onclick="handleTestIt()">Test It</button>
 
     <script type="text/javascript">
 
     function handleTestIt() {
-        post_to_url('http://localhost:9000/hubnet', {'hubnet_data' : 'cKwIXSnIJc91L/5vEYTEJK3smVUZ1NC1wKZg0hZJ3t1/BVgOtP5htUXHVYYLsyV5'});
+        post_to_url('/hubnet', {'hubnet_data' : 'cKwIXSnIJc91L/5vEYTEJK3smVUZ1NC1wKZg0hZJ3t1/BVgOtP5htUXHVYYLsyV5'});
     }
 
     // Credit for this goes out to Rakesh Pai a la StackOverflow
@@ -32,4 +35,6 @@
         form.submit();
     }
     </script>
+    </body>
+
 }
