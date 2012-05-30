@@ -59,7 +59,7 @@ object Application extends Controller {
                                flatMap(_.get(HubNetKey)).flatMap(_.headOption) map (scalaz.Success(_)) getOrElse (scalaz.Failure("Invalid POST data"))
       val decryptedMaybe = inputMaybe flatMap (DecryptionUtil.decodeForHubNet(_))
       decryptedMaybe flatMap {
-        case (modelNameOpt, username, teacherName, isTeacher) =>
+        case (modelNameOpt, username, isHeadless, teacherName, isTeacher) =>
 
           //@ This needs to get added back in eventually!
           //val portMaybe = {
@@ -69,6 +69,7 @@ object Application extends Controller {
 
           val portMaybe: scalaz.Validation[String, Int] = scalaz.Success(9173) //@
 
+          val clientIP = null //@ We need to get this from somewhere
           val host = "http://" + request.host
           val hostIP = "129.105.107.206" //@ Eventually, do this properly
           val modelJNLPName = modelNameOpt getOrElse "NetLogo"
