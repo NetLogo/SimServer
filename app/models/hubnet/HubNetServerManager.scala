@@ -23,9 +23,9 @@ object HubNetServerManager {
   private val portServerMap = (Stream continually (new HubNetServerActor) take ServerCountLimit zipWithIndex).
                                map { case (actor, offset) => (StartingPort + offset, actor) } toMap
   
-  private val teacherPortMap = collection.mutable.Map[String, Int]()
+  private val teacherToIPPortMap = collection.mutable.Map[String, (String, Int)]()
 
-  def startUpServer(modelNameOpt: Option[String], teacherName: String) : Validation[String, Int] = {
+  def startUpServer(modelNameOpt: Option[String], teacherName: String, ip: String) : Validation[String, (String, Int)] = {
 
     val modelNameMaybe = modelNameOpt map (Success(_)) getOrElse Failure("No model name given\n")
 
@@ -36,22 +36,22 @@ object HubNetServerManager {
           Await.result(server.self ? Start(m, port), timeout.duration).asInstanceOf[ServerStatus] == Started
       } map {
         case (port, server) =>
-          registerTeacherWithPort(teacherName, Option(port))
+          registerTeacherIPAndPort(teacherName, ip, Option(port))
           Success(port)
       } getOrElse Failure("Unable to start any servers at the moment.\n")
 
-    modelNameMaybe flatMap portMaybeFunc
+    modelNameMaybe flatMap portMaybeFunc map ((ip, _))
 
   }
 
-  def registerTeacherWithPort(teacherName: String, portOpt: Option[Int] = None) : Int = {
+  def registerTeacherIPAndPort(teacherName: String, ip: String, portOpt: Option[Int] = None) : Success[String, (String, Int)] = {
     val port = portOpt getOrElse StartingPort
-    teacherPortMap += teacherName -> port
-    port
+    teacherToIPPortMap += teacherName -> (ip, port)
+    Success(ip, port)
   }
 
-  def getPortByTeacherName(teacherName: String) : Validation[String, Int] = {
-    teacherPortMap.get(teacherName) map (Success(_)) getOrElse Failure(NotStartedFormat(teacherName))
+  def getPortByTeacherName(teacherName: String) : Validation[String, (String, Int)] = {
+    teacherToIPPortMap.get(teacherName) map { case (ip, port) => Success((ip, port)) } getOrElse Failure(NotStartedFormat(teacherName))
   }
 
 }

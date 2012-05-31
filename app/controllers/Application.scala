@@ -6,8 +6,8 @@ import models.log.LoggingHandler
 import java.net.URI
 import models.jnlp.{MainJar, JNLP}
 import models.hubnet.HubNetServerManager
-import scalaz.Success
 import models.util.{HubNetSettings, TempGenManager, DecryptionUtil, RequestUtil}
+import scalaz.{Failure, Success}
 
 object Application extends Controller {
 
@@ -15,6 +15,8 @@ object Application extends Controller {
   val HubNetKey      = "hubnet_data"
   val ModelsSubDir   = "assets/misc/models"
   val DepsSubDir     = "assets/misc/deps"
+
+  private lazy val thisIP = "129.105.107.206" //@ Eventually, do this properly
 
   TempGenManager.removeAll()  // Clear all temp gen files on startup
 
@@ -59,48 +61,54 @@ object Application extends Controller {
       val inputMaybe = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
                                orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
                                orElse(Option(request.queryString)).
-                               flatMap(_.get(HubNetKey)).flatMap(_.headOption) map (scalaz.Success(_)) getOrElse (scalaz.Failure("Invalid POST data"))
+                               flatMap(_.get(HubNetKey)).flatMap(_.headOption) map (Success(_)) getOrElse (Failure("Invalid POST data"))
 
-      val settingsMaybe = inputMaybe flatMap (DecryptionUtil.decodeForHubNet(_))
+      val inputAndSettingsMaybe = inputMaybe flatMap (input => DecryptionUtil.decodeForHubNet(input) map (settings => (input, settings)))
 
-      settingsMaybe flatMap {
-        case HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt) =>
+      inputAndSettingsMaybe flatMap {
+        case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt)) =>
 
-          val portMaybe = {
+          val clientIP = "129.105.107.206" //@ We need to get this from somewhere (eventually)
+
+          val ipPortMaybe = {
             import HubNetServerManager._
             if (isTeacher) {
               if (isHeadless)
-                startUpServer(modelNameOpt, teacherName)
+                startUpServer(modelNameOpt, teacherName, thisIP)
               else
-                Success(registerTeacherWithPort(teacherName, preferredPortOpt))
+                registerTeacherIPAndPort(teacherName, clientIP, preferredPortOpt)
             }
             else
               getPortByTeacherName(teacherName)
           }
 
-          val clientIP = null //@ We need to get this from somewhere (eventually)
           val host = "http://" + request.host
-          val hostIP = "129.105.107.206" //@ Eventually, do this properly
-          val modelJNLPName = modelNameOpt getOrElse "NetLogo"
-          val filename = inputMaybe.toOption.get  // Impossible for `inputMaybe` to be a `Failure` at this point
-          val fileExt = ".jnlp"
+          val programName = modelNameOpt getOrElse "NetLogo"
+          val fileExt = "jnlp"
+          val fileName = TempGenManager.formatFilePath(input, fileExt)
+          val (mainClass, argsMaybe) = {
+            if (isTeacher && !isHeadless)
+              ("org.nlogo.app.App", Success(Seq()))
+            else
+              ("org.nlogo.hubnet.client.App", ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, "--port", port.toString) })
+          }
 
-          val propsMaybe = portMaybe map {
-            port => JNLP(
+          val propsMaybe = argsMaybe map {
+            args => JNLP(
               new URI(host),
-              TempGenManager.formatFilePath(filename + fileExt),
+              fileName,
               new MainJar("NetLogo.jar"),
-              "%s HubNet Client".format(modelJNLPName),
-              "org.nlogo.hubnet.client.App",
+              "%s HubNet Client".format(programName),
+              mainClass,
               "NetLogo HubNet Client",
-              "A HubNet client for %s".format(modelJNLPName),
-              "HubNet (%s)".format(modelJNLPName),
+              "A HubNet client for %s".format(programName),
+              "HubNet (%s)".format(programName),
               false,
-              arguments = Seq("--id", username, "--ip", hostIP, "--port", port.toString)
+              arguments = args
             )
           }
 
-          propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, filename, fileExt drop 1).toString replaceAllLiterally("\\", "/"))
+          propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
 
       } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
 

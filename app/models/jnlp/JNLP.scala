@@ -43,7 +43,7 @@ case class JNLP(
 // It's tempting to use `String.format` here, but I fear that it would get far too confusing
 ("""
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase=""" + '"' + serverPublicURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + ".jnlp" + '"' + """>
+<jnlp spec="1.0+" codebase=""" + '"' + serverPublicURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
     <information>
         <title>""" + appTitle + """</title>
         <vendor>CCL</vendor>

@@ -26,14 +26,19 @@ object TempGenManager {
 
   // 16 characters should be enough for uniqueness
   // Play won't route to a file with a '%' in, so I'm just filtering them out (this _should_ be fine)
-  def formatFilePath(fileName: String) : String =
-    "%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fileName, CharEncoding) filterNot (_ == '%') take 16)
+  def formatFilePath(fileName: String, fileExt: String) : String = {
+    def determineFileName(fn: String) = "%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fn, CharEncoding) filterNot (_ == '%') take 16)
+    "%s.%s".format(determineFileName(fileName), fileExt)
+  }
 
-  def registerFile(contents: String, fileName: String, fileExt: String) : String = {
+  def registerFile(contents: String, rawFileName: String, fileExt: String) : String = {
+    registerFile(contents, formatFilePath(rawFileName, fileExt))
+  }
+
+  def registerFile(contents: String, fileName: String) : String = {
 
     // Create an actor with a handle to the file, write the contents to it
-    val fileAlias = "%s.%s".format(formatFilePath(fileName), fileExt)
-    val file = new File("%s%s%s".format(PublicPath, File.separator, fileAlias))
+    val file = new File("%s%s%s".format(PublicPath, File.separator, fileName))
     val fileActor = system.actorOf(Props(new TempGenActor(file)))
     fileActor ! Initialize
     fileActor ! Write(contents)
