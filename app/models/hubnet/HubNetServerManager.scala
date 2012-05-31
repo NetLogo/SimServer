@@ -36,7 +36,7 @@ object HubNetServerManager {
           Await.result(server.self ? Start(m, port), timeout.duration).asInstanceOf[ServerStatus] == Started
       } map {
         case (port, server) =>
-          registerTeacherWithPort(teacherName, port)
+          registerTeacherWithPort(teacherName, Option(port))
           Success(port)
       } getOrElse Failure("Unable to start any servers at the moment.\n")
 
@@ -44,8 +44,10 @@ object HubNetServerManager {
 
   }
 
-  def registerTeacherWithPort(teacherName: String, port: Int) {
+  def registerTeacherWithPort(teacherName: String, portOpt: Option[Int] = None) : Int = {
+    val port = portOpt getOrElse StartingPort
     teacherPortMap += teacherName -> port
+    port
   }
 
   def getPortByTeacherName(teacherName: String) : Validation[String, Int] = {

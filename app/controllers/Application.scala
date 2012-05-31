@@ -3,9 +3,11 @@ package controllers
 import play.api._
 import play.api.mvc._
 import models.log.LoggingHandler
-import models.util.{TempGenManager, DecryptionUtil, RequestUtil}
 import java.net.URI
 import models.jnlp.{MainJar, JNLP}
+import models.hubnet.HubNetServerManager
+import scalaz.Success
+import models.util.{HubNetSettings, TempGenManager, DecryptionUtil, RequestUtil}
 
 object Application extends Controller {
 
@@ -53,23 +55,30 @@ object Application extends Controller {
 
   def handleHubNet = Action {
     request =>
+
       val inputMaybe = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
                                orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
                                orElse(Option(request.queryString)).
                                flatMap(_.get(HubNetKey)).flatMap(_.headOption) map (scalaz.Success(_)) getOrElse (scalaz.Failure("Invalid POST data"))
-      val decryptedMaybe = inputMaybe flatMap (DecryptionUtil.decodeForHubNet(_))
-      decryptedMaybe flatMap {
-        case (modelNameOpt, username, isHeadless, teacherName, isTeacher) =>
 
-          //@ This needs to get added back in eventually!
-          //val portMaybe = {
-            //import HubNetServerManager._
-            //if (isTeacher) startUpServer(modelNameOpt, teacherName) else getPortByTeacherName(teacherName)
-          //}
+      val settingsMaybe = inputMaybe flatMap (DecryptionUtil.decodeForHubNet(_))
 
-          val portMaybe: scalaz.Validation[String, Int] = scalaz.Success(9173) //@
+      settingsMaybe flatMap {
+        case HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt) =>
 
-          val clientIP = null //@ We need to get this from somewhere
+          val portMaybe = {
+            import HubNetServerManager._
+            if (isTeacher) {
+              if (isHeadless)
+                startUpServer(modelNameOpt, teacherName)
+              else
+                Success(registerTeacherWithPort(teacherName, preferredPortOpt))
+            }
+            else
+              getPortByTeacherName(teacherName)
+          }
+
+          val clientIP = null //@ We need to get this from somewhere (eventually)
           val host = "http://" + request.host
           val hostIP = "129.105.107.206" //@ Eventually, do this properly
           val modelJNLPName = modelNameOpt getOrElse "NetLogo"
@@ -90,8 +99,11 @@ object Application extends Controller {
               arguments = Seq("--id", username, "--ip", hostIP, "--port", port.toString)
             )
           }
+
           propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, filename, fileExt drop 1).toString replaceAllLiterally("\\", "/"))
+
       } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
+
   }
 
 }
