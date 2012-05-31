@@ -66,7 +66,7 @@ object Application extends Controller {
       val inputAndSettingsMaybe = inputMaybe flatMap (input => DecryptionUtil.decodeForHubNet(input) map (settings => (input, settings)))
 
       inputAndSettingsMaybe flatMap {
-        case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt)) =>
+        case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt, isLogging)) =>
 
           val clientIP = "129.105.107.206" //@ We need to get this from somewhere (eventually)
 
@@ -88,23 +88,23 @@ object Application extends Controller {
           val fileName = TempGenManager.formatFilePath(input, fileExt)
           val (mainClass, argsMaybe) = {
             if (isTeacher && !isHeadless)
-              ("org.nlogo.app.App", Success(Seq()))
+              ("org.nlogo.app.App", modelNameOpt map (Seq(_) ++ (if (isLogging) Seq("--logging") else Seq())) map (Success(_)) getOrElse Failure("No model name supplied."))
             else
               ("org.nlogo.hubnet.client.App", ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, "--port", port.toString) })
           }
 
           val propsMaybe = argsMaybe map {
             args => JNLP(
-              new URI(host),
-              fileName,
-              new MainJar("NetLogo.jar"),
-              "%s HubNet Client".format(programName),
-              mainClass,
-              "NetLogo HubNet Client",
-              "A HubNet client for %s".format(programName),
-              "HubNet (%s)".format(programName),
-              false,
-              arguments = args
+              serverPublicURI  = new URI(host),
+              jnlpLoc          = fileName,
+              mainJar          = new MainJar("NetLogo.jar"),
+              applicationName  = "%s HubNet Client".format(programName),
+              mainClass        = mainClass,
+              appTitle         = "NetLogo HubNet Client",
+              desc             = "A HubNet client for %s".format(programName),
+              shortDesc        = "HubNet (%s)".format(programName),
+              isOfflineAllowed = false,
+              arguments        = args
             )
           }
 

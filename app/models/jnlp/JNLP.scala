@@ -22,7 +22,6 @@ case class JNLP(
                 appNameInMenu: String                 = "NetLogo (WebStart)",
                 otherJars: Seq[Jar]                   = Seq(),
                 properties: Seq[Pair[String, String]] = Seq(),
-                modelName: Option[String]             = None, //@ Not currently utilized
                 arguments: Seq[String]                = Seq()
                ) {
 
