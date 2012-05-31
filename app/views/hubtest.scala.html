@@ -5,13 +5,13 @@
 @main("HubNet JNLP Test Page!") {
 
     <body onload="getIP()">
-    @form(action = routes.HubNet.yourData) {
+    @form(action = routes.HubNet.hubData) {
 
       @inputText(myForm("Model Name"))
       @inputText(myForm("User Name"))
-         @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
+         @select(myForm("Is Headless"), options = options(List("Yes", "No", "N/A")))
       @inputText(myForm("Teacher Name"))
-         @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
+         @select(myForm("Is Teacher"), options = options(List("Yes", "No", "N/A")))
       @inputText(myForm("Port Number"))
          @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
 

@@ -11,7 +11,7 @@ GET     /logging/:id                controllers.Logging.retrieveData(id)
 POST    /logging/:id                controllers.Logging.logData(id)
 
 GET     /hubtest                    controllers.HubNet.hubTest
-GET     /yourData                   controllers.HubNet.yourData
+GET     /hubdata                    controllers.HubNet.hubData
 POST    /hubnet                     controllers.HubNet.handleHubNet
 
 
