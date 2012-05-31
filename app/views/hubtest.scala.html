@@ -1,7 +1,24 @@
+@(myForm: Form[(String, String, String, String, String, String, String)])
+
+@import helper._
+
 @main("HubNet JNLP Test Page!") {
 
     <body onload="getIP()">
-    <input id="textbox" readonly="readonly" /><br>
+    @form(action = routes.HubNet.yourData) {
+
+      @inputText(myForm("Model Name"))
+      @inputText(myForm("User Name"))
+         @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
+      @inputText(myForm("Teacher Name"))
+         @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
+      @inputText(myForm("Port Number"))
+         @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
+
+      <input type="submit" value="Test It">
+
+    }
+
     <button onclick="handleTestIt()">Test It</button>
 
     <script type="text/javascript">

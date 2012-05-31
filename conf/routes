@@ -5,12 +5,14 @@
 # Home page
 GET     /                           controllers.Application.index
 
-GET     /ws                         controllers.Application.ws
-GET     /logging                    controllers.Application.startLogging
-GET     /logging/:id                controllers.Application.retrieveData(id)
-GET     /hubtest                    controllers.Application.hubTest
-POST    /logging/:id                controllers.Application.logData(id)
-POST    /hubnet                     controllers.Application.handleHubNet
+GET     /ws                         controllers.Logging.ws
+GET     /logging                    controllers.Logging.startLogging
+GET     /logging/:id                controllers.Logging.retrieveData(id)
+POST    /logging/:id                controllers.Logging.logData(id)
+
+GET     /hubtest                    controllers.HubNet.hubTest
+GET     /yourData                   controllers.HubNet.yourData
+POST    /hubnet                     controllers.HubNet.handleHubNet
 
 
 # Map static resources from the /public folder to the /assets URL path
