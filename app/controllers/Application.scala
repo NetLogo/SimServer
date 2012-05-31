@@ -84,8 +84,7 @@ object Application extends Controller {
 
           val host = "http://" + request.host
           val programName = modelNameOpt getOrElse "NetLogo"
-          val fileExt = "jnlp"
-          val fileName = TempGenManager.formatFilePath(input, fileExt)
+          val fileName = TempGenManager.formatFilePath(input, "jnlp")
           val (mainClass, argsMaybe) = {
             if (isTeacher && !isHeadless)
               ("org.nlogo.app.App", modelNameOpt map (Seq(_) ++ (if (isLogging) Seq("--logging") else Seq())) map (Success(_)) getOrElse Failure("No model name supplied."))
