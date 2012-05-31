@@ -6,6 +6,8 @@ import akka.dispatch.Await
 import akka.pattern.ask
 import scalaz.{Failure, Success, Validation}
 import models.{ServerStatus, Start, Started}
+import akka.actor.ActorSystem._
+import akka.actor.{Props, ActorSystem}
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,7 +22,9 @@ object HubNetServerManager {
   private val StartingPort = 9173
   private val ServerCountLimit = 20
 
-  private val portServerMap = (Stream continually (new HubNetServerActor) take ServerCountLimit zipWithIndex).
+  private val system = ActorSystem("HeadlessServers")
+
+  private val portServerMap = (Stream continually (system.actorOf(Props(new HubNetServerActor))) take ServerCountLimit zipWithIndex).
                                map { case (actor, offset) => (StartingPort + offset, actor) } toMap
   
   private val teacherToIPPortMap = collection.mutable.Map[String, (String, Int)]()
@@ -33,7 +37,7 @@ object HubNetServerManager {
       portServerMap find {
         case (port, server) =>
           implicit val timeout = Timeout(3 seconds)
-          Await.result(server.self ? Start(m, port), timeout.duration).asInstanceOf[ServerStatus] == Started
+          Await.result(server ? Start(m, port), timeout.duration).asInstanceOf[ServerStatus] == Started
       } map {
         case (port, server) =>
           registerTeacherIPAndPort(teacherName, ip, Option(port))
