@@ -104,6 +104,7 @@ object Application extends Controller {
               desc             = "A HubNet client for %s".format(programName),
               shortDesc        = "HubNet (%s)".format(programName),
               isOfflineAllowed = false,
+              properties       = if (isLogging) Seq(("jnlp.connectpath", "http://abmplus.tech.northwestern.edu:9001/logging")) else Seq(),
               arguments        = args
             )
           }
