@@ -56,7 +56,7 @@ object HubNet extends Controller {
           import HubNetSettings._
 
           def morphBlnStr2OZ(blnStr: String, key: String) : Seq[(String, String)] = {
-            if (blnStr != "N/A") Seq(key -> (if (blnStr == "YES") "true" else "false")) else Seq()
+            if (blnStr != "N/A") Seq(key -> (if (blnStr == "Yes") "true" else "false")) else Seq()
           }
 
           val modelOZ    = if (!modelName.isEmpty)  Seq(ModelNameKey -> modelName)   else Seq()
@@ -110,7 +110,9 @@ object HubNet extends Controller {
           val fileName = TempGenManager.formatFilePath(input, "jnlp")
           val (mainClass, argsMaybe) = {
             if (isTeacher && !isHeadless)
-              ("org.nlogo.app.App", modelNameOpt map (Seq(_) ++ (if (isLogging) Seq("--logging") else Seq())) map (Success(_)) getOrElse Failure("No model name supplied."))
+              ("org.nlogo.app.App", modelNameOpt map
+                                    (modelName => Seq("--url", ModelUtil.getURLFromName(modelName)) ++ (if (isLogging) Seq("--logging") else Seq())) map
+                                    (Success(_)) getOrElse Failure("No model name supplied."))
             else
               ("org.nlogo.hubnet.client.App", ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, "--port", port.toString) })
           }

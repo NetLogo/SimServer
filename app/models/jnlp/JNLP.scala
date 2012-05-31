@@ -59,6 +59,7 @@ case class JNLP(
         <!-- Application Resources -->
         <j2se version="1.5+ 1.6+ 1.7+" href="http://java.sun.com/products/autodl/j2se"/>
         <jar href=""" + '"' + DepsDir + """/extensions.jar" download="lazy"/>
+        <jar href=""" + '"' + DepsDir + """/logging.jar" download="lazy"/>
         <jar href=""" + '"' + DepsDir + """/asm-all-3.3.1.jar"/>
         <jar href=""" + '"' + DepsDir + """/gluegen-rt-1.1.1.jar"/>
         <jar href=""" + '"' + DepsDir + """/jhotdraw-6.0b1.jar"/>
