@@ -19,12 +19,7 @@ object DecryptionUtil {
   }
 
   private def decodeToMap(encryptedStr: String, keyPass: String, delim: String) : Map[String, String] = {
-    (new EncryptionUtil(keyPass) with PBEWithMF5AndDES) decrypt(encryptedStr) split(delim replaceAllLiterally("|", "\\|")) map {
-      str =>
-        val Breaker = """([^=]+)=(.*)""".r
-        val Breaker(key, value) = str
-        key -> value
-    } toMap
+    (new EncryptionUtil(keyPass) with PBEWithMF5AndDES) decrypt(encryptedStr) split(delim replaceAllLiterally("|", "\\|")) map (KVMatcher(_)) toMap
   }
 
 }

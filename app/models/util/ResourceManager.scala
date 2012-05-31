@@ -25,8 +25,7 @@ object ResourceManager {
     try {
       val src  = io.Source.fromFile(AccessFileName)
       try {
-        val KVMatcher = """([^=]*)=([^=]*)""".r
-        src.getLines().toIndexedSeq filter (KVMatcher.pattern.matcher(_) matches()) map { line => val KVMatcher(k, v) = line; (k, v) } toMap
+        src.getLines().toIndexedSeq filter (KVMatcher.matches(_)) map (KVMatcher(_)) toMap
       }
       finally {
         src.close()
