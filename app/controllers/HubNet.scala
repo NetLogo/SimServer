@@ -117,17 +117,17 @@ object HubNet extends Controller {
 
           val propsMaybe = argsMaybe map {
             args => JNLP(
-            serverPublicURI  = new URI(host),
-            jnlpLoc          = fileName,
-            mainJar          = new MainJar("NetLogo.jar"),
-            applicationName  = "%s HubNet Client".format(programName),
-            mainClass        = mainClass,
-            appTitle         = "NetLogo HubNet Client",
-            desc             = "A HubNet client for %s".format(programName),
-            shortDesc        = "HubNet (%s)".format(programName),
-            isOfflineAllowed = false,
-            properties       = if (isLogging) Seq(("jnlp.connectpath", "http://abmplus.tech.northwestern.edu:9001/logging")) else Seq(),
-            arguments        = args
+              serverPublicURI  = new URI(host),
+              jnlpLoc          = fileName,
+              mainJar          = new MainJar("NetLogo.jar"),
+              applicationName  = "%s HubNet Client".format(programName),
+              mainClass        = mainClass,
+              appTitle         = "NetLogo HubNet Client",
+              desc             = "A HubNet client for %s".format(programName),
+              shortDesc        = "HubNet (%s)".format(programName),
+              isOfflineAllowed = false,
+              properties       = if (isLogging) Seq(("jnlp.connectpath", "http://abmplus.tech.northwestern.edu:9001/logging")) else Seq(),
+              arguments        = args
             )
           }
 
