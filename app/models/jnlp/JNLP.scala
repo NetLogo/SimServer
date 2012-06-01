@@ -19,7 +19,7 @@ case class JNLP(
                 desc: String                          = "A NetLogo WebStart app",
                 shortDesc: String                     = "NetLogo (WebStart)",
                 isOfflineAllowed: Boolean             = true,
-                appNameInMenu: String                 = "NetLogo (WebStart)",
+                appNameInMenu: String                 = "NetLogo (WebStart)", // Used if we ever want to save application shortcuts
                 otherJars: Seq[Jar]                   = Seq(),
                 properties: Seq[Pair[String, String]] = Seq(),
                 arguments: Seq[String]                = Seq()
@@ -48,10 +48,6 @@ case class JNLP(
         <vendor>CCL</vendor>
         <description>""" + desc + """</description>
         <description kind="short">""" + shortDesc + """</description>""" + offlineAllowedStr + """
-        <shortcut online="false">
-            <desktop/>
-            <menu submenu=""" + '"' + appNameInMenu + '"' + """/>
-        </shortcut>
     </information>
     <security> <all-permissions/> </security>
     <resources>
@@ -59,7 +55,6 @@ case class JNLP(
         <!-- Application Resources -->
         <j2se version="1.5+ 1.6+ 1.7+" href="http://java.sun.com/products/autodl/j2se"/>
         <jar href=""" + '"' + DepsDir + """/extensions.jar" download="lazy"/>
-        <jar href=""" + '"' + DepsDir + """/logging.jar" download="lazy"/>
         <jar href=""" + '"' + DepsDir + """/asm-all-3.3.1.jar"/>
         <jar href=""" + '"' + DepsDir + """/gluegen-rt-1.1.1.jar"/>
         <jar href=""" + '"' + DepsDir + """/jhotdraw-6.0b1.jar"/>
@@ -70,7 +65,8 @@ case class JNLP(
         <jar href=""" + '"' + DepsDir + """/picocontainer-2.13.6.jar"/>
         <jar href=""" + '"' + DepsDir + """/quaqua-7.3.4.jar"/>
         <jar href=""" + '"' + DepsDir + """/scala-library.jar"/>
-        <jar href=""" + '"' + DepsDir + """/swing-layout-7.3.4.jar"/>""" + jarsStr + """
+        <jar href=""" + '"' + DepsDir + """/swing-layout-7.3.4.jar"/>""" +
+        jarsStr + """
 
         <!-- System Properties -->""" +
         propsStr + """

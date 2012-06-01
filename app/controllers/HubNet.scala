@@ -4,12 +4,10 @@ import play.api.mvc._
 import play.api.data.Form
 import play.api.data.Forms._
 import java.net.URI
-import models.jnlp.{MainJar, JNLP}
 import models.hubnet.HubNetServerManager
 import models.util._
-import models.util.KVMatcher._
-import play.api.libs.ws.WS
 import scalaz.{Validation, Failure, Success}
+import models.jnlp.{Jar, MainJar, JNLP}
 
 /**
  * Created by IntelliJ IDEA.
@@ -128,6 +126,7 @@ object HubNet extends Controller {
               desc             = "A HubNet client for %s".format(programName),
               shortDesc        = "HubNet (%s)".format(programName),
               isOfflineAllowed = false,
+              otherJars        = if (isLogging) Seq(new Jar("logging.jar", true)) else Seq(),
               properties       = if (isLogging) Seq(("jnlp.connectpath", "http://abmplus.tech.northwestern.edu:9001/logging")) else Seq(),
               arguments        = args
             )
