@@ -29,13 +29,14 @@ object HubNet extends Controller {
   //@ For testing only
   def form = Form(
     tuple(
-      "Model Name" -> text,
-      "User Name" -> text,
-      "Is Headless" -> text,
+      "Model Name"   -> text,
+      "User Name"    -> text,
+      "Is Headless"  -> text,
       "Teacher Name" -> text,
-      "Is Teacher" -> text,
-      "Port Number" -> text,
-      "Is Logging" -> text
+      "Is Teacher"   -> text,
+      "Port Number"  -> text,
+      "Is Logging"   -> text,
+      "Teacher IP"   -> text
     )
   )
 
@@ -49,7 +50,7 @@ object HubNet extends Controller {
     implicit request => form.bindFromRequest.fold(
       errors => Ok(views.html.hubdata("Nice failure", "You suck")),
       {
-        case (modelName, userName, isHeadless, teacherName, isTeacher, portNumber, isLogging) =>
+        case (modelName, userName, isHeadless, teacherName, isTeacher, portNumber, isLogging, teacherIP) =>
 
           import HubNetSettings._
 
@@ -57,13 +58,14 @@ object HubNet extends Controller {
             if (blnStr != "N/A") Seq(key -> (if (blnStr == "Yes") "true" else "false")) else Seq()
           }
 
-          val modelOZ    = if (!modelName.isEmpty)  Seq(ModelNameKey -> modelName)   else Seq()
-          val portNumOZ  = if (!portNumber.isEmpty) Seq(PortNumKey -> portNumber)    else Seq()
+          val modelOZ    = if (!modelName.isEmpty)  Seq(ModelNameKey -> modelName) else Seq()
+          val portNumOZ  = if (!portNumber.isEmpty) Seq(PortNumKey -> portNumber)  else Seq()
+          val teachIPOZ  = if (!teacherIP.isEmpty)  Seq(TeacherIPKey -> teacherIP) else Seq()
           val headlessOZ = morphBlnStr2OZ(isHeadless, IsHeadlessKey)
           val teacherOZ  = morphBlnStr2OZ(isTeacher,  IsTeacherKey)
           val loggingOZ  = morphBlnStr2OZ(isLogging,  IsLoggingKey)
 
-          val kvMap   = Map(UserNameKey -> userName, TeacherNameKey -> teacherName) ++ loggingOZ ++ teacherOZ ++ portNumOZ ++ headlessOZ ++ modelOZ
+          val kvMap   = Map(UserNameKey -> userName, TeacherNameKey -> teacherName) ++ loggingOZ ++ teacherOZ ++ portNumOZ ++ headlessOZ ++ modelOZ ++ teachIPOZ
           val delimed = kvMap.toSeq map { case (k, v) => "%s=%s".format(k, v) } mkString ResourceManager(ResourceManager.HubnetDelim)
           val encrypted = (new EncryptionUtil(ResourceManager(ResourceManager.HubNetKeyPass)) with PBEWithMF5AndDES) encrypt(delimed)
 
@@ -87,9 +89,9 @@ object HubNet extends Controller {
       val inputAndSettingsMaybe = encryptedStrMaybe flatMap (input => DecryptionUtil.decodeForHubNet(input) map (settings => (input, settings)))
 
       inputAndSettingsMaybe flatMap {
-        case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt, isLogging)) =>
+        case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt, isLogging, teacherIP)) =>
 
-          val clientIP = "129.105.107.206" //@ We need to get this from somewhere (eventually)
+          //val clientIP = "129.105.107.206" //@ We need to get this from somewhere (eventually)
 
           val ipPortMaybe = {
             import HubNetServerManager._
@@ -97,7 +99,7 @@ object HubNet extends Controller {
               if (isHeadless)
                 startUpServer(modelNameOpt, teacherName, thisIP)
               else
-                registerTeacherIPAndPort(teacherName, clientIP, preferredPortOpt)
+                registerTeacherIPAndPort(teacherName, teacherIP.get, preferredPortOpt)
             }
             else
               getPortByTeacherName(teacherName)

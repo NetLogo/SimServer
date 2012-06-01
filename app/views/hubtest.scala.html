@@ -1,4 +1,4 @@
-@(myForm: Form[(String, String, String, String, String, String, String)])
+@(myForm: Form[(String, String, String, String, String, String, String, String)])
 
 @import helper._
 
@@ -15,6 +15,7 @@
          @select(myForm("Is Teacher"), options = options(List("Yes", "No", "N/A")))
       @inputText(myForm("Port Number"))
          @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
+      @inputText(myForm("Teacher IP"))
 
       <input type="submit" value="Test It">
 
