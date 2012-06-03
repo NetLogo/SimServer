@@ -23,6 +23,9 @@ object TempGenManager {
   private val LifeSpan     = 1 minute
 
   private val system = ActorSystem("TempGen")
+  private val tempGenFolder = new File(PublicPath + File.separator + TempGenPath)
+
+  if (!tempGenFolder.exists()) tempGenFolder.mkdir()
 
   // 16 characters should be enough for uniqueness
   // Play won't route to a file with a '%' in, so I'm just filtering them out (this _should_ be fine)
@@ -52,7 +55,7 @@ object TempGenManager {
 
   // Could _easily_ be more efficient (at least for small numbers of files), but I want to stick to having actors manage the files
   def removeAll() {
-    (new File(PublicPath + File.separator + TempGenPath)).listFiles foreach { file => system.actorOf(Props(new TempGenActor(file))) ! Delete }
+    tempGenFolder.listFiles foreach { file => system.actorOf(Props(new TempGenActor(file))) ! Delete }
   }
 
 }
