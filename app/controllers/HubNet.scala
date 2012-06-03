@@ -108,6 +108,7 @@ object HubNet extends Controller {
           val host = "http://" + request.host
           val programName = modelNameOpt getOrElse "NetLogo"
           val fileName = TempGenManager.formatFilePath(input, "jnlp")
+          val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
           val (mainClass, argsMaybe) = {
             if (isTeacher && !isHeadless)
               ("org.nlogo.app.App", modelNameOpt map
@@ -124,10 +125,10 @@ object HubNet extends Controller {
               serverPublicURI  = new URI(host),
               jnlpLoc          = fileName,
               mainJar          = new MainJar("NetLogo.jar"),
-              applicationName  = "%s HubNet Client".format(programName),
+              applicationName  = "%s HubNet %s".format(programName, clientOrServerStr),
               mainClass        = mainClass,
-              appTitle         = "NetLogo HubNet Client",
-              desc             = "A HubNet client for %s".format(programName),
+              appTitle         = "NetLogo HubNet %s".format(clientOrServerStr),
+              desc             = "A HubNet %s for %s".format(clientOrServerStr.toLowerCase, programName),
               shortDesc        = "HubNet (%s)".format(programName),
               isOfflineAllowed = false,
               otherJars        = if (isLogging) Seq(new Jar("logging.jar", true)) else Seq(),
