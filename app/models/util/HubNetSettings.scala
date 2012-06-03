@@ -1,5 +1,7 @@
 package models.util
 
+import java.util.InputMismatchException
+
 /**
  * Created by IntelliJ IDEA.
  * User: Jason
@@ -46,6 +48,7 @@ object HubNetSettings {
     v2 map {
       case (uname: String) :: (headless: Boolean) :: (tname: String) :: (teacher: Boolean) :: (logging: Boolean) :: Nil =>
         new HubNetSettings(modelName, uname, headless, tname, teacher, portNum, logging, teacherIP)
+      case _ => throw new InputMismatchException("You changed the contents of `questionables` in the `HubNetSettings` factory without changing the pattern matching!")
     }
 
   }
