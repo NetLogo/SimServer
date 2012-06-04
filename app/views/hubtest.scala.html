@@ -1,6 +1,7 @@
-@(myForm: Form[(String, String, String, String, String, String, String, String)])
+@(myForm: Form[(String, String, String, String, String, String, String)])
 
 @import helper._
+@import java.net.InetAddress
 
 @main("HubNet JNLP Test Page!") {
 
@@ -10,12 +11,11 @@
 
       @inputText(myForm("Model Name"))
       @inputText(myForm("User Name"))
-         @select(myForm("Is Headless"), options = options(List("Yes", "No", "N/A")))
+      @select(myForm("Is Headless"), options = options(List("Yes", "No", "N/A")))
       @inputText(myForm("Teacher Name"))
-         @select(myForm("Is Teacher"), options = options(List("Yes", "No", "N/A")))
+      @select(myForm("Is Teacher"), options = options(List("Yes", "No", "N/A")))
       @inputText(myForm("Port Number"))
-         @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
-      @inputText(myForm("Teacher IP"))
+      @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
 
       <input type="submit" value="Test It">
 

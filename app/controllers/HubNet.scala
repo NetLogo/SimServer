@@ -35,8 +35,7 @@ object HubNet extends Controller {
       "Teacher Name" -> text,
       "Is Teacher"   -> text,
       "Port Number"  -> text,
-      "Is Logging"   -> text,
-      "Teacher IP"   -> text
+      "Is Logging"   -> text
     )
   )
 
@@ -50,7 +49,7 @@ object HubNet extends Controller {
     implicit request => form.bindFromRequest.fold(
       errors => Ok(views.html.hubdata("Nice failure", "You suck")),
       {
-        case (modelName, userName, isHeadless, teacherName, isTeacher, portNumber, isLogging, teacherIP) =>
+        case (modelName, userName, isHeadless, teacherName, isTeacher, portNumber, isLogging) =>
 
           import HubNetSettings._
 
@@ -58,9 +57,11 @@ object HubNet extends Controller {
             if (blnStr != "N/A") Seq(key -> (if (blnStr == "Yes") "true" else "false")) else Seq()
           }
 
+          val ip = java.net.InetAddress.getLocalHost.getHostAddress
+
           val modelOZ    = if (!modelName.isEmpty)  Seq(ModelNameKey -> modelName) else Seq()
           val portNumOZ  = if (!portNumber.isEmpty) Seq(PortNumKey -> portNumber)  else Seq()
-          val teachIPOZ  = if (!teacherIP.isEmpty)  Seq(TeacherIPKey -> teacherIP) else Seq()
+          val teachIPOZ  = if (!ip.isEmpty)  Seq(TeacherIPKey -> ip) else Seq()
           val headlessOZ = morphBlnStr2OZ(isHeadless, IsHeadlessKey)
           val teacherOZ  = morphBlnStr2OZ(isTeacher,  IsTeacherKey)
           val loggingOZ  = morphBlnStr2OZ(isLogging,  IsLoggingKey)
