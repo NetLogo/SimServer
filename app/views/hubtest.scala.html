@@ -4,6 +4,8 @@
 
 @main("HubNet JNLP Test Page!") {
 
+    <body onload="getAddr()"></body>
+
     <applet id="app" archive="/assets/applets/AppletJ.jar" code="App" height=1 width=1></applet>
 
     @form(action = routes.HubNet.hubData) {
@@ -20,15 +22,13 @@
 
     }
 
-    <button onclick="getIP()">Check Localhost IP</button>
-
     <script type="text/javascript">
-      function getIP() {
-        alert("In.");
-        var y = app.findIP();
-        alert("Got it?");
-        alert(y);
+
+      function getAddr() {
+        var z = document.app.findIP();
+        alert(z);
       }
+
     </script>
 
 }
