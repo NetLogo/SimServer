@@ -1,11 +1,10 @@
 @(myForm: Form[(String, String, String, String, String, String, String)])
 
 @import helper._
-@import java.net.InetAddress
 
 @main("HubNet JNLP Test Page!") {
 
-    <body onload="getIP()">
+    <applet id="app" archive="/assets/applets/AppletJ.jar" code="App" height=1 width=1></applet>
 
     @form(action = routes.HubNet.hubData) {
 
@@ -21,6 +20,15 @@
 
     }
 
-    </body>
+    <button onclick="getIP()">Check Localhost IP</button>
+
+    <script type="text/javascript">
+      function getIP() {
+        alert("In.");
+        var y = app.findIP();
+        alert("Got it?");
+        alert(y);
+      }
+    </script>
 
 }

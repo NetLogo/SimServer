@@ -53,11 +53,11 @@ object HubNet extends Controller {
 
           import HubNetSettings._
 
+          val ip = "" // We'll have to do something better for bringing this in...
+
           def morphBlnStr2OZ(blnStr: String, key: String) : Seq[(String, String)] = {
             if (blnStr != "N/A") Seq(key -> (if (blnStr == "Yes") "true" else "false")) else Seq()
           }
-
-          val ip = java.net.InetAddress.getLocalHost.getHostAddress
 
           val modelOZ    = if (!modelName.isEmpty)  Seq(ModelNameKey -> modelName) else Seq()
           val portNumOZ  = if (!portNumber.isEmpty) Seq(PortNumKey -> portNumber)  else Seq()
