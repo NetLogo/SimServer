@@ -61,7 +61,8 @@ object HubNet extends Controller {
           val keys  = Seq(ModelNameKey, UserNameKey, TeacherNameKey, PortNumKey, IsHeadlessKey, IsLoggingKey)
           val pairs = vals zip keys
           val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
-          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(str)))) // Fail or redirect to snoop the IP
+          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(java.net.URLEncoder.encode(str, "UTF-8")))))
+          // Fail or redirect to snoop the IP
       }
     )
   }
@@ -100,7 +101,7 @@ object HubNet extends Controller {
   }
 
   def handleTeacherProxy(encryptedStr: String, teacherIP: String) = Action {
-    request => handleHubNet(Success(encryptedStr), true, Option(teacherIP))(request)
+    request => handleHubNet(Success(java.net.URLDecoder.decode(encryptedStr, "UTF-8")), true, Option(teacherIP))(request)
   }
 
   def handleHubNet(encryptedStrMaybe: Validation[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
