@@ -112,8 +112,6 @@ object HubNet extends Controller {
       inputAndSettingsMaybe flatMap {
         case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, preferredPortOpt, isLogging)) =>
 
-          //val clientIP = "129.105.107.206" //@ We need to get this from somewhere (eventually)
-
           val ipPortMaybe = {
             import HubNetServerManager._
             if (isTeacher) {

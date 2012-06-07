@@ -8,10 +8,14 @@
 
     <script type="text/javascript" src="@routes.HubNet.javascriptRoutes"></script>
 
+    <div id="info-str" data-data="@info"></div>
+
     <script type="text/javascript">
       function redirectWithIP() {
         var ip = document.app.findIP();
-        jsRoutes.controllers.HubNet.handleTeacherProxy(info, ip)
+        var info = $("#info-str").data('data');  // Bring the info (server => HTML => client)
+        var route = jsRoutes.controllers.HubNet.handleTeacherProxy(info, ip);
+        window.location.href = route.url;
       }
     </script>
 
