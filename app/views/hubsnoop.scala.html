@@ -8,8 +8,10 @@
 
     <script type="text/javascript" src="@routes.HubNet.javascriptRoutes">
       function redirectWithIP() {
+        alert("In");
         var ip = document.app.findIP();
-        jsRoutes.controllers.HubNet.handleTeacherProxy(info, ip)
+        alert("IP was: " + ip);
+        //jsRoutes.controllers.HubNet.handleTeacherProxy(info, ip)
       }
     </script>
 
