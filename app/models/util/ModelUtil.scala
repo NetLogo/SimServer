@@ -10,7 +10,8 @@ package models.util
 //@ Simple and stupid.  ...Or simply stupid?
 object ModelUtil {
 
-  private val RootURLFormat = "http://129.105.107.206:9000/assets/misc/models/%s.nlogo".format((_: String)) //@ THIS SUUUUUUUCKS
+  //@ This suuuuuucks!
+  private val RootURLFormat = "http://" + "DERP" /* We need to acquire IP and port somehow... */ + "/assets/misc/models/%s.nlogo".format((_: String))
 
   private val nameToFileNameMap = Map("Critters" -> "Critter%20Designers")
 
