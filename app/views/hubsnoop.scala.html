@@ -10,9 +10,7 @@
 
     <script type="text/javascript">
       function redirectWithIP() {
-        alert("In");
         var ip = document.app.findIP();
-        alert("IP was: " + ip);
         jsRoutes.controllers.HubNet.handleTeacherProxy(info, ip)
       }
     </script>
