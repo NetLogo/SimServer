@@ -11,9 +11,15 @@ GET     /logging/:id                controllers.Logging.retrieveData(id)
 POST    /logging/:id                controllers.Logging.logData(id)
 
 GET     /hubtest                    controllers.HubNet.hubTest
-GET     /hubdata                    controllers.HubNet.hubData
-POST    /hubnet                     controllers.HubNet.handleHubNet
+GET     /bindstudent                controllers.HubNet.bindStudent
 
+GET     /hubteach                   controllers.HubNet.hubTeach
+GET     /bindteacher                controllers.HubNet.bindTeacher
+GET     /hubsnoop/:str              controllers.HubNet.hubSnoop(str)
+
+GET     /teacherproxy/:str/:ip      controllers.HubNet.handleTeacherProxy(str, ip)
+
+GET     /hubnet/javascripts/routes  controllers.HubNet.javascriptRoutes()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

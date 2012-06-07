@@ -1,34 +1,13 @@
-@(myForm: Form[(String, String, String, String, String, String, String)])
+@(myForm: Form[models.hubnet.StudentInfo])
 
 @import helper._
 
-@main("HubNet JNLP Test Page!") {
+@main("HubNet Student JNLP Test Page!") {
 
-    <body onload="getAddr()"></body>
-
-    <applet id="app" archive="/assets/applets/AppletJ.jar" code="App" height=1 width=1></applet>
-
-    @form(action = routes.HubNet.hubData) {
-
-      @inputText(myForm("Model Name"))
+    @form(action = routes.HubNet.bindStudent) {
       @inputText(myForm("User Name"))
-      @select(myForm("Is Headless"), options = options(List("Yes", "No", "N/A")))
       @inputText(myForm("Teacher Name"))
-      @select(myForm("Is Teacher"), options = options(List("Yes", "No", "N/A")))
-      @inputText(myForm("Port Number"))
-      @select(myForm("Is Logging"), options = options(List("Yes", "No", "N/A")))
-
       <input type="submit" value="Test It">
-
     }
-
-    <script type="text/javascript">
-
-      function getAddr() {
-        var z = document.app.findIP();
-        alert(z);
-      }
-
-    </script>
 
 }

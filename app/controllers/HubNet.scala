@@ -1,13 +1,12 @@
 package controllers
 
 import play.api.mvc._
-import play.api.data.Form
-import play.api.data.Forms._
 import java.net.URI
-import models.hubnet.HubNetServerManager
 import models.util._
 import scalaz.{Validation, Failure, Success}
 import models.jnlp.{Jar, MainJar, JNLP}
+import play.api.Logger
+import models.hubnet.{StudentInfo, TeacherInfo, HubNetServerManager}
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,79 +17,99 @@ import models.jnlp.{Jar, MainJar, JNLP}
 
 object HubNet extends Controller {
 
-  val HubNetKey      = "hubnet_data"
   val ModelsSubDir   = "assets/misc/models"
   val DepsSubDir     = "assets/misc/deps"
 
-  private lazy val thisIP = "129.105.107.206" //@ Eventually, do this properly
+  private lazy val thisIP = "DERP" //@ We need an appropriate way to get ahold of this (probably from a request)
 
   TempGenManager.removeAll()  // Clear all temp gen files on startup
 
   //@ For testing only
-  def form = Form(
-    tuple(
-      "Model Name"   -> text,
-      "User Name"    -> text,
-      "Is Headless"  -> text,
-      "Teacher Name" -> text,
-      "Is Teacher"   -> text,
-      "Port Number"  -> text,
-      "Is Logging"   -> text
-    )
-  )
-
-  //@ For testing only
   def hubTest = Action {
-    Ok(views.html.hubtest(form))
+    Ok(views.html.hubtest(StudentInfo.form))
   }
 
-  //@ For testing only
-  def hubData = Action {
-    implicit request => form.bindFromRequest.fold(
-      errors => Ok(views.html.hubdata("Nice failure", "You suck")),
+  //@ For testing only (maybe)
+  def bindStudent = Action {
+    implicit request => StudentInfo.form.bindFromRequest.fold(
+      errors => ExpectationFailed("Failed to parse form: " + errors.toString),
       {
-        case (modelName, userName, isHeadless, teacherName, isTeacher, portNumber, isLogging) =>
-
+        case StudentInfo(userName, teacherName) =>
           import HubNetSettings._
-
-          val ip = "" // We'll have to do something better for bringing this in...
-
-          def morphBlnStr2OZ(blnStr: String, key: String) : Seq[(String, String)] = {
-            if (blnStr != "N/A") Seq(key -> (if (blnStr == "Yes") "true" else "false")) else Seq()
-          }
-
-          val modelOZ    = if (!modelName.isEmpty)  Seq(ModelNameKey -> modelName) else Seq()
-          val portNumOZ  = if (!portNumber.isEmpty) Seq(PortNumKey -> portNumber)  else Seq()
-          val teachIPOZ  = if (!ip.isEmpty)  Seq(TeacherIPKey -> ip) else Seq()
-          val headlessOZ = morphBlnStr2OZ(isHeadless, IsHeadlessKey)
-          val teacherOZ  = morphBlnStr2OZ(isTeacher,  IsTeacherKey)
-          val loggingOZ  = morphBlnStr2OZ(isLogging,  IsLoggingKey)
-
-          val kvMap   = Map(UserNameKey -> userName, TeacherNameKey -> teacherName) ++ loggingOZ ++ teacherOZ ++ portNumOZ ++ headlessOZ ++ modelOZ ++ teachIPOZ
-          val delimed = kvMap.toSeq map { case (k, v) => "%s=%s".format(k, v) } mkString ResourceManager(ResourceManager.HubnetDelim)
-          val encrypted = (new EncryptionUtil(ResourceManager(ResourceManager.HubNetKeyPass)) with PBEWithMF5AndDES) encrypt(delimed)
-
-          reallyHandleHubNet(Success(encrypted), request)
-
+          val vals  = Seq(userName,    teacherName)
+          val keys  = Seq(UserNameKey, TeacherNameKey)
+          val pairs = vals zip keys
+          val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
+          handleHubNet(encryptedMaybe, false)
       }
     )
   }
 
-  def handleHubNet = Action {
-    request =>
-    val inputMaybe = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
-                             orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
-                             orElse(Option(request.queryString)).
-                             flatMap(_.get(HubNetKey)).flatMap(_.headOption) map (Success(_)) getOrElse (Failure("Invalid POST data"))
-    reallyHandleHubNet(inputMaybe, request)
+  //@ For testing only
+  def hubTeach = Action {
+    Ok(views.html.hubteach(TeacherInfo.form))
   }
 
-  def reallyHandleHubNet(encryptedStrMaybe: Validation[String, String], request: Request[AnyContent]) : Result = {
+  //@ For testing only (maybe?)
+  def bindTeacher = Action {
+    implicit request => TeacherInfo.form.bindFromRequest.fold(
+      errors => ExpectationFailed("Failed to parse form: " + errors.toString),
+      {
+        case TeacherInfo(modelName, userName, isHeadless, teacherName, portNumber, isLogging) =>
+          import HubNetSettings._
+          val vals  = Seq(modelName,    userName,    teacherName,    portNumber, isHeadless,    isLogging)
+          val keys  = Seq(ModelNameKey, UserNameKey, TeacherNameKey, PortNumKey, IsHeadlessKey, IsLoggingKey)
+          val pairs = vals zip keys
+          val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
+          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(str)))) // Fail or redirect to snoop the IP
+      }
+    )
+  }
+
+  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : Validation[String, String] = {
+    try {
+      val kvMap = requiredInfo ++ optionalPairs.flatten
+      val delimed = kvMap.toSeq map { case (k, v) => "%s=%s".format(k, v) } mkString ResourceManager(ResourceManager.HubnetDelim)
+      val encrypted = (new EncryptionUtil(ResourceManager(ResourceManager.HubNetKeyPass)) with PBEWithMF5AndDES) encrypt(delimed)
+      Success(encrypted)
+    }
+    catch {
+      case e =>
+        Logger.error(e.getLocalizedMessage)
+        Failure("Failed to encrypt HubNet info; " + e.getLocalizedMessage)
+    }
+  }
+
+  //@ Not currently used....  Should be used for optional parameters in conjuction with `encryptHubNetInfoPairs`
+  private def morphPair2Opt(pair: Pair[String, String]) : Option[(String, String)] = {
+    pair match {
+      case (str, key) =>
+        (
+          if (!str.isEmpty) Option(str)
+          else None
+        ) map {
+          x =>      if (x == "Yes") "true"
+               else if (x == "No")  "false"
+               else                 x
+        } map (key -> _)
+    }
+  }
+
+  def hubSnoop(encryptedInfo: String) = Action {
+    Ok(views.html.hubsnoop(encryptedInfo))
+  }
+
+  def handleTeacherProxy(encryptedStr: String, teacherIP: String) = Action {
+    request => handleHubNet(Success(encryptedStr), true, Option(teacherIP))(request)
+  }
+
+  def handleHubNet(encryptedStrMaybe: Validation[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
+                  (implicit request: Request[AnyContent]) : Result = {
 
       val inputAndSettingsMaybe = encryptedStrMaybe flatMap (input => DecryptionUtil.decodeForHubNet(input) map (settings => (input, settings)))
 
       inputAndSettingsMaybe flatMap {
-        case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, isTeacher, preferredPortOpt, isLogging, teacherIP)) =>
+        case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, preferredPortOpt, isLogging)) =>
 
           //val clientIP = "129.105.107.206" //@ We need to get this from somewhere (eventually)
 
@@ -142,6 +161,15 @@ object HubNet extends Controller {
 
       } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
 
+  }
+
+  def javascriptRoutes() = Action {
+    implicit request =>
+    Ok(
+      play.api.Routes.javascriptRouter("jsRoutes")(
+        routes.javascript.HubNet.handleTeacherProxy
+      )
+    ).as("text/javascript")
   }
 
 }

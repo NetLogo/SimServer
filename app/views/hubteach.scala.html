@@ -1,0 +1,20 @@
+@(myForm: Form[models.hubnet.TeacherInfo])
+
+@import helper._
+
+@main("HubNet Teacher JNLP Test Page!") {
+
+    @form(action = routes.HubNet.bindTeacher) {
+
+      @inputText(myForm("Model Name"))
+      @inputText(myForm("User Name"))
+      @select(myForm("Is Headless"), options = options(List("No", "Yes")))
+      @inputText(myForm("Teacher Name"))
+      @inputText(myForm("Port Number"))
+      @select(myForm("Is Logging"), options = options(List("No", "Yes")))
+
+      <input type="submit" value="Test It">
+
+    }
+
+}
