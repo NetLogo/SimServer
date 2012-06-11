@@ -17,8 +17,9 @@ import models.hubnet.{StudentInfo, TeacherInfo, HubNetServerManager}
 
 object HubNet extends Controller {
 
-  val ModelsSubDir   = "assets/misc/models"
-  val DepsSubDir     = "assets/misc/deps"
+  val CharEncoding = "UTF-8"
+  val ModelsSubDir = "assets/misc/models"
+  val DepsSubDir   = "assets/misc/deps"
 
   private lazy val thisIP = "DERP" //@ We need an appropriate way to get ahold of this (probably from a request)
 
@@ -61,7 +62,7 @@ object HubNet extends Controller {
           val keys  = Seq(ModelNameKey, UserNameKey, TeacherNameKey, PortNumKey, IsHeadlessKey, IsLoggingKey)
           val pairs = keys zip vals
           val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
-          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(str))))
+          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(encode(str)))))
           // Fail or redirect to snoop the IP
       }
     )
@@ -97,11 +98,10 @@ object HubNet extends Controller {
   }
 
   def hubSnoop(encryptedInfo: String) = Action {
-    Ok(views.html.hubsnoop(encryptedInfo))
+    Ok(views.html.hubsnoop(encode(encryptedInfo)))
   }
 
   // Encoding and decoding is working properly here (which isn't all that surprising to me)
-  //@ We should just use POSTs, instead
   def handleTeacherProxy(encryptedStr: String, teacherIP: String) = Action {
     request => handleHubNet(Success(encryptedStr), true, Option(teacherIP))(request)
   }
@@ -173,5 +173,7 @@ object HubNet extends Controller {
       )
     ).as("text/javascript")
   }
+
+  private def encode(str: String) : String = java.net.URLEncoder.encode(str, CharEncoding)
 
 }
