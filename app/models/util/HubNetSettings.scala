@@ -30,7 +30,11 @@ object HubNetSettings {
 
     // These are all `Option`s
     val (modelName, userName, isHeadless, teacherName, portNum, isLogging) = {
-      def defaultOnAndWrapBoolStr(strOpt: Option[String]) = Option(strOpt map (_.toBoolean) getOrElse false)
+      def defaultOnAndWrapBoolStr(strOpt: Option[String]) = Option(strOpt map {
+        case "Yes" => "true"
+        case "No"  => "false"
+        case x     => x
+      } map (_.toBoolean) getOrElse false)
       import inMap.get
       (get(ModelNameKey), get(UserNameKey), defaultOnAndWrapBoolStr(get(IsHeadlessKey)),
        get(TeacherNameKey), get(PortNumKey) map (_.toInt), defaultOnAndWrapBoolStr(get(IsLoggingKey)))
