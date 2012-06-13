@@ -18,7 +18,7 @@ import akka.actor.{Props, ActorSystem}
 
 object HubNetServerManager {
 
-  private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format(_)
+  private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format((_: String))
   private val StartingPort = 9173
   private val ServerCountLimit = 20
 
