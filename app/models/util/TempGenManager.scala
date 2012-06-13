@@ -27,11 +27,11 @@ object TempGenManager {
 
   if (!tempGenFolder.exists()) tempGenFolder.mkdir()
 
-  // 16 characters should be enough for uniqueness
-  // Play won't route to a file with a '%' in, so I'm just filtering them out (this _should_ be fine)
   def formatFilePath(fileName: String, fileExt: String) : String = {
-    def determineFileName(fn: String) = "%s/%s".format(TempGenPath, java.net.URLEncoder.encode(fn, CharEncoding) filterNot (_ == '%') take 16)
-    "%s.%s".format(determineFileName(fileName), fileExt)
+    val (dropNum, takeNum) = (10, 16)      // The first 10 characters tend to be encryption noise; 16 characters should give good uniqueness
+    val encoded = java.net.URLEncoder.encode(fileName, CharEncoding) filterNot (_ == '%')        // Play won't route to a file with a '%' in
+    val name = if (encoded.length >= dropNum + 5) encoded drop dropNum take takeNum else encoded // If it meets my magic buffer size, trim it
+    "%s/%s.%s".format(TempGenPath, name, fileExt)
   }
 
   def registerFile(contents: String, rawFileName: String, fileExt: String) : String = {
