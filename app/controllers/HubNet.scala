@@ -1,12 +1,15 @@
 package controllers
 
 import play.api.mvc._
-import java.net.URI
-import models.util._
-import scalaz.{Validation, Failure, Success}
-import models.jnlp.{Jar, MainJar, JNLP}
 import play.api.Logger
+
+import java.net.URI
+
+import scalaz.{Validation, Failure, Success}
+
 import models.hubnet.{StudentInfo, TeacherInfo, HubNetServerManager}
+import models.jnlp.{Jar, MainJar, JNLP}
+import models.util._
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,7 +24,7 @@ object HubNet extends Controller {
   val ModelsSubDir = "assets/misc/models"
   val DepsSubDir   = "assets/misc/deps"
 
-  private lazy val thisIP = "DERP" //@ We need an appropriate way to get ahold of this (probably from a request)
+  private lazy val thisIP = java.net.InetAddress.getLocalHost.getHostAddress
 
   TempGenManager.removeAll()  // Clear all temp gen files on startup
 
@@ -82,14 +85,11 @@ object HubNet extends Controller {
     }
   }
 
-  //@ Not currently used....  Should be used for optional parameters in conjuction with `encryptHubNetInfoPairs`
+  //@ Not currently used....  Should be used for optional parameters in conjunction with `encryptHubNetInfoPairs`
   private def morphPair2Opt(pair: Pair[String, String]) : Option[(String, String)] = {
     pair match {
       case (str, key) =>
-        (
-          if (!str.isEmpty) Option(str)
-          else None
-        ) map {
+        (if (!str.isEmpty) Option(str) else None) map {
           x =>      if (x == "Yes") "true"
                else if (x == "No")  "false"
                else                 x
@@ -127,15 +127,15 @@ object HubNet extends Controller {
             getPortByTeacherName(teacherName)
         }
 
-        val host = "http://" + request.host
+        val codebaseURL = "http://" + request.host  //@ Should probably be done better (through `routes`?)
         val programName = modelNameOpt getOrElse "NetLogo"
         val fileName = TempGenManager.formatFilePath(input, "jnlp")
         val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
         val (mainClass, argsMaybe) = {
           if (isTeacher && !isHeadless)
             ("org.nlogo.app.App", modelNameOpt map
-                                  (modelName => Seq("--url", ModelUtil.getURLFromName(modelName)) ++
-                                                ipPortMaybe.fold({_ => Seq()}, { case (_, port) => Seq("--port", port.toString) }) ++
+                                  (modelName => Seq("--url", Models.getModelURL(modelName)) ++
+                                                ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq("--port", port.toString)} ) ++
                                                 (if (isLogging) Seq("--logging") else Seq())) map
                                   (Success(_)) getOrElse Failure("No model name supplied."))
           else
@@ -144,7 +144,7 @@ object HubNet extends Controller {
 
         val propsMaybe = argsMaybe map {
           args => JNLP(
-            serverPublicURI  = new URI(host),
+            codebaseURI      = new URI(codebaseURL),
             jnlpLoc          = fileName,
             mainJar          = new MainJar("NetLogo.jar"),
             applicationName  = "%s HubNet %s".format(programName, clientOrServerStr),
