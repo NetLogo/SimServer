@@ -133,11 +133,11 @@ object HubNet extends Controller {
         val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
         val (mainClass, argsMaybe) = {
           if (isTeacher && !isHeadless)
-            ("org.nlogo.app.App", modelNameOpt map
-                                  (modelName => Seq("--url", Models.getModelURL(modelName)) ++
-                                                ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq("--port", port.toString)} ) ++
-                                                (if (isLogging) Seq("--logging") else Seq())) map
-                                  (Success(_)) getOrElse Failure("No model name supplied."))
+            ("org.nlogo.app.App", modelNameOpt map {
+                                    modelName => Seq("--url", Models.getModelURL(modelName)) ++
+                                                 ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq("--port", port.toString)} ) ++
+                                                 (if (isLogging) Seq("--logging") else Seq())
+                                  } map (Success(_)) getOrElse Failure("No model name supplied."))
           else
             ("org.nlogo.hubnet.client.App", ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, "--port", port.toString) })
         }
