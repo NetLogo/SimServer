@@ -28,7 +28,7 @@ object HubNet extends Controller {
 
   TempGenManager.removeAll()  // Clear all temp gen files on startup
 
-  //@ For testing only
+  //@ For testing only (maybe?)
   def hubTest = Action {
     Ok(views.html.hubtest(StudentInfo.form))
   }
@@ -127,7 +127,7 @@ object HubNet extends Controller {
             getPortByTeacherName(teacherName)
         }
 
-        val codebaseURL = "http://" + request.host  //@ Should probably be done better (through `routes`?)
+        val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
         val fileName = TempGenManager.formatFilePath(input, "jnlp")
         val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
@@ -174,6 +174,7 @@ object HubNet extends Controller {
     ).as("text/javascript")
   }
 
+  //@ Does this really belong here?
   private def encode(str: String) : String = java.net.URLEncoder.encode(str, CharEncoding)
 
 }
