@@ -9,8 +9,14 @@ import java.util.InputMismatchException
  * Time: 5:15 PM
  */
 
-class HubNetSettings(val modelNameOpt: Option[String], val userName: String, val isHeadless: Boolean,
-                     val teacherName: String, val desiredPortNumOpt: Option[Int], val isLogging: Boolean)
+sealed abstract case class HubNetSettings(modelNameOpt: Option[String], userName: String, isHeadless: Boolean,
+                                          teacherName: String, desiredPortNumOpt: Option[Int], isLogging: Boolean)
+
+sealed class StudentHubNetSettings(uname: String, tname: String) extends HubNetSettings(None, uname, false, tname, None, false)
+
+sealed class TeacherHubNetSettings(modelName: Option[String], uname: String, headless: Boolean,
+                                   tname: String, portNum: Option[Int], logging: Boolean)
+                                   extends HubNetSettings(modelName, uname, headless, tname, portNum, logging)
 
 object HubNetSettings {
 
@@ -21,12 +27,8 @@ object HubNetSettings {
   val IsHeadlessKey  = "is_headless"
   val IsLoggingKey   = "is_logging"
 
-  def unapply(settings: HubNetSettings) : Option[(Option[String], String, Boolean, String, Option[Int], Boolean)] = {
-    import settings._; Option(modelNameOpt, userName, isHeadless, teacherName, desiredPortNumOpt, isLogging)
-  }
-
   // Could return a `Validation`, but I don't think that my use of `Validation` is this class's business
-  def apply(inMap: Map[String, String]) : Option[HubNetSettings] = {
+  def apply(inMap: Map[String, String], isTeacher: Boolean) : Option[HubNetSettings] = {
 
     // These are all `Option`s
     val (modelName, userName, isHeadless, teacherName, portNum, isLogging) = {
@@ -41,13 +43,16 @@ object HubNetSettings {
     }
 
     // If something needs to not be `None`, add it here
-    val questionables = List(userName, isHeadless, teacherName, isLogging)
+    val questionables = if (isTeacher) List(userName, isHeadless, teacherName, isLogging) else List(userName, teacherName)
     val verifieds = if (questionables forall (!_.isEmpty)) Option(questionables.flatten) else None
 
     verifieds map {
       case (uname: String) :: (headless: Boolean) :: (tname: String) :: (logging: Boolean) :: Nil =>
-        new HubNetSettings(modelName, uname, headless, tname, portNum, logging)
-      case _ => throw new InputMismatchException("You changed the contents of `questionables` in the `HubNetSettings` factory without changing the pattern matching!")
+        new TeacherHubNetSettings(modelName, uname, headless, tname, portNum, logging)
+      case (uname: String) :: (tname: String) :: Nil =>
+        new StudentHubNetSettings(uname, tname)
+      case _ =>
+        throw new InputMismatchException("The `HubNetSettings` factory could not generate an instance with the given data pattern.")
     }
 
   }

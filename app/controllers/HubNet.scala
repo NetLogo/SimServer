@@ -42,7 +42,7 @@ object HubNet extends Controller {
           import HubNetSettings._
           val vals  = Seq(userName,    teacherName)
           val keys  = Seq(UserNameKey, TeacherNameKey)
-          val pairs = vals zip keys
+          val pairs = keys zip vals
           val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
           handleHubNet(encryptedMaybe, false)
       }
@@ -110,7 +110,7 @@ object HubNet extends Controller {
                   (implicit request: Request[AnyContent]) : Result = {
 
     // Could this benefit from using a `for` comprehension?
-    val inputAndSettingsMaybe = encryptedStrMaybe flatMap (input => DecryptionUtil.decodeForHubNet(input) map (settings => (input, settings)))
+    val inputAndSettingsMaybe = encryptedStrMaybe flatMap (input => DecryptionUtil.decodeForHubNet(input, isTeacher) map (settings => (input, settings)))
 
     inputAndSettingsMaybe flatMap {
       case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, preferredPortOpt, isLogging)) =>
