@@ -10,7 +10,7 @@ import java.net.URI
  */
 
 case class JNLP(
- /* Required */ serverPublicURI: URI,            // Should just be the 'public' folder
+ /* Required */ codebaseURI: URI,   // Should just be the 'public' folder
  /* Required */ jnlpLoc: String,
  /* Required */ mainJar: MainJar,
  /* Required */ applicationName: String,
@@ -42,7 +42,7 @@ case class JNLP(
 // It's tempting to use `String.format` here, but I fear that it would get far too confusing
 ("""
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase=""" + '"' + serverPublicURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
+<jnlp spec="1.0+" codebase=""" + '"' + codebaseURI.toString + "/assets" + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
     <information>
         <title>""" + appTitle + """</title>
         <vendor>CCL</vendor>
