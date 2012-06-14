@@ -8,6 +8,8 @@ package models.util
  */
 
 object ModelMap {
-  private val nameToFileNameMap = Map("Critters" -> "Critter%20Designers")
-  def apply(modelName: String) : String = nameToFileNameMap(modelName)
+  private val nameToFilenameMap = Map("Critters" -> "Critter%20Designers")
+  def apply   (modelName: String) : String      = nameToFilenameMap(modelName)
+  def contains(modelName: String) : Boolean     = nameToFilenameMap.contains(modelName)
+  def listModels                  : Seq[String] = nameToFilenameMap.keys.toSeq
 }

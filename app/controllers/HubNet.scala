@@ -36,7 +36,7 @@ object HubNet extends Controller {
   //@ For testing only (maybe)
   def bindStudent = Action {
     implicit request => StudentInfo.form.bindFromRequest.fold(
-      errors => ExpectationFailed("Failed to parse form: " + errors.toString),
+      errors => Ok(views.html.hubtest(errors)),  //@ Is this really `bindStudents`'s business?
       {
         case StudentInfo(userName, teacherName) =>
           import HubNetSettings._
@@ -57,7 +57,7 @@ object HubNet extends Controller {
   //@ For testing only (maybe?)
   def bindTeacher = Action {
     implicit request => TeacherInfo.form.bindFromRequest.fold(
-      errors => ExpectationFailed("Failed to parse form: " + errors.toString),
+      errors => Ok(views.html.hubteach(errors)),  //@ Is this really `bindTeacher`'s business?
       {
         case TeacherInfo(modelName, userName, isHeadless, teacherName, portNumber, isLogging) =>
           import HubNetSettings._

@@ -1,7 +1,8 @@
 package models.hubnet
 import Converter.str2Option
 import play.api.data.Forms._
-import play.api.data.Form
+import play.api.data._
+import models.util.ModelMap
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,7 +19,20 @@ sealed class HubNetRoleInfo(val modelName: Option[String] = None, val username: 
                             val teacherName: String, val portNum: Option[String] = None, val isLogging: Option[String] = None)
 
 sealed trait InfoCompanion[T] {
+
+  protected val RequiredText = text.verifying("Required Text", !(_: String).isEmpty)
+
+            val YesNoChoices = Seq("No", "Yes")
+  protected val YesNo        = text.verifying("""Invalid value; choose %s""".format(YesNoChoices map ("\"%s\"".format(_)) mkString " or "),
+                                              YesNoChoices.contains((_: String)))
+
+  protected def numerical(min: Int, max: Int) = text.verifying("Not a number within the range [%s, %s] (inclusive)".format(min, max),
+                                                                  number => try { val x = number.toInt; x >= min && x <= max }
+                                                                            catch { case _ => false }
+                                                                )
+
   def form : Form[T]
+
 }
 
 case class StudentInfo(private val uname: String, private val tname: String) extends HubNetRoleInfo(username = uname, teacherName = tname)
@@ -27,8 +41,8 @@ object StudentInfo extends InfoCompanion[StudentInfo] {
   override def form : Form[StudentInfo] = {
     Form(
       mapping(
-        "User Name"    -> text,
-        "Teacher Name" -> text
+        "User Name"    -> RequiredText,
+        "Teacher Name" -> RequiredText
       )(StudentInfo.apply)(StudentInfo.unapply)
     )
   }
@@ -41,16 +55,17 @@ case class TeacherInfo(private val mname: String, private val uname: String, pri
   def generateWithIP(ipAddr: String) : TeacherInfo = new TeacherInfo(mname, uname, headless, tname, port, logging)
 }
 
+// Crappy validation....  Could use built-in validators, but they carry annoying messages that I don't know how to get rid of
 object TeacherInfo extends InfoCompanion[TeacherInfo] {
   override def form : Form[TeacherInfo] = {
     Form(
       mapping(
-        "Model Name"   -> text,
-        "User Name"    -> text,
-        "Is Headless"  -> text,
-        "Teacher Name" -> text,
-        "Port Number"  -> text,
-        "Is Logging"   -> text
+        "Model Name"   -> text.verifying("Unknown model: Must come from the list of " + ModelMap.listModels.mkString("{ ", "; ", " }"), ModelMap.contains(_)),
+        "User Name"    -> RequiredText,
+        "Is Headless"  -> YesNo,
+        "Teacher Name" -> RequiredText,
+        "Port Number"  -> numerical(0, 65535),
+        "Is Logging"   -> YesNo
       )(TeacherInfo.apply)(TeacherInfo.unapply)
     )
   }
