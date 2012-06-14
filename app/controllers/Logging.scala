@@ -36,8 +36,7 @@ object Logging extends Controller {
                          orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
                          orElse(Option(request.queryString)).
                          flatMap(_.get(LoggingDataKey)).flatMap(_.headOption).
-                         //@ I'm pretty sure this `RequestUtil` can be replaced by a call to `request.queryString` (embarrassing...)
-                         flatMap(str => if (LoggingHandler.isHandlable(str)) Some(str) else RequestUtil.extractPropertyFromUri(request.uri, LoggingDataKey)).
+                         flatMap(str => if (LoggingHandler.isHandlable(str)) Some(str) else request.queryString.get(LoggingDataKey) map(_(0))).
                          getOrElse ("ERROR_IN_PARSING ")
       val response = LoggingHandler.log(id.toLong, data)
       Ok(response)
