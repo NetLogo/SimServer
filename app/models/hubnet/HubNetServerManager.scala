@@ -24,8 +24,8 @@ object HubNetServerManager {
 
   private val system = ActorSystem("HeadlessServers")
 
-  private val portServerMap = (Stream continually (system.actorOf(Props(new HubNetServerActor))) take ServerCountLimit zipWithIndex).
-                               map { case (actor, offset) => (StartingPort + offset, actor) } toMap
+  private lazy val portServerMap = (Stream continually (system.actorOf(Props(new HubNetServerActor))) take ServerCountLimit zipWithIndex).
+                                    map { case (actor, offset) => (StartingPort + offset, actor) } toMap
   
   private val teacherToIPPortMap = collection.mutable.Map[String, (String, Int)]()
 
