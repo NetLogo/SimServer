@@ -50,9 +50,11 @@ object LoggingHandler {
     if (!logDir.exists()) logDir.mkdir()
   }
 
-  private def prepareData(data: String): String = {
-    decompressData(data) orElse Option(data) flatMap (validateData(_)) getOrElse
-    ("ERROR   DATA MUST BE TEXT OR GZIP COMPRESSED" replaceAll(" ", "_"))
+  private def prepareData(data: String, encoding: String = DefaultEncoding): String = {
+    (unGzip(data.getBytes(encoding)) flatMap (validateData(_))).
+      orElse (decompressData(data, encoding) orElse Option(data) flatMap (validateData(_))).
+      getOrElse ("ERROR   DATA MUST BE TEXT OR GZIP COMPRESSED" replaceAll(" ", "_"))
+
   }
 
   /* Some(data)  if valid
@@ -84,39 +86,8 @@ object LoggingHandler {
     }
   }
 
-  def isHandlable(data: String): Boolean = {
-    isGzipDecodable(data) || isValid(data)
-  }
-
   private def isValid(data: String): Boolean = {
     data.toLowerCase.matches("""(?s)^[a-z]{%d}.*""".format(3)) //@ Pretty unmaginificent validation on my part...
-  }
-
-  private def isGzipDecodable(data: String, encoding: String = DefaultEncoding): Boolean = {
-    /*
-     //@
-     This `try`/`catch` thing actually shouldn't be necessary.  Somehow, "finalize" messages—and _only_ "finalize"
-     messages—are reaching this point and not being able to be decoded by `URLDecoder.decode`.  It complains of
-     invalid hex characters.  However, the "last-ditch effort" code that calls `RequestUtil.extractPropertyFromUri`
-     to read the compressed text out of the URI succeeds, so... it's unclear how this could be going wrong.
-     Fortunately, the code _works_ as is, and I'm not sure that this is big deal.  If someone ends up reading this,
-     though, that probably means that it ended up being a big deal....  --JAB
-     */
-    val decodedData = {
-      try {
-        java.net.URLDecoder.decode(data, encoding).getBytes(encoding)
-      }
-      catch {
-        case _ => data.getBytes(encoding)
-      }
-    }
-    try {
-      new GZIPInputStream(new ByteArrayInputStream(decodedData))
-      true
-    }
-    catch {
-      case _ => false
-    }
   }
 
 }
