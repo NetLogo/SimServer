@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" 
-        codebase="http://abmplus.tech.northwestern.edu:9001/assets/misc" href="demo.jnlp">
+        codebase="http://129.105.107.139:9000/assets/misc" href="newDemo.jnlp">
     <information>
         <title>GoGo Extension / WebStart Demo</title>
         <vendor>CCL</vendor>
@@ -20,6 +20,10 @@
         <jar href="deps/NetLogo.jar" main="true" />
         <jar href="deps/extensions.jar" download="lazy"/>
         <jar href="deps/logging.jar" download="lazy"/>
+        <jar href="deps/commons-codec-1.6.jar" download="lazy"/>
+        <jar href="deps/commons-logging-1.1.1.jar" download="lazy"/>
+        <jar href="deps/httpclient-4.2.jar" download="lazy"/>
+        <jar href="deps/httpcore-4.2.jar" download="lazy"/>
         <jar href="deps/asm-all-3.3.1.jar"/>
         <jar href="deps/gluegen-rt-1.1.1.jar"/>
         <jar href="deps/jhotdraw-6.0b1.jar"/>
@@ -33,13 +37,13 @@
         <jar href="deps/swing-layout-7.3.4.jar"/>
 
         <!-- System Properties -->
-        <property name="jnlp.connectpath" value="http://abmplus.tech.northwestern.edu:9001/logging"/>
+        <property name="jnlp.connectpath" value="http://localhost:9000/logging"/>
 
     </resources>
     <application-desc name="Netlogo Demo Application" main-class="org.nlogo.app.App">
         <argument>--logging</argument>
         <argument>--url</argument>
-		<argument>http://abmplus.tech.northwestern.edu:9001/assets/misc/models/circling.nlogo</argument>
+		<argument>http://129.105.107.139:9000/assets/misc/models/Critter%20Designers.nlogo</argument>
 	</application-desc>
     <update check="timeout" policy="always"/>
 </jnlp>
