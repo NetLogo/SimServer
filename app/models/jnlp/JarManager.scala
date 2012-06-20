@@ -9,7 +9,13 @@ package models.jnlp
 
 object JarManager {
 
-  private val DefaultLazyJarNames = Seq("extensions.jar")
+  private val DefaultLazyJarNames = Seq(
+    "extensions.jar",
+    "commons-codec-1.6.jar",
+    "commons-logging-1.1.1.jar",
+    "httpclient-4.2.jar",
+    "httpcore-4.2.jar"
+  )
 
   private val DefaultJarNames = Seq(
     "asm-all-3.3.1.jar",
