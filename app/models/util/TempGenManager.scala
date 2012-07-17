@@ -19,7 +19,6 @@ object TempGenManager {
   val PublicPath = "public"
   val AssetPath  = "assets"
   val TempGenPath  = "gen"
-  private val CharEncoding = "UTF-8"
   private val LifeSpan     = 1 minute
 
   private val system = ActorSystem("TempGen")
@@ -27,11 +26,8 @@ object TempGenManager {
 
   if (!tempGenFolder.exists()) tempGenFolder.mkdir()
 
-  def formatFilePath(fileName: String, fileExt: String) : String = {
-    val (dropNum, takeNum) = (10, 16)      // The first 10 characters tend to be encryption noise; 16 characters should give good uniqueness
-    val encoded = java.net.URLEncoder.encode(fileName, CharEncoding) filterNot (_ == '%')        // Play won't route to a file with a '%' in
-    val name = if (encoded.length >= dropNum + 5) encoded drop dropNum take takeNum else encoded // If it meets my magic buffer size, trim it
-    "%s/%s.%s".format(TempGenPath, name, fileExt)
+  def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
+    "%s/%s.%s".format(TempGenPath, fileNameBasis.##.abs, fileExt)
   }
 
   def registerFile(contents: String, rawFileName: String, fileExt: String) : String = {
