@@ -8,6 +8,7 @@ import models.hubnet.HubNetServerManager
 import models.util._
 import scalaz.{Validation, Failure, Success}
 import models.jnlp.{Jar, MainJar, JNLP}
+import models.filemanager.TempFileManager
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,13 +19,13 @@ import models.jnlp.{Jar, MainJar, JNLP}
 
 object HubNet extends Controller {
 
-  val HubNetKey      = "hubnet_data"
-  val ModelsSubDir   = "assets/misc/models"
-  val DepsSubDir     = "assets/misc/deps"
+  val HubNetKey    = "hubnet_data"
+  val ModelsSubDir = "assets/misc/models"
+  val DepsSubDir   = "assets/misc/deps"
 
   private lazy val thisIP = "129.105.107.206" //@ Eventually, do this properly
 
-  TempGenManager.removeAll()  // Clear all temp gen files on startup
+  TempFileManager.removeAll()  // Clear all temp gen files on startup
 
   //@ For testing only
   def form = Form(
@@ -108,7 +109,7 @@ object HubNet extends Controller {
 
           val host = "http://" + request.host
           val programName = modelNameOpt getOrElse "NetLogo"
-          val fileName = TempGenManager.formatFilePath(input, "jnlp")
+          val fileName = TempFileManager.formatFilePath(input, "jnlp")
           val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
           val (mainClass, argsMaybe) = {
             if (isTeacher && !isHeadless)
@@ -138,7 +139,7 @@ object HubNet extends Controller {
             )
           }
 
-          propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
+          propsMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
 
       } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
 
