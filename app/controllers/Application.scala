@@ -27,7 +27,7 @@ object Application extends Controller {
       userID   <- paramMap.get(UserIDKey)
     } yield {
       try Success(PermFileManager.registerFile(input, "%s_%s_%s_%s".format(System.currentTimeMillis(), periodID, runID, userID), "csv"))
-      catch { case _ => Failure("Failed to write data") }
+      catch { case ex => Failure("Failed to write data: " + ex.getMessage) }
     }) getOrElse (Failure("Invalid POST data"))
     status.fold((ExpectationFailed(_)), (_ => Ok))
   }
