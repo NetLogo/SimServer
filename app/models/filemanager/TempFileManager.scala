@@ -10,7 +10,13 @@ import akka.util.duration._
  */
 
 object TempFileManager extends FileManager {
-  override val MyFolderName = "gen"
-  protected override val LifeSpan = 1 minute
-  protected override val SystemName = "TempGen"
+
+            override val MyFolderName = "gen"
+  protected override val LifeSpan     = 1 minute
+  protected override val SystemName   = "TempGen"
+
+  override def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
+    "%s/%s.%s".format(MyFolderName, fileNameBasis.##.abs, fileExt)
+  }
+
 }

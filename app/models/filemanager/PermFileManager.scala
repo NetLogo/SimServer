@@ -10,7 +10,7 @@ import akka.util.duration._
  */
 
 object PermFileManager extends FileManager {
-  override val MyFolderName = "perm"
-  protected override val LifeSpan = 365 days //@ Permanent enough for me...
-  protected override val SystemName = "PermanentFiles"
+            override val MyFolderName = "perm"
+  protected override val LifeSpan     = 365 days //@ Permanent enough for me...
+  protected override val SystemName   = "PermanentFiles"
 }
