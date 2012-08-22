@@ -15,7 +15,7 @@ import models.util.FileUtil
  * Time: 1:02 PM
  */
 
-trait FileManager {
+trait FileManager extends Delayer {
 
   val PublicPath   = "public"
   val AssetPath    = "assets"
@@ -25,13 +25,13 @@ trait FileManager {
   protected def LifeSpan  : Duration
   protected def SystemName: String
 
-  protected val system     = ActorSystem(SystemName)
-  protected val fileFolder = new File(PublicPath + File.separator + MyFolderName)
+  protected lazy val system      = ActorSystem(SystemName)
+  protected lazy val fileFolder  = new File(PublicPath + File.separator + MyFolderName)
 
   if (!fileFolder.exists()) fileFolder.mkdir()
 
   def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
-    "%s/%s.%s".format(MyFolderName, fileNameBasis.##.abs, fileExt)
+    "%s/%s.%s".format(MyFolderName, fileNameBasis, fileExt)
   }
 
   def registerFile(contents: String, fileNameBasis: String, fileExt: String) : String =
@@ -66,3 +66,8 @@ class FileActor(file: File) extends Actor {
   }
 }
 
+sealed trait Delayer extends DelayedInit {
+  override def delayedInit(body: => Unit) {
+    body
+  }
+}
