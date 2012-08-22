@@ -34,10 +34,10 @@ trait FileManager {
     "%s/%s.%s".format(MyFolderName, fileNameBasis.##.abs, fileExt)
   }
 
-  def registerFile(contents: String, fileNameBasis: String, fileExt: String) =
+  def registerFile(contents: String, fileNameBasis: String, fileExt: String) : String =
     registerFile(contents, formatFilePath(fileNameBasis, fileExt))
   
-  def registerFile(contents: String, fileName: String): String = {
+  def registerFile(contents: String, fileName: String) : String = {
 
     // Create an actor with a handle to the file, write the contents to it
     val file = new File("%s%s%s".format(PublicPath, File.separator, fileName))
