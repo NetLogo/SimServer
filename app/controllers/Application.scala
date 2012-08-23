@@ -6,10 +6,10 @@ import models.filemanager.PermFileManager
 
 object Application extends Controller {
 
-  private val ExportKey   = "netlogo_export"
-  private val PeriodIDKey = "period_id"
-  private val RunIDKey    = "run_id"
-  private val UserIDKey   = "user_id"
+  private val ExportKey      = "netlogo_export"
+  private val PeriodIDKey    = "period_id"
+  private val RunIDKey       = "run_id"
+  private val WorkgroupIDKey = "workgroup_id"
 
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
@@ -24,7 +24,7 @@ object Application extends Controller {
       input    <- paramMap.get(ExportKey);
       periodID <- paramMap.get(PeriodIDKey);
       runID    <- paramMap.get(RunIDKey);
-      userID   <- paramMap.get(UserIDKey)
+      userID   <- paramMap.get(WorkgroupIDKey)
     } yield {
       try Success(PermFileManager.registerFile(input, "%s_%s_%s_%s".format(System.currentTimeMillis(), periodID, runID, userID), "csv"))
       catch { case ex => Failure("Failed to write data: " + ex.getMessage) }
