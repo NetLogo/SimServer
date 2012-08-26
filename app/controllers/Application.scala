@@ -15,6 +15,17 @@ object Application extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
+  def displayHttpRequest = Action {
+    request =>
+    val text = "\nRequest Type: \n" + request.method +
+               "\n\nHeaders: \n" + (request.headers.toSimpleMap map { case (k, v) => "%s: %s".format(k, v) } mkString("\n")) +
+               "\n\nBody: \n" + ((request.body.asFormUrlEncoded flatMap {
+                                    case x if x.isEmpty => None
+                                    case x              => Some(x map { case (k, v) => "%s=%s".format(k, v(0)) } mkString ("\n"))
+                                }) getOrElse ("[empty]")) + "\n\n"
+    Ok(text)
+  }
+
   def handleExport = Action {
     request =>
     val paramMap = request.body.asMultipartFormData.map(_.asFormUrlEncoded).

@@ -4,6 +4,8 @@
 
 # Home page
 GET     /                           controllers.Application.index
+GET     /http                       controllers.Application.displayHttpRequest
+POST    /http                       controllers.Application.displayHttpRequest
 POST    /export                     controllers.Application.handleExport
 
 GET     /ws                         controllers.Logging.ws
