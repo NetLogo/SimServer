@@ -1,0 +1,22 @@
+@(myForm: Form[models.hubnet.TeacherInfo])
+
+@import helper._
+@import models.util.ModelMap
+@import models.hubnet.TeacherInfo
+
+@main("HubNet Teacher JNLP Test Page!") {
+
+    @form(action = routes.HubNet.bindTeacher) {
+
+      @select(myForm("Model Name"), options = options(ModelMap.listModels.toList))
+      @inputText(myForm("User Name"))
+      @inputText(myForm("Teacher Name"))
+      @inputText(myForm("Port Number"))
+      @select(myForm("Is Headless"), options = options(TeacherInfo.YesNoChoices.toList))
+      @select(myForm("Is Logging"), options = options(TeacherInfo.YesNoChoices.toList))
+
+      <input type="submit" value="Test It">
+
+    }
+
+}

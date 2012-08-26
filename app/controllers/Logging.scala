@@ -2,7 +2,6 @@ package controllers
 
 import play.api._
 import play.api.mvc._
-import models.util.RequestUtil
 import models.log.LoggingHandler
 
 /**
@@ -36,9 +35,8 @@ object Logging extends Controller {
                          orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
                          orElse(Option(request.queryString)).
                          flatMap(_.get(LoggingDataKey)).flatMap(_.headOption).
-                         flatMap(str => if (LoggingHandler.isHandlable(str)) Some(str) else RequestUtil.extractPropertyFromUri(request.uri, LoggingDataKey)).
-                         getOrElse ("ERROR_IN_PARSING ")
-      val response = LoggingHandler.log(id.toLong, data)
+                         map(LoggingHandler.log(id.toLong, _))
+      val response = data getOrElse ("ERROR_IN_PARSING")
       Ok(response)
   }
 

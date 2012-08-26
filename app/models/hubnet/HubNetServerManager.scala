@@ -18,14 +18,14 @@ import akka.actor.{Props, ActorSystem}
 
 object HubNetServerManager {
 
-  private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format(_)
+  private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format((_: String))
   private val StartingPort = 9173
   private val ServerCountLimit = 20
 
   private val system = ActorSystem("HeadlessServers")
 
-  private val portServerMap = (Stream continually (system.actorOf(Props(new HubNetServerActor))) take ServerCountLimit zipWithIndex).
-                               map { case (actor, offset) => (StartingPort + offset, actor) } toMap
+  private lazy val portServerMap = (Stream continually (system.actorOf(Props(new HubNetServerActor))) take ServerCountLimit zipWithIndex).
+                                    map { case (actor, offset) => (StartingPort + offset, actor) } toMap
   
   private val teacherToIPPortMap = collection.mutable.Map[String, (String, Int)]()
 

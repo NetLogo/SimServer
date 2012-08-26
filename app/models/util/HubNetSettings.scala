@@ -9,9 +9,14 @@ import java.util.InputMismatchException
  * Time: 5:15 PM
  */
 
-class HubNetSettings(val modelNameOpt: Option[String], val userName: String, val isHeadless: Boolean,
-                     val teacherName: String, val isTeacher: Boolean, val desiredPortNumOpt: Option[Int],
-                     val isLogging: Boolean, val teacherIP: Option[String])
+sealed abstract case class HubNetSettings(modelNameOpt: Option[String], userName: String, isHeadless: Boolean,
+                                          teacherName: String, desiredPortNumOpt: Option[Int], isLogging: Boolean)
+
+sealed class StudentHubNetSettings(uname: String, tname: String) extends HubNetSettings(None, uname, false, tname, None, false)
+
+sealed class TeacherHubNetSettings(modelName: Option[String], uname: String, headless: Boolean,
+                                   tname: String, portNum: Option[Int], logging: Boolean)
+                                   extends HubNetSettings(modelName, uname, headless, tname, portNum, logging)
 
 object HubNetSettings {
 
@@ -19,36 +24,35 @@ object HubNetSettings {
   val UserNameKey    = "username"
   val TeacherNameKey = "teacher_name"
   val PortNumKey     = "port_num"
-  val TeacherIPKey   = "teacher_ip"
   val IsHeadlessKey  = "is_headless"
-  val IsTeacherKey   = "is_teacher"
   val IsLoggingKey   = "is_logging"
 
-  def unapply(settings: HubNetSettings) : Option[(Option[String], String, Boolean, String, Boolean, Option[Int], Boolean, Option[String])] = {
-    import settings._; Option(modelNameOpt, userName, isHeadless, teacherName, isTeacher, desiredPortNumOpt, isLogging, teacherIP)
-  }
-
   // Could return a `Validation`, but I don't think that my use of `Validation` is this class's business
-  def apply(inMap: Map[String, String]) : Option[HubNetSettings] = {
+  def apply(inMap: Map[String, String], isTeacher: Boolean) : Option[HubNetSettings] = {
 
     // These are all `Option`s
-    val (modelName, userName, isHeadless, teacherName, isTeacher, portNum, isLogging, teacherIP) = {
-      def defaultOnAndWrapBoolStr(strOpt: Option[String]) = Option(strOpt map (_.toBoolean) getOrElse false)
+    val (modelName, userName, isHeadless, teacherName, portNum, isLogging) = {
+      def defaultOnAndWrapBoolStr(strOpt: Option[String]) = Option(strOpt map {
+        case "Yes" => "true"
+        case "No"  => "false"
+        case x     => x
+      } map (_.toBoolean) getOrElse false)
       import inMap.get
       (get(ModelNameKey), get(UserNameKey), defaultOnAndWrapBoolStr(get(IsHeadlessKey)),
-       get(TeacherNameKey), defaultOnAndWrapBoolStr(get(IsTeacherKey)), get(PortNumKey) map (_.toInt),
-       defaultOnAndWrapBoolStr(get(IsLoggingKey)), get(TeacherIPKey))
+       get(TeacherNameKey), get(PortNumKey) map (_.toInt), defaultOnAndWrapBoolStr(get(IsLoggingKey)))
     }
 
     // If something needs to not be `None`, add it here
-    val questionables = List(userName, isHeadless, teacherName, isTeacher, isLogging)
+    val questionables = if (isTeacher) List(userName, isHeadless, teacherName, isLogging) else List(userName, teacherName)
     val verifieds = if (questionables forall (!_.isEmpty)) Option(questionables.flatten) else None
-    val v2 = if (isTeacher.isEmpty || (isTeacher.get && teacherIP.isEmpty)) None else verifieds
 
-    v2 map {
-      case (uname: String) :: (headless: Boolean) :: (tname: String) :: (teacher: Boolean) :: (logging: Boolean) :: Nil =>
-        new HubNetSettings(modelName, uname, headless, tname, teacher, portNum, logging, teacherIP)
-      case _ => throw new InputMismatchException("You changed the contents of `questionables` in the `HubNetSettings` factory without changing the pattern matching!")
+    verifieds map {
+      case (uname: String) :: (headless: Boolean) :: (tname: String) :: (logging: Boolean) :: Nil =>
+        new TeacherHubNetSettings(modelName, uname, headless, tname, portNum, logging)
+      case (uname: String) :: (tname: String) :: Nil =>
+        new StudentHubNetSettings(uname, tname)
+      case _ =>
+        throw new InputMismatchException("The `HubNetSettings` factory could not generate an instance with the given data pattern.")
     }
 
   }

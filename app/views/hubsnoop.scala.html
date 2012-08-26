@@ -1,0 +1,22 @@
+@(info: String)
+
+@main("Snooping...") {
+
+    <body onload="redirectWithIP()"></body>
+
+    <applet id="app" archive="/assets/applets/AppletJ.jar" code="App" height=1 width=1></applet>
+
+    <script type="text/javascript" src="@routes.HubNet.javascriptRoutes"></script>
+
+    <div id="info-str" data-data="@info"></div>
+
+    <script type="text/javascript">
+      function redirectWithIP() {
+        var ip = document.app.findIP();
+        var info = $("#info-str").data('data');  // Bring the info (server => HTML => client)
+        var route = jsRoutes.controllers.HubNet.handleTeacherProxy(info, ip);
+        window.location.href = route.url;
+      }
+    </script>
+
+}
