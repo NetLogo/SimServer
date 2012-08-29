@@ -136,7 +136,7 @@ object HubNet extends Controller {
         val (mainClass, argsMaybe) = {
           if (isTeacher && !isHeadless)
             ("org.nlogo.app.App", modelNameOpt map {
-                                    modelName => Seq("--url", Models.getModelURL(modelName)) ++
+                                    modelName => Seq("--url", Models.getHubNetModelURL(modelName)) ++
                                                  ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq("--port", port.toString)} ) ++
                                                  (if (isLogging) Seq("--logging") else Seq())
                                   } map (Success(_)) getOrElse Failure("No model name supplied."))
