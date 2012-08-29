@@ -20,7 +20,7 @@ object ModelMapper {
   )
   private val filenameToAliasMap = aliasToFilenameMap map { case (k, v) => (v, k) }
 
-  //@ I'm debating whether or not this should be recreated each time it's queried for... --JAB (8/29/12)
+  // I'm hoping it will be fine to be able to reload and sort the file list each time it's queried for --JAB (8/29/12)
   private def nameToFileMap = (new File(fsPathToHubNet)).listFiles(ModelFileFilter) map (file => (dropExt(file.getName), file)) toMap
 
   def apply(fn: String)           : File        = get(fn) getOrElse (throw new NoSuchElementException("Could not find file: " + fn))
