@@ -13,7 +13,11 @@ import FileUtil.{ dropExt, ModelFileFilter }
 object ModelMapper {
 
   private val fsPathToHubNet     = "./public/misc/models/hubnet/"
-  private val aliasToFilenameMap = Map[String, String]() //@ This would benefit from being a `BiHashMap`...
+  private val aliasToFilenameMap = Map( //@ This would benefit from being a `BiHashMap`...
+           "Dice Stalagmite" -> "Dice Stalagmite HubNet",
+                    "Memory" -> "Memory HubNet",
+    "Tragedy of the Commons" -> "Tragedy of the Commons HubNet"
+  )
   private val filenameToAliasMap = aliasToFilenameMap map { case (k, v) => (v, k) }
 
   //@ I'm debating whether or not this should be recreated each time it's queried for... --JAB (8/29/12)
