@@ -1,11 +1,11 @@
 package models.log
 
 import java.util.zip.GZIPInputStream
-import collection.mutable.{ArrayBuffer, HashMap}
+import collection.mutable.{ ArrayBuffer, HashMap }
 import io.Source
 import scala.util.Random
 import actors.Actor.State._
-import java.io.{FilenameFilter, ByteArrayInputStream, File}
+import java.io.{ FilenameFilter, ByteArrayInputStream, File }
 
 object LoggingHandler {
 

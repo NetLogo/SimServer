@@ -58,6 +58,8 @@ trait FileManager extends Delayer {
 
 }
 
+// v--  DEFINITIONS BELOW ARE OPEN TO EXTRACTION/REFACTORING  --v
+
 class FileActor(file: File) extends Actor {
   override protected def receive = {
     case Initialize      => file.delete(); file.createNewFile()
@@ -66,6 +68,8 @@ class FileActor(file: File) extends Actor {
   }
 }
 
+// This was created to seamlessly hide nitty-gritty detail that a class's body is delayed init (usually for superfluous reasons)
+// Why does this not already exist in the Scala library to begin with? --JAB (8/29/12)
 sealed trait Delayer extends DelayedInit {
   override def delayedInit(body: => Unit) {
     body
