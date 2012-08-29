@@ -2,7 +2,7 @@ package models.hubnet
 import Converter.str2Option
 import play.api.data.Forms._
 import play.api.data._
-import models.util.ModelMap
+import models.util.ModelMapper
 
 /**
  * Created by IntelliJ IDEA.
@@ -60,7 +60,7 @@ object TeacherInfo extends InfoCompanion[TeacherInfo] {
   override def form : Form[TeacherInfo] = {
     Form(
       mapping(
-        "Model Name"   -> text.verifying("Unknown model: Must come from the list of " + ModelMap.listModels.mkString("{ ", "; ", " }"), ModelMap.contains(_)),
+        "Model Name"   -> text.verifying("Unknown model: Must come from the list of " + ModelMapper.modelNames.mkString("{ ", "; ", " }"), ModelMapper.contains(_)),
         "User Name"    -> RequiredText,
         "Is Headless"  -> YesNo,
         "Teacher Name" -> RequiredText,

@@ -1,14 +1,14 @@
 @(myForm: Form[models.hubnet.TeacherInfo])
 
 @import helper._
-@import models.util.ModelMap
+@import models.util.ModelMapper
 @import models.hubnet.TeacherInfo
 
 @main("HubNet Teacher JNLP Test Page!") {
 
     @form(action = routes.HubNet.bindTeacher) {
 
-      @select(myForm("Model Name"), options = options(ModelMap.listModels.toList))
+      @select(myForm("Model Name"), options = options(ModelMapper.modelNames.toList))
       @inputText(myForm("User Name"))
       @inputText(myForm("Teacher Name"))
       @inputText(myForm("Port Number"))
