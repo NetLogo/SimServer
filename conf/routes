@@ -24,7 +24,10 @@ GET     /teacherproxy/:str/:ip      controllers.HubNet.handleTeacherProxy(str, i
 
 GET     /hubnet/javascripts/routes  controllers.HubNet.javascriptRoutes()
 
-GET     /models/hubnet/list         controllers.Models.modelNames
+GET     /models/hubnet/list         controllers.Models.modelNames(responseType = "plain")
+GET     /models/hubnet/list/        controllers.Models.modelNames(responseType = "plain")
+GET     /models/hubnet/list/:rType  controllers.Models.modelNames(rType: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

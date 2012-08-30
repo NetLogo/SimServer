@@ -1,6 +1,8 @@
 package controllers
 
+import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, RequestHeader }
+
 import models.util.{ NetUtil, ModelMapper }
 
 /**
@@ -14,7 +16,17 @@ import models.util.{ NetUtil, ModelMapper }
 //  I feel like I should do something about this; this architecture kinda sucks.... --JAB (8/29/12)
 object Models extends Controller {
 
-  def modelNames = Action { Ok(ModelMapper.modelNames mkString("", "\n", "\n")) }
+  private val PlainType = "plain"
+  private val JsonType  = "json"
+
+  def modelNames(responseType: String) = Action {
+    val names = ModelMapper.modelNames
+    responseType match {
+      case PlainType => Ok(names.mkString("", "\n", "\n"))
+      case JsonType  => import Json.toJson; Ok(toJson(names map (toJson(_))) + "\n")
+      case x         => BadRequest("Unrecognized response type requested: " + x + "\n")
+    }
+  }
 
   protected[controllers] def getHubNetModelURL(modelName: String)(implicit request: RequestHeader) : String = {
     val name = urlify(ModelMapper.unalias(modelName))
