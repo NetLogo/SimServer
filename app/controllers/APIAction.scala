@@ -9,7 +9,7 @@ import play.api.mvc.{ Action, AnyContent, BodyParser, Request, Result, SimpleRes
  * Time: 1:09 PM
  */
 
-object APIAction {
+private[controllers] object APIAction {
 
   private val APIHeader = "Access-Control-Allow-Origin" -> "*"
 
