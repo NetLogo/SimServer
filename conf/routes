@@ -6,7 +6,7 @@
 GET     /                           controllers.Application.index
 GET     /http                       controllers.Application.displayHttpRequest
 POST    /http                       controllers.Application.displayHttpRequest
-POST    /export                     controllers.Application.handleExport
+POST    /export                     controllers.Application.handleNetLogoExportWorld
 
 GET     /ws                         controllers.Logging.ws
 GET     /logging                    controllers.Logging.startLogging

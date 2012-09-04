@@ -26,7 +26,7 @@ object Application extends Controller {
     Ok(text)
   }
 
-  def handleExport = Action {
+  def handleNetLogoExportWorld = Action {
     request =>
     val paramMap = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
                            orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
