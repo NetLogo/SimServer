@@ -19,7 +19,7 @@ object Models extends Controller {
   private val PlainType = "plain"
   private val JsonType  = "json"
 
-  def modelNames(responseType: String) = Action {
+  def modelNames(responseType: String) = APIAction {
     val names = ModelMapper.modelNames
     responseType match {
       case PlainType => Ok(names.mkString("", "\n", "\n"))

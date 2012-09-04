@@ -15,7 +15,7 @@ object Application extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def displayHttpRequest = Action {
+  def displayHttpRequest = APIAction {
     request =>
     val text = "\nRequest Type: \n" + request.method +
                "\n\nHeaders: \n" + (request.headers.toSimpleMap map { case (k, v) => "%s: %s".format(k, v) } mkString("\n")) +
@@ -26,7 +26,7 @@ object Application extends Controller {
     Ok(text)
   }
 
-  def handleNetLogoExportWorld = Action {
+  def handleNetLogoExportWorld = APIAction {
     request =>
     val paramMap = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
                            orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).

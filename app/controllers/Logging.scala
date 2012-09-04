@@ -19,17 +19,17 @@ object Logging extends Controller {
     Ok(views.html.ws())
   }
 
-  def startLogging = Action {
+  def startLogging = APIAction {
     Ok("/" + LoggingHandler.createNewLog())
   }
 
   //@ For testing only.  This has potential for trouble.
   // In the code that ends up being deployed, people should not be able to see other people's logs!
-  def retrieveData(id: String) = Action {
+  def retrieveData(id: String) = APIAction {
     Ok(LoggingHandler.retrieveLogText(id.toLong))
   }
 
-  def logData(id: String) = Action {
+  def logData(id: String) = APIAction {
     request =>
       val data = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
                          orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
