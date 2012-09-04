@@ -1,5 +1,7 @@
 package models.util
 
+import java.net.URLEncoder
+
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
@@ -8,6 +10,11 @@ package models.util
  */
 
 object NetUtil {
+
+  private val CharEncoding = "UTF-8"
+
   // Javaaaaaaaa!!!!  Why do you do this to meeeeeeee?!
-  def encodeForURL(str: String) = java.net.URLEncoder.encode(str, "UTF-8").replaceAllLiterally("+", "%20")
+  def encodeForURL(str: String) = encode(str).replaceAllLiterally("+", "%20")
+
+  def encode(str: String) = URLEncoder.encode(str, CharEncoding)
 }
