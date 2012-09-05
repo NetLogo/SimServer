@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc.{ Action, AnyContent, BodyParser, Request, Result, SimpleResult }
+import play.api.mvc.{ Action, AnyContent, BodyParser, Request, SimpleResult }
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,16 +13,11 @@ private[controllers] object APIAction {
 
   private val APIHeader = "Access-Control-Allow-Origin" -> "*"
 
-  private val result2apiResult = (result: Result) => {
-    result match {
-      case simple: SimpleResult[_] => simple.withHeaders(APIHeader)
-      case x                       => x
-    }
-  }
+  private val result2apiResult = (result: SimpleResult[_]) => result.withHeaders(APIHeader)
 
-  def apply[A](bodyParser: BodyParser[A])(block: Request[A] => Result) = Action(bodyParser)(block andThen result2apiResult)
-  def apply(block: Request[AnyContent] => Result)                      = Action(block andThen result2apiResult)
-  def apply(block: => Result)                                          = Action(result2apiResult(block))
+  def apply[A](bodyParser: BodyParser[A])(block: Request[A] => SimpleResult[_]) = Action(bodyParser)(block andThen result2apiResult)
+  def apply(block: Request[AnyContent] => SimpleResult[_])                      = Action(block andThen result2apiResult)
+  def apply(block: => SimpleResult[_])                                          = Action(result2apiResult(block))
 
 }
 
