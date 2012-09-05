@@ -8,5 +8,7 @@ package models.util
  */
 
 object Util {
-  def noneIfEmpty[T <: { def isEmpty: Boolean }](x: T) : Option[T] = if (x.isEmpty) None else Option(x)
+  // Has to be two methods, because the compiler gets touchy about inferring `U` from a default parameter
+  def noneIfEmpty[T <% { def isEmpty: Boolean }](x: T) : Option[T] = noneIfEmpty(x, identity[T] _)
+  def noneIfEmpty[T <% { def isEmpty: Boolean }, U](x: T, transformer: T => U) : Option[U] = if (x.isEmpty) None else Option(transformer(x))
 }
