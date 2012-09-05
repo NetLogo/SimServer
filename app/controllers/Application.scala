@@ -3,6 +3,7 @@ package controllers
 import play.api.mvc._
 import scalaz.{Success, Failure}
 import models.filemanager.PermFileManager
+import models.util.PlayUtil
 
 object Application extends Controller {
 
@@ -28,9 +29,7 @@ object Application extends Controller {
 
   def handleNetLogoExportWorld = APIAction {
     request =>
-    val paramMap = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
-                           orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
-                           orElse(Option(request.queryString)) getOrElse Map() map { case (k, v) => (k, v(0)) }
+    val paramMap = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
     val status = (for {
       input    <- paramMap.get(ExportKey);
       periodID <- paramMap.get(PeriodIDKey);
