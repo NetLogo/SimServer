@@ -18,7 +18,7 @@ object LoggingHandler {
   def createNewLog(): Long = {
     ensureLogDirExists()
     //@ val id = { logCount += 1; logCount }
-    val id = Random.nextInt().abs.toInt
+    val id = Random.nextInt().abs
     val actor = new LogActor(id)
     idActorMap.put(id, actor)
     actor.start()
@@ -82,7 +82,7 @@ object LoggingHandler {
 
     }
     catch {
-      case _ => None
+      case ex => play.api.Logger.error("Failed to un-GZIP log data: " + ex.getMessage); None
     }
   }
 
