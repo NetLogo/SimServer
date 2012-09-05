@@ -12,6 +12,6 @@ import play.api.mvc.{ AnyContent, Request }
 object PlayUtil {
   def extractParamMapOpt(request: Request[AnyContent]) =
     request.body.asMultipartFormData.map(_.asFormUrlEncoded).
-            orElse(request.body.asFormUrlEncoded flatMap (Util.noneIfEmpty)).
+            orElse(request.body.asFormUrlEncoded flatMap (Util.noneIfEmpty(_))).
             orElse(Option(request.queryString))
 }

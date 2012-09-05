@@ -10,7 +10,7 @@ import scalaz.{ Failure, Success, Validation }
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
 import models.jnlp.{ Jar, JNLP, MainJar }
 import models.filemanager.TempFileManager
-import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager }
+import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
 /**
  * Created by IntelliJ IDEA.
@@ -86,7 +86,7 @@ object HubNet extends Controller {
   private def morphPair2Opt(pair: Pair[String, String]) : Option[(String, String)] = {
     pair match {
       case (str, key) =>
-        (if (!str.isEmpty) Option(str) else None) map {
+        Util.noneIfEmpty(str) map {
           x =>      if (x == "Yes") "true"
                else if (x == "No")  "false"
                else                 x

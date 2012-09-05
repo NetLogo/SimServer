@@ -1,9 +1,9 @@
 package controllers
 
 import play.api.mvc._
-import scalaz.{Success, Failure}
+import scalaz.{ Success, Failure }
 import models.filemanager.PermFileManager
-import models.util.PlayUtil
+import models.util.{ PlayUtil, Util }
 
 object Application extends Controller {
 
@@ -18,12 +18,15 @@ object Application extends Controller {
 
   def displayHttpRequest = APIAction {
     request =>
+    val paramsOpt = PlayUtil.extractParamMapOpt(request)
     val text = "\nRequest Type: \n" + request.method +
                "\n\nHeaders: \n" + (request.headers.toSimpleMap map { case (k, v) => "%s: %s".format(k, v) } mkString("\n")) +
-               "\n\nBody: \n" + ((request.body.asFormUrlEncoded flatMap {
-                                    case x if x.isEmpty => None
-                                    case x              => Some(x map { case (k, v) => "%s=%s".format(k, v(0)) } mkString ("\n"))
-                                }) getOrElse ("[empty]")) + "\n\n"
+               "\n\nBody: \n" + (
+                 paramsOpt flatMap {
+                   params =>
+                     Util.noneIfEmpty(params, ((_: Map[String, Seq[String]]) map { case (k, v) => "%s=%s".format(k, v(0)) } mkString ("\n")))
+                 } getOrElse "[empty]"
+               ) + "\n\n"
     Ok(text)
   }
 
@@ -31,9 +34,9 @@ object Application extends Controller {
     request =>
     val paramMap = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
     val status = (for {
-      input    <- paramMap.get(ExportKey);
-      periodID <- paramMap.get(PeriodIDKey);
-      runID    <- paramMap.get(RunIDKey);
+      input    <- paramMap.get(ExportKey)
+      periodID <- paramMap.get(PeriodIDKey)
+      runID    <- paramMap.get(RunIDKey)
       userID   <- paramMap.get(WorkgroupIDKey)
     } yield {
       try Success(PermFileManager.registerFile(input, "%s_%s_%s_%s".format(System.currentTimeMillis(), periodID, runID, userID), "csv"))
