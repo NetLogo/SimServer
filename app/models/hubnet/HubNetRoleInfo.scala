@@ -33,14 +33,15 @@ sealed trait InfoCompanion[T] {
   protected def numerical(min: Int, max: Int) =
     text.verifying(
       "Not a number within the range [%s, %s] (inclusive)".format(min, max),
-      number => try   { val x = number.toInt; x >= min && x <= max }
-                catch {
-                  case ex: NumberFormatException =>
-                    false
-                  case ex: Exception =>
-                    Logger.warn("Unexpected error on string => number conversion", ex)
-                    false
-                }
+      number =>
+        try   { val x = number.toInt; x >= min && x <= max }
+        catch {
+          case ex: NumberFormatException =>
+            false
+          case ex: Exception =>
+            Logger.warn("Unexpected error on string => number conversion", ex)
+            false
+        }
     )
 
   def form : Form[T]

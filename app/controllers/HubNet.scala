@@ -143,7 +143,7 @@ object HubNet extends Controller {
         }
 
         val propsMaybe = argsMaybe map {
-          args => JNLP(
+          args => new JNLP(
             codebaseURI      = new URI(codebaseURL),
             jnlpLoc          = fileName,
             mainJar          = new MainJar("NetLogo.jar"),

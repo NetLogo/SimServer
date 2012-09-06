@@ -36,5 +36,5 @@ object NetLogoJarManager {
     val jarsAndIsLazyPairs = Seq((DefaultLazyJarNames, true), (DefaultJarNames, false))
     jarsAndIsLazyPairs map { case (jars, isLazy) => jars map (generateJar(_, isLazy)) } flatten
   }
-  
+
 }
