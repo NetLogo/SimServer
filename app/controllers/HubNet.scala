@@ -144,7 +144,7 @@ object HubNet extends Controller {
                 modelName => Seq("--url", Models.getHubNetModelURL(modelName)) ++
                              ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq(PortArgKey, port.toString)} ) ++
                              (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq)
-              } map (Success(_)) getOrElse Failure("No model name supplied.")
+              } map (Success(_)) getOrElse Failure("No model name supplied")
             (ServerMainClass, args)
           }
           else
