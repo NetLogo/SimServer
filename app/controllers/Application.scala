@@ -40,7 +40,12 @@ object Application extends Controller {
       userID   <- paramMap.get(WorkgroupIDKey)
     } yield {
       try Success(PermFileManager.registerFile(input, "%s_%s_%s_%s".format(System.currentTimeMillis(), periodID, runID, userID), "csv"))
-      catch { case ex => Failure("Failed to write data: " + ex.getMessage) }
+      catch {
+        case ex =>
+          val errorStr = "Failed to write data: " + ex.getMessage
+          play.api.Logger.error("%s\n%s".format(errorStr, ex.getStackTraceString))
+          Failure(errorStr)
+      }
     }) getOrElse (Failure("Invalid POST data"))
     status.fold((ExpectationFailed(_)), (_ => Ok))
   }
