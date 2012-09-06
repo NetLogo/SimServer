@@ -1,8 +1,12 @@
 package models.hubnet
-import Converter.str2Option
+
+import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data._
+import play.api.Logger
+
 import models.util.ModelMapper
+
+import Converter.str2Option
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +16,7 @@ import models.util.ModelMapper
  */
 
 private object Converter {
-  implicit def str2Option(str: String) = Option(str)
+  implicit def str2Option(str: String) = Option(str) // High potential for danger, but... I think it's safe here
 }
 
 sealed class HubNetRoleInfo(val modelName: Option[String] = None, val username: String, val isHeadless: Option[String] = None,
@@ -27,13 +31,16 @@ sealed trait InfoCompanion[T] {
                                               YesNoChoices.contains((_: String)))
 
   protected def numerical(min: Int, max: Int) =
-    text.verifying("Not a number within the range [%s, %s] (inclusive)".format(min, max),
-                   number => try   { val x = number.toInt; x >= min && x <= max }
-                             catch {
-                               case ex =>
-                                 play.api.Logger.warn("Input not within desired range: %s\n%s").format(ex.getMessage, ex.getStackTraceString)
-                                 false    
-                             }
+    text.verifying(
+      "Not a number within the range [%s, %s] (inclusive)".format(min, max),
+      number => try   { val x = number.toInt; x >= min && x <= max }
+                catch {
+                  case ex: NumberFormatException =>
+                    false
+                  case ex =>
+                    Logger.warn("Unexpected error on string => number conversion", ex)
+                    false
+                }
     )
 
   def form : Form[T]

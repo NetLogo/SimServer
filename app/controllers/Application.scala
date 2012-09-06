@@ -4,6 +4,7 @@ import play.api.mvc._
 import scalaz.{ Success, Failure }
 import models.filemanager.PermFileManager
 import models.util.{ PlayUtil, Util }
+import play.api.Logger
 
 object Application extends Controller {
 
@@ -42,9 +43,9 @@ object Application extends Controller {
       try Success(PermFileManager.registerFile(input, "%s_%s_%s_%s".format(System.currentTimeMillis(), periodID, runID, userID), "csv"))
       catch {
         case ex =>
-          val errorStr = "Failed to write data: " + ex.getMessage
-          play.api.Logger.error("%s\n%s".format(errorStr, ex.getStackTraceString))
-          Failure(errorStr)
+          val errorStr = "Failed to write data" + ex.getMessage
+          Logger.warn(errorStr, ex)
+          Failure("%s: %s".format(errorStr, ex.getMessage))
       }
     }) getOrElse (Failure("Invalid POST data"))
     status.fold((ExpectationFailed(_)), (_ => Ok))

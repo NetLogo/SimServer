@@ -33,7 +33,7 @@ object ResourceManager {
     }
     catch {
       case ex =>
-        Logger.error("Failed to read access info from file", ex)
+        Logger.error("Failed to read access info from file", ex) // One of the few errors in this system that should be log level "error"
         Map[String, String]()
     }
   }
