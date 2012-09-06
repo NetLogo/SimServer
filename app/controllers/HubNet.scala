@@ -8,7 +8,7 @@ import java.net.URI
 import scalaz.{ Failure, Success, Validation }
 
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
-import models.jnlp.{ Jar, JNLP, MainJar }
+import models.jnlp.{ HubNetJNLP, Jar }
 import models.filemanager.TempFileManager
 import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
@@ -127,36 +127,46 @@ object HubNet extends Controller {
             getPortByTeacherName(teacherName)
         }
 
+        val PortArgKey      = "--port"
+        val JNLPConnectPath = "http://abmplus.tech.northwestern.edu:9001/logging"
+        val ServerMainClass = "org.nlogo.app.App"
+        val ClientMainClass = "org.nlogo.hubnet.client.App"
+
         val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
         val fileName = TempFileManager.formatFilePath(input, "jnlp")
         val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
+
         val (mainClass, argsMaybe) = {
-          if (isTeacher && !isHeadless)
-            ("org.nlogo.app.App", modelNameOpt map {
-                                    modelName => Seq("--url", Models.getHubNetModelURL(modelName)) ++
-                                                 ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq("--port", port.toString)} ) ++
-                                                 (if (isLogging) Seq("--logging") else Seq())
-                                  } map (Success(_)) getOrElse Failure("No model name supplied."))
+          if (isTeacher && !isHeadless) {
+            val args =
+              modelNameOpt map {
+                modelName => Seq("--url", Models.getHubNetModelURL(modelName)) ++
+                             ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq(PortArgKey, port.toString)} ) ++
+                             (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq)
+              } map (Success(_)) getOrElse Failure("No model name supplied.")
+            (ServerMainClass, args)
+          }
           else
-            ("org.nlogo.hubnet.client.App", ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, "--port", port.toString) })
+            (ClientMainClass, ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, PortArgKey, port.toString) })
         }
 
+        val properties = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", JNLPConnectPath)).toSeq
+        val otherJars  = Util.ifFirstWrapSecond(isLogging, new Jar("logging.jar", true)).toSeq
+
         val propsMaybe = argsMaybe map {
-          args => new JNLP(
-            codebaseURI      = new URI(codebaseURL),
-            jnlpLoc          = fileName,
-            mainJar          = new MainJar("NetLogo.jar"),
-            applicationName  = "%s HubNet %s".format(programName, clientOrServerStr),
-            mainClass        = mainClass,
-            appTitle         = "NetLogo HubNet %s".format(clientOrServerStr),
-            desc             = "A HubNet %s for %s".format(clientOrServerStr.toLowerCase, programName),
-            shortDesc        = "HubNet (%s)".format(programName),
-            isOfflineAllowed = false,
-            otherJars        = if (isLogging) Seq(new Jar("logging.jar", true)) else Seq(),
-            properties       = if (isLogging) Seq(("jnlp.connectpath", "http://abmplus.tech.northwestern.edu:9001/logging")) else Seq(), //@ Grrr, hardcoded URL!
-            arguments        = args
-          )
+          args =>
+            new HubNetJNLP(
+              codebaseURI       = new URI(codebaseURL),
+              jnlpLoc           = fileName,
+              mainClass         = mainClass,
+              programName       = programName,
+              clientOrServerStr = clientOrServerStr,
+              isOfflineAllowed  = false,
+              otherJars         = otherJars,
+              properties        = properties,
+              args              = args
+            )
         }
 
         propsMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
