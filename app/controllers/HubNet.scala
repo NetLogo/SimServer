@@ -77,8 +77,8 @@ object HubNet extends Controller {
     }
     catch {
       case e =>
-        Logger.error(e.getLocalizedMessage)
-        Failure("Failed to encrypt HubNet info; " + e.getLocalizedMessage)
+        Logger.error(e.getMessage)
+        Failure("Failed to encrypt HubNet info; " + e.getMessage)
     }
   }
 
