@@ -22,14 +22,19 @@ sealed trait InfoCompanion[T] {
 
   protected val RequiredText = text.verifying("Required Text", !(_: String).isEmpty)
 
-            val YesNoChoices = Seq("No", "Yes")
+   /*none*/ val YesNoChoices = Seq("No", "Yes")
   protected val YesNo        = text.verifying("""Invalid value; choose %s""".format(YesNoChoices map ("\"%s\"".format(_)) mkString " or "),
                                               YesNoChoices.contains((_: String)))
 
-  protected def numerical(min: Int, max: Int) = text.verifying("Not a number within the range [%s, %s] (inclusive)".format(min, max),
-                                                                  number => try { val x = number.toInt; x >= min && x <= max }
-                                                                            catch { case _ => false }
-                                                                )
+  protected def numerical(min: Int, max: Int) =
+    text.verifying("Not a number within the range [%s, %s] (inclusive)".format(min, max),
+                   number => try   { val x = number.toInt; x >= min && x <= max }
+                             catch {
+                               case ex =>
+                                 play.api.Logger.warn("Input not within desired range: %s\n%s").format(ex.getMessage, ex.getStackTraceString)
+                                 false    
+                             }
+    )
 
   def form : Form[T]
 
