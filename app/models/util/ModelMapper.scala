@@ -23,9 +23,11 @@ object ModelMapper {
   // I'm hoping it will be fine to be able to reload and sort the file list each time it's queried for --JAB (8/29/12)
   private def nameToFileMap = (new File(fsPathToHubNet)).listFiles(ModelFileFilter) map (file => (dropExt(file.getName), file)) toMap
 
-  def apply(fn: String)           : File        = get(fn) getOrElse (throw new NoSuchElementException("Could not find file: " + fn))
-  def contains(modelName: String) : Boolean     = !get(modelName).isEmpty
-  def modelNames                  : Seq[String] = (nameToFileMap map { case (k, _) => filenameToAliasMap.getOrElse(k, k) } toSeq).sortBy(_.toLowerCase)
+  def apply(fn: String)           : File    = get(fn) getOrElse (throw new NoSuchElementException("Could not find file: " + fn))
+  def contains(modelName: String) : Boolean = !get(modelName).isEmpty
+
+  def modelNames : Seq[String] =
+    (nameToFileMap map { case (k, _) => filenameToAliasMap.getOrElse(k, k) } toSeq).sortBy(_.toLowerCase)
 
   def get(fn: String) : Option[File] = {
     def getFileOptByAlias(alias: String) = aliasToFilenameMap get (alias) flatMap (nameToFileMap get (_))

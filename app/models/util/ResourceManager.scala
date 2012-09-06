@@ -25,7 +25,7 @@ object ResourceManager {
     try {
       val src  = io.Source.fromFile(AccessFileName)
       try {
-        src.getLines().toIndexedSeq filter (KVMatcher.matches(_)) map (KVMatcher(_)) toMap
+        src.getLines().toSeq filter (KVMatcher.matches(_)) map (KVMatcher(_)) toMap
       }
       finally {
         src.close()

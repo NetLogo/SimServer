@@ -35,10 +35,18 @@ case class JNLP(
     val args = arguments   // Currently, no additions
 
     val offlineAllowedStr = if (isOfflineAllowed) "\n" + formatXMLNode("offline-allowed", Map(), 2) else ""
-    val jarsStr = jars map { jar => import jar._; formatXMLNode("jar", Map((Seq("href" -> "%s/%s".format(DepsPath, jarName)) ++ (if (isMain) Seq("main" -> "true") else Seq()) ++ (if (isLazy) Seq("download" -> "lazy") else Seq())): _*), 2) } mkString("\n", "\n", "")
     val propsStr = props map { case (key, value) => formatXMLNode("property", Map("name" -> key, "value" -> value), 2) } mkString("\n", "\n", "")
     val argsStr = args map (formatXMLPair("argument", Map(), _, 2)) mkString("\n", "\n", "\n" + formatIndentation(1))
     val appDescStr = "\n" + formatXMLPair("application-desc", Map("name" -> applicationName, "main-class" -> mainClass), argsStr, 1)
+    val jarsStr = jars map {
+      jar =>
+        import jar._
+        val hrefProps =
+          Seq("href" -> "%s/%s".format(DepsPath, jarName)) ++
+          (if (isMain) Seq("main" -> "true") else Seq()) ++
+          (if (isLazy) Seq("download" -> "lazy") else Seq())
+        formatXMLNode("jar", Map(hrefProps: _*), 2)
+    } mkString ("\n", "\n", "")
 
 // It's tempting to use `String.format` here, but I fear that it would get far too confusing
 // (Also, Guns N' Roses once wrote a song about the following code; it was called "Welcome to the Jungle")
