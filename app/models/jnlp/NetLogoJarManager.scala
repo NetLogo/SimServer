@@ -7,7 +7,7 @@ package models.jnlp
  * Time: 4:08 PM
  */
 
-object JarManager {
+object NetLogoJarManager {
 
   private val DefaultLazyJarNames = Seq(
     "extensions.jar",
@@ -33,7 +33,7 @@ object JarManager {
   
   def getDefaultJars : Seq[Jar] = {
     def generateJar(name: String, isLazy: Boolean) = new Jar(name, isLazy)
-    val listLazyPairs = Seq((DefaultLazyJarNames, true), (DefaultJarNames, false))
-    listLazyPairs map { case (list, isLazy) => list map (generateJar(_, isLazy)) } flatten
+    val jarsAndIsLazyPairs = Seq((DefaultLazyJarNames, true), (DefaultJarNames, false))
+    jarsAndIsLazyPairs map { case (jars, isLazy) => jars map (generateJar(_, isLazy)) } flatten
   }
 }
