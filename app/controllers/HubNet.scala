@@ -76,7 +76,7 @@ object HubNet extends Controller {
       Success(encrypted)
     }
     catch {
-      case ex =>
+      case ex: Exception =>
         val errorStr = "Failed to encrypt HubNet info"
         Logger.warn(errorStr, ex)
         Failure("%s; %s".format(errorStr, ex.getMessage))

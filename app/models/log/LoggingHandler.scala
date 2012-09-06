@@ -82,7 +82,7 @@ object LoggingHandler {
 
     }
     catch {
-      case ex =>
+      case ex: Exception =>
         play.api.Logger.warn("Failed to un-GZIP log data",  ex)
         None
     }

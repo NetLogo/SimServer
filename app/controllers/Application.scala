@@ -42,7 +42,7 @@ object Application extends Controller {
     } yield {
       try Success(PermFileManager.registerFile(input, "%s_%s_%s_%s".format(System.currentTimeMillis(), periodID, runID, userID), "csv"))
       catch {
-        case ex =>
+        case ex: Exception =>
           val errorStr = "Failed to write data" + ex.getMessage
           Logger.warn(errorStr, ex)
           Failure("%s: %s".format(errorStr, ex.getMessage))

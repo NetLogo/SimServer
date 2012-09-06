@@ -37,7 +37,7 @@ sealed trait InfoCompanion[T] {
                 catch {
                   case ex: NumberFormatException =>
                     false
-                  case ex =>
+                  case ex: Exception =>
                     Logger.warn("Unexpected error on string => number conversion", ex)
                     false
                 }
