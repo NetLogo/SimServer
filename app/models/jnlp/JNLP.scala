@@ -9,7 +9,7 @@ import java.net.URI
  * Time: 3:40 PM
  */
 
-case class JNLP(
+class JNLP(
  /* Required */ codebaseURI: URI,   // Should just be the 'public' folder
  /* Required */ jnlpLoc: String,
  /* Required */ mainJar: MainJar,
@@ -20,17 +20,16 @@ case class JNLP(
                 shortDesc: String                     = "NetLogo (WebStart)",
                 isOfflineAllowed: Boolean             = true,
                 appNameInMenu: String                 = "NetLogo (WebStart)", // Used if we ever want to save application shortcuts
+                vendor: String                        = "CCL",
+                depsPath: String                      = "misc/deps",
                 otherJars: Seq[Jar]                   = Seq(),
                 properties: Seq[Pair[String, String]] = Seq(),
                 arguments: Seq[String]                = Seq()
-               ) {
-
-  private val Vendor = "CCL"
-  private val DepsPath = "misc/deps"
+ ) {
 
   def toXMLStr : String = {
 
-    val jars = mainJar +: JarManager.getDefaultJars ++: otherJars
+    val jars = mainJar +: NetLogoJarManager.getDefaultJars ++: otherJars
     val props = properties // No additions as of right now
     val args = arguments   // Currently, no additions
 
@@ -42,7 +41,7 @@ case class JNLP(
       jar =>
         import jar._
         val hrefProps =
-          Seq("href" -> "%s/%s".format(DepsPath, jarName)) ++
+          Seq("href" -> "%s/%s".format(depsPath, jarName)) ++
           (if (isMain) Seq("main" -> "true") else Seq()) ++
           (if (isLazy) Seq("download" -> "lazy") else Seq())
         formatXMLNode("jar", Map(hrefProps: _*), 2)
@@ -55,7 +54,7 @@ case class JNLP(
 <jnlp spec="1.0+" codebase=""" + '"' + codebaseURI.toString + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
     <information>
         <title>""" + appTitle + """</title>
-        <vendor>""" + Vendor + """</vendor>
+        <vendor>""" + vendor + """</vendor>
         <description>""" + desc + """</description>
         <description kind="short">""" + shortDesc + """</description>""" + offlineAllowedStr + """
     </information>
