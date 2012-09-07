@@ -83,6 +83,7 @@ private[jnlp] object JNLPDefaults {
   // (Also, Guns N' Roses once wrote a song about the following code; it was called "Welcome to the Jungle")
   def generateJNLPString(codebaseURI: String, jnlpLoc: String, applicationName: String, vendor: String, desc: String,
                          shortDesc: String, offlineAllowedStr: String, jarsStr: String, propsStr: String, appDesc: String) = (
+//@ String interpolation, plox!  (Scala 2.10, I'm waiting here for youuuuuuuuu!  And for Play for follow suuuuuuuuuit!)
 """
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase=""" + '"' + codebaseURI.toString + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
