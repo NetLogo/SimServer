@@ -17,7 +17,6 @@ class JNLP(
  /* Required */ mainJar: MainJar,
  /* Required */ mainClass: String,
                 applicationName: String               = ApplicationName,
-                appTitle: String                      = AppTitle,
                 desc: String                          = Desc,
                 shortDesc: String                     = ShortDesc,
                 isOfflineAllowed: Boolean             = IsOfflineAllowed,
@@ -49,7 +48,7 @@ class JNLP(
         formatXMLNode("jar", Map(hrefProps: _*), 2)
     } mkString ("\n", "\n", "")
 
-    generateJNLPString(codebaseURI.toString, jnlpLoc, appTitle, vendor, desc, shortDesc, offlineAllowedStr, jarsStr, propsStr, appDesc)
+    generateJNLPString(codebaseURI.toString, jnlpLoc, applicationName, vendor, desc, shortDesc, offlineAllowedStr, jarsStr, propsStr, appDesc)
 
   }
 
@@ -72,8 +71,7 @@ class JNLP(
 
 private[jnlp] object JNLPDefaults {
 
-  val ApplicationName  = "WebStart"
-  val AppTitle         = "NetLogo"
+  val ApplicationName  = "Unnamed WebStart Application"
   val Desc             = "A NetLogo WebStart app"
   val ShortDesc        = "NetLogo (WebStart)"
   val IsOfflineAllowed = true
@@ -83,13 +81,13 @@ private[jnlp] object JNLPDefaults {
 
   // It's tempting to use `String.format` here, but I fear that it would get far too confusing
   // (Also, Guns N' Roses once wrote a song about the following code; it was called "Welcome to the Jungle")
-  def generateJNLPString(codebaseURI: String, jnlpLoc: String, appTitle: String, vendor: String, desc: String,
+  def generateJNLPString(codebaseURI: String, jnlpLoc: String, applicationName: String, vendor: String, desc: String,
                          shortDesc: String, offlineAllowedStr: String, jarsStr: String, propsStr: String, appDesc: String) = (
 """
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase=""" + '"' + codebaseURI.toString + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
     <information>
-        <title>""" + appTitle + """</title>
+        <title>""" + applicationName + """</title>
         <vendor>""" + vendor + """</vendor>
         <description>""" + desc + """</description>
         <description kind="short">""" + shortDesc + """</description>""" + offlineAllowedStr + """

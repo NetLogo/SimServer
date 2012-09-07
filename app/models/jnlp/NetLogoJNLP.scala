@@ -17,7 +17,6 @@ class NetLogoJNLP(
                 mainJar: MainJar                      = MainJar,
                 mainClass: String                     = MainClass,
                 applicationName: String               = ApplicationName,
-                appTitle: String                      = AppTitle,
                 desc: String                          = Desc,
                 shortDesc: String                     = ShortDesc,
                 isOfflineAllowed: Boolean             = IsOfflineAllowed,
@@ -27,17 +26,17 @@ class NetLogoJNLP(
                 otherJars: Seq[Jar]                   = Seq(),
                 properties: Seq[Pair[String, String]] = Seq(),
                 arguments: Seq[String]                = Seq()
- ) extends JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, appTitle, desc, shortDesc,
+ ) extends JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
                 isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars, properties, arguments)
 
 private[jnlp] object NetLogoJNLPDefaults {
+  private val Defs     = JNLPDefaults
   val MainJar          = new MainJar("NetLogo.jar")
   val MainClass        = "org.nlogo.app.App"
-  val ApplicationName  = "NetLogo WebStart"
-  val AppTitle         = "NetLogo"
+  val ApplicationName  = "NetLogo"
   val Desc             = "A NetLogo WebStart app"
   val ShortDesc        = "NetLogo (WebStart)"
-  val IsOfflineAllowed = JNLPDefaults.IsOfflineAllowed
+  val IsOfflineAllowed = Defs.IsOfflineAllowed
   val AppNameInMenu    = "NetLogo (WebStart)"
   val Vendor           = "CCL"
   val DepsPath         = "misc/deps"

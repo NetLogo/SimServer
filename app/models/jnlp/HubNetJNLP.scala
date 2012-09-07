@@ -17,7 +17,6 @@ class HubNetJNLP(
                 mainJar: MainJar                      = MainJar,
                 mainClass: String                     = MainClass,
                 applicationName: String               = ApplicationName,
-                appTitle: String                      = AppTitle,
                 desc: String                          = Desc,
                 shortDesc: String                     = ShortDesc,
                 isOfflineAllowed: Boolean             = IsOfflineAllowed,
@@ -27,7 +26,7 @@ class HubNetJNLP(
                 otherJars: Seq[Jar]                   = Seq(),
                 properties: Seq[Pair[String, String]] = Seq(),
                 arguments: Seq[String]                = Seq()
- ) extends NetLogoJNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, appTitle, desc, shortDesc,
+ ) extends NetLogoJNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
                        isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars, properties, arguments) {
 
     def this(codebaseURI: URI, jnlpLoc: String, mainClass: String, programName: String,
@@ -38,7 +37,6 @@ class HubNetJNLP(
              MainJar,
              mainClass,
              "%s HubNet %s".format(programName, clientOrServerStr),                   // applicationName
-             "NetLogo HubNet %s".format(clientOrServerStr),                           // appTitle
              "A HubNet %s for %s".format(clientOrServerStr.toLowerCase, programName), // desc
              "HubNet (%s)".format(programName),                                       // shortDesc
              isOfflineAllowed,
@@ -57,7 +55,6 @@ private[jnlp] object HubNetJNLPDefaults {
   val MainJar          = Defs.MainJar
   val MainClass        = "org.nlogo.hubnet.client.App"
   val ApplicationName  = "HubNet WebStart"
-  val AppTitle         = "HubNet"
   val Desc             = "A HubNet WebStart app"
   val ShortDesc        = "HubNet (WebStart)"
   val IsOfflineAllowed = Defs.IsOfflineAllowed
