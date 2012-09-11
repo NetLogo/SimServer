@@ -23,9 +23,9 @@ class HubNetJNLP(
                 appNameInMenu: String                 = AppNameInMenu,
                 vendor: String                        = Vendor,
                 depsPath: String                      = DepsPath,
-                otherJars: Seq[Jar]                   = Seq(),
-                properties: Seq[Pair[String, String]] = Seq(),
-                arguments: Seq[String]                = Seq()
+                otherJars: Seq[Jar]                   = OtherJars,
+                properties: Seq[Pair[String, String]] = Properties,
+                arguments: Seq[String]                = Arguments
  ) extends NetLogoJNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
                        isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars, properties, arguments) {
 
@@ -52,13 +52,16 @@ class HubNetJNLP(
 
 private[jnlp] object HubNetJNLPDefaults {
   private val Defs = NetLogoJNLPDefaults
-  val MainJar          = Defs.MainJar
-  val MainClass        = "org.nlogo.hubnet.client.App"
-  val ApplicationName  = "HubNet WebStart"
-  val Desc             = "A HubNet WebStart app"
-  val ShortDesc        = "HubNet (WebStart)"
-  val IsOfflineAllowed = Defs.IsOfflineAllowed
-  val AppNameInMenu    = "HubNet (WebStart)"
-  val Vendor           = Defs.Vendor
-  val DepsPath         = Defs.DepsPath
+  val MainJar                           = Defs.MainJar
+  val MainClass                         = "org.nlogo.hubnet.client.App"
+  val ApplicationName                   = "HubNet WebStart"
+  val Desc                              = "A HubNet WebStart app"
+  val ShortDesc                         = "HubNet (WebStart)"
+  val IsOfflineAllowed                  = Defs.IsOfflineAllowed
+  val AppNameInMenu                     = "HubNet (WebStart)"
+  val Vendor                            = Defs.Vendor
+  val DepsPath                          = Defs.DepsPath
+  val OtherJars:  Seq[Jar]              = Defs.OtherJars
+  val Properties: Seq[(String, String)] = Defs.Properties
+  val Arguments:  Seq[String]           = Defs.Arguments
 }
