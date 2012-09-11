@@ -32,20 +32,20 @@ class HubNetJNLP(
     def this(codebaseURI: URI, jnlpLoc: String, mainClass: String, programName: String,
              clientOrServerStr: String, isOfflineAllowed: Boolean, otherJars: Seq[Jar],
              properties: Seq[Pair[String, String]], args: Seq[String])  {
-        this(codebaseURI,
-             jnlpLoc,
-             MainJar,
-             mainClass,
-             "%s HubNet %s".format(programName, clientOrServerStr),                   // applicationName
-             "A HubNet %s for %s".format(clientOrServerStr.toLowerCase, programName), // desc
-             "HubNet (%s)".format(programName),                                       // shortDesc
-             isOfflineAllowed,
-             AppNameInMenu,
-             Vendor,
-             DepsPath,
-             otherJars,
-             properties,
-             args)
+      this(codebaseURI,
+           jnlpLoc,
+           MainJar,
+           mainClass,
+           "%s HubNet %s".format(programName, clientOrServerStr),                   // applicationName
+           "A HubNet %s for %s".format(clientOrServerStr.toLowerCase, programName), // desc
+           "HubNet (%s)".format(programName),                                       // shortDesc
+           isOfflineAllowed,
+           AppNameInMenu,
+           Vendor,
+           DepsPath,
+           otherJars,
+           properties,
+           args)
     }
 
 }
