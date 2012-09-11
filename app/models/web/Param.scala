@@ -10,7 +10,7 @@ import play.api.libs.json.{ JsValue, Reads }
  */
 
 // Modeling necessary information for interpreting input parameters (which could be getting interpreted as either JSON or `Map`s)
-// Essentially, models how something with key `key` can become a realized parameter/`ParamBox`
+// Essentially, models how something with a parameter key can become realized parameters/`ParamBox`s
 class Param[T] private (val key: String, jsFunc: (JsValue) => Option[T], val pathDescriptor: String, defaulter: Option[() => T] = None) {
 
   private lazy val default = defaulter.get() // BOOM!
@@ -46,6 +46,14 @@ object Param {
 }
 
 
+/* Models a realized parameter--a parameter that has been had extraction attempted on it.
+ * If the extraction succeeded, it will be a `SomeParam`; if not, it will be a `NoneParam`.
+ * `ParamBox` can be thought of as a gimped-in-functionality `Option` that always carries
+ * with it a `key` value, which tells what parameter is being represented in the box (this
+ * is helpful for cases where you don't want to immediately return a `Validation` monad,
+ * and you want something else down the line to do the validation of all the parameters,
+ * and be able to report specifically _which_ parameters failed to validate)
+ */
 sealed abstract class ParamBox[+T] {
 
   def key: String
