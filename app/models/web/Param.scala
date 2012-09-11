@@ -10,12 +10,15 @@ import play.api.libs.json.{ JsValue, Reads }
  */
 
 // Modeling necessary information for interpreting input parameters (which could be getting interpreted as either JSON or `Map`s)
+// Essentially, models how something with key `key` can become a realized parameter/`ParamBox`
 class Param[T] private (val key: String, jsFunc: (JsValue) => Option[T], val pathDescriptor: String, defaulter: Option[() => T] = None) {
 
   private lazy val default = defaulter.get() // BOOM!
 
-  def apply(js: JsValue)    : ParamBox[T] = ParamBox(key, jsFunc(js))
-  def unpeelJs(js: JsValue) : T           = jsFunc(js) getOrElse default
+  private def unpeel(opt: Option[T]) = opt orElse (if (this.hasDefault) Option(default) else None)
+
+  def apply(js: JsValue)    : ParamBox[T] = ParamBox(key, unpeel(jsFunc(js)))
+  def unpeelJs(js: JsValue) : T           = unpeel(jsFunc(js)) get // BOOM!
   def hasDefault            : Boolean     = !defaulter.isEmpty
 
 }
@@ -26,7 +29,7 @@ object Param {
 
   private def extractClassName(c: Class[_])                    = c.getName match { case ClassNameMatcher(name) => name }
   private def standardJsonPathFormat(className: String)        = "<root> -> <%s>".format(className.toLowerCase)
-  private def standardJsonExtractor(key: String)(js: JsValue) = js \ key
+  private def standardJsonExtractor(key: String)(js: JsValue)  = js \ key
 
   // Oh, boy... the trouble that I went through to make this what-turned-out-to-be-trashy factory API...
   // You can't reasonably do `jsFunc` and `pathDescriptor` as default arguments
