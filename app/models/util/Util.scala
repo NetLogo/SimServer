@@ -10,7 +10,7 @@ package models.util
 object Util {
 
   // Has to be two methods, because the compiler gets touchy about inferring `U` from a default parameter
-  def noneIfEmpty[T <% { def isEmpty: Boolean }](x: T) : Option[T] = noneIfEmpty(x, identity[T] _)
+  def noneIfEmpty[T <% { def isEmpty: Boolean }]   (x: T)                      : Option[T] = noneIfEmpty(x, identity[T] _)
   def noneIfEmpty[T <% { def isEmpty: Boolean }, U](x: T, transformer: T => U) : Option[U] = if (x.isEmpty) None else Option(transformer(x))
 
   def ifFirstWrapSecond[T](x: => Boolean, y: => T) : Option[T] = if (x) Some(y) else None
