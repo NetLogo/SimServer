@@ -14,42 +14,73 @@ import models.util.Util.noneIfEmpty
  * Time: 3:05 PM
  */
 
-object JNLPParams {
+trait JNLPParams {
 
-  private val CodebaseURIKey      = "codebase_uri"
-  private val MainJarKey          = "main_jar"
-  private val MainClassKey        = "main_class"
-  private val ApplicationNameKey  = "application_name"
-  private val DescKey             = "description"
-  private val ShortDescKey        = "short_description"
-  private val IsOfflineAllowedKey = "is_offline_allowed"
-  private val AppNameInMenuKey    = "application_name_in_menu"
-  private val VendorKey           = "vendor"
-  private val DepsPathKey         = "dependencies_path"
-  private val OtherJarsKey        = "other_jars"
-  private val PropertiesKey       = "properties"
-  private val ArgumentsKey        = "arguments"
+  final def stringify : String = {
+    def headerAndParamsFormat(header: String, params: String) = """%s
+                                                                  |
+                                                                  |%s
+                                                                  |
+                                                                  |
+                                                                  |
+                                                                  |""".format(header, params).stripMargin
+    def headerFormat(header: String) = {
+      val barrier = Stream.fill(header.length)("=").mkString
+      """%s
+        |%s
+        |%s""".format(barrier, header, barrier)
+    }
+    def paramFormat(param: Param[_]) = """%s
+                                         |
+                                         |%s""".format(param.key, param.pathDescriptor).stripMargin
+    val headerStr = headerFormat(paramCategoryLabel.toUpperCase)
+    val paramsStr = (JNLPParams.BaseParams ++ additionalParams map paramFormat).mkString
+    headerAndParamsFormat(headerStr, paramsStr)
+  }
 
-  private def parseJsArray[T, U](key: String)(js: JsValue)(parseFunc: JsValue => T)(validationFunc: PartialFunction[T, U]) : Option[Seq[U]] =
+  protected def additionalParams   : Seq[Param[_]]
+  protected def paramCategoryLabel : String
+
+  def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP]
+
+}
+
+private[jnlp] object JNLPParams {
+
+  val CodebaseURIKey      = "codebase_uri"
+  val MainJarKey          = "main_jar"
+  val MainClassKey        = "main_class"
+  val ApplicationNameKey  = "application_name"
+  val DescKey             = "description"
+  val ShortDescKey        = "short_description"
+  val IsOfflineAllowedKey = "is_offline_allowed"
+  val AppNameInMenuKey    = "application_name_in_menu"
+  val VendorKey           = "vendor"
+  val DepsPathKey         = "dependencies_path"
+  val OtherJarsKey        = "other_jars"
+  val PropertiesKey       = "properties"
+  val ArgumentsKey        = "arguments"
+
+  def parseJsArray[T, U](key: String)(js: JsValue)(parseFunc: JsValue => T)(validationFunc: PartialFunction[T, U]) : Option[Seq[U]] =
     (js \ key).asOpt[Seq[JsValue]] map { _ map parseFunc collect validationFunc }
 
 
   // -------------------> OTHER JARS SPECIFICS START <------------------- //
 
-  private val OtherJarsArrElemNameKey   = "jar_name"
-  private val OtherJarsArrElemIsLazyKey = "is_lazy"
+  val OtherJarsArrElemNameKey   = "jar_name"
+  val OtherJarsArrElemIsLazyKey = "is_lazy"
 
-  private def otherJarsParse(key: String)(js: JsValue) : Option[Seq[(String, Boolean)]] = {
+  def otherJarsParse(key: String)(js: JsValue) : Option[Seq[(String, Boolean)]] = {
     val parseFunc = (jar: JsValue) => ((jar \ OtherJarsArrElemNameKey).asOpt[String], (jar \ OtherJarsArrElemIsLazyKey).asOpt[Boolean])
     parseJsArray(key)(js)(parseFunc){ case (Some(jarStr), Some(isLazy)) => (jarStr, isLazy) }
   }
 
-  private val OtherJarsParseDescriptor = """<root> ->
-                                           |  <array_name = %s> -> {
-                                           |    (<name = %s> -> <string>), (<name = %s> -> <boolean>)
-                                           |  }*""".format(OtherJarsKey,
-                                                           OtherJarsArrElemNameKey,
-                                                           OtherJarsArrElemIsLazyKey).stripMargin
+  val OtherJarsParseDescriptor = """<root> ->
+                                   |  <array_name = %s> -> {
+                                   |    (<name = %s> -> <string>), (<name = %s> -> <boolean>)
+                                   |  }*""".format(OtherJarsKey,
+                                                   OtherJarsArrElemNameKey,
+                                                   OtherJarsArrElemIsLazyKey).stripMargin
 
   // -------------------> OTHER JARS SPECIFICS END <------------------- //
 
@@ -57,20 +88,20 @@ object JNLPParams {
 
   // -------------------> PROPERTIES SPECIFICS START <------------------- //
 
-  private val PropertiesArrElemNameKey  = "name"
-  private val PropertiesArrElemValueKey = "value"
+  val PropertiesArrElemNameKey  = "name"
+  val PropertiesArrElemValueKey = "value"
 
-  private def propertiesParse(key: String)(js: JsValue) : Option[Seq[(String, String)]] = {
+  def propertiesParse(key: String)(js: JsValue) : Option[Seq[(String, String)]] = {
     val parseFunc = (prop: JsValue) => ((prop \ PropertiesArrElemNameKey).asOpt[String], (prop \ PropertiesArrElemValueKey).asOpt[String])
     parseJsArray(key)(js)(parseFunc){ case (Some(name), Some(value)) => (name, value) }
   }
 
-  private val PropertiesParseDescriptor = """<root> ->
-                                            |  <array_name = %s> -> {
-                                            |    (<name = %s> -> <string>), (<name = %s> -> <string>)
-                                            |  }*""".format(PropertiesKey,
-                                                            PropertiesArrElemNameKey,
-                                                            PropertiesArrElemValueKey).stripMargin
+  val PropertiesParseDescriptor = """<root> ->
+                                    |  <array_name = %s> -> {
+                                    |    (<name = %s> -> <string>), (<name = %s> -> <string>)
+                                    |  }*""".format(PropertiesKey,
+                                                    PropertiesArrElemNameKey,
+                                                    PropertiesArrElemValueKey).stripMargin
 
   // -------------------> PROPERTIES SPECIFICS END <------------------- //
 
@@ -78,38 +109,45 @@ object JNLPParams {
 
   // -------------------> ARGUMENTS SPECIFICS START <------------------- //
 
-  private val ArgumentArrElemKey = "argument"
+  val ArgumentArrElemKey = "argument"
 
-  private def argumentsParse(key: String)(js: JsValue) : Option[Seq[String]] = (js \ key).asOpt[Seq[String]]
+  def argumentsParse(key: String)(js: JsValue) : Option[Seq[String]] = (js \ key).asOpt[Seq[String]]
 
-  private val ArgumentsParseDescriptor = """<root> ->
-                                           |  <array_name = %s> -> <string>*""".format(ArgumentArrElemKey).stripMargin
+  val ArgumentsParseDescriptor = """<root> ->
+                                   |  <array_name = %s> -> <string>*""".format(ArgumentArrElemKey).stripMargin
 
   // -------------------> ARGUMENTS SPECIFICS END <------------------- //
 
 
-  private val CodebaseURIParam      = Param[String](CodebaseURIKey)
-  private val MainJarParam          = Param[String](MainJarKey)
-  private val MainClassParam        = Param[String](MainClassKey)
-  private val ApplicationNameParam  = Param[String](ApplicationNameKey)
-  private val DescParam             = Param[String](DescKey)
-  private val ShortDescParam        = Param[String](ShortDescKey)
-  private val IsOfflineAllowedParam = Param[Boolean](IsOfflineAllowedKey)
-  private val AppNameInMenuParam    = Param[String](AppNameInMenuKey)
-  private val VendorParam           = Param[String](VendorKey)
-  private val DepsPathParam         = Param[String](DepsPathKey)
-  private val OtherJarsParam        = Param[Seq[(String, Boolean)]](OtherJarsKey,  otherJarsParse  _, OtherJarsParseDescriptor)
-  private val PropertiesParam       = Param[Seq[(String, String)]] (PropertiesKey, propertiesParse _, PropertiesParseDescriptor)
-  private val ArgumentsParam        = Param[Seq[String]]           (ArgumentsKey,  argumentsParse  _, ArgumentsParseDescriptor)
+  val CodebaseURIParam      = Param[String](CodebaseURIKey)
+  val MainJarParam          = Param[String](MainJarKey)
+  val MainClassParam        = Param[String](MainClassKey)
+  val ApplicationNameParam  = Param[String](ApplicationNameKey)
+  val DescParam             = Param[String](DescKey)
+  val ShortDescParam        = Param[String](ShortDescKey)
+  val IsOfflineAllowedParam = Param[Boolean](IsOfflineAllowedKey)
+  val AppNameInMenuParam    = Param[String](AppNameInMenuKey)
+  val VendorParam           = Param[String](VendorKey)
+  val DepsPathParam         = Param[String](DepsPathKey)
+  val OtherJarsParam        = Param[Seq[(String, Boolean)]](OtherJarsKey,  otherJarsParse  _, OtherJarsParseDescriptor)
+  val PropertiesParam       = Param[Seq[(String, String)]] (PropertiesKey, propertiesParse _, PropertiesParseDescriptor)
+  val ArgumentsParam        = Param[Seq[String]]           (ArgumentsKey,  argumentsParse  _, ArgumentsParseDescriptor)
 
   // --------------> Adding a param above?  THEN ADD IT TO THIS LIST! <-------------- //
-  private val Params = Seq(CodebaseURIParam, MainJarParam, MainClassParam, ApplicationNameParam, DescParam,
-                           ShortDescParam, IsOfflineAllowedParam, AppNameInMenuParam, VendorParam,
-                           DepsPathParam, OtherJarsParam, PropertiesParam, ArgumentsParam)
+  val BaseParams = Seq(CodebaseURIParam, MainJarParam, MainClassParam, ApplicationNameParam, DescParam,
+                       ShortDescParam, IsOfflineAllowedParam, AppNameInMenuParam, VendorParam,
+                       DepsPathParam, OtherJarsParam, PropertiesParam, ArgumentsParam)
 
-  def stringify = Params map (param => "%s:\n\n%s".format(param.key, param.pathDescriptor)) mkString "\n\n\n\n"
+}
 
-  def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
+object BaseJNLPParams extends JNLPParams {
+
+  import JNLPParams._
+
+  override val additionalParams   = Seq[Param[_]]()
+  override val paramCategoryLabel = "Base"
+
+  override def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
     JNLP(
       CodebaseURIParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -128,9 +166,6 @@ object JNLPParams {
     )
 
 }
-
-
-
 
 
 
