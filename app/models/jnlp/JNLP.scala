@@ -33,13 +33,11 @@ class JNLP(
 
   def toXMLStr : String = {
 
-    val jars = mainJar +: NetLogoJarManager.getDefaultJars ++: otherJars
-    val props = properties // No additions as of right now
-    val args = arguments   // Currently, no additions
+    val jars = mainJar +: otherJars
 
     val offlineAllowedStr = if (isOfflineAllowed) "\n" + formatXMLNode("offline-allowed", Map(), 2) else ""
-    val propsStr = props map { case (key, value) => formatXMLNode("property", Map("name" -> key, "value" -> value), 2) } mkString("\n", "\n", "")
-    val argsStr = args map (formatXMLPair("argument", Map(), _, 2)) mkString("\n", "\n", "\n" + formatIndentation(1))
+    val propsStr = properties map { case (key, value) => formatXMLNode("property", Map("name" -> key, "value" -> value), 2) } mkString("\n", "\n", "")
+    val argsStr = arguments map (formatXMLPair("argument", Map(), _, 2)) mkString("\n", "\n", "\n" + formatIndentation(1))
     val appDesc = "\n" + formatXMLPair("application-desc", Map("name" -> applicationName, "main-class" -> mainClass), argsStr, 1)
     val jarsStr = jars map {
       jar =>
@@ -90,7 +88,7 @@ object JNLP {
 
     val requireds = List(codebaseURIBox, jnlpLocBox, mainJarBox, mainClassBox)
 
-    val errorStrFormat  = "Bad POST data for: " + (_: String)
+    val errorStrFormat  = "Bad data supplied for: " + (_: String)
     val rootValidations = requireds map (box => box map (x => Success(List(x))) getOrElse Failure(errorStrFormat(box.key)))
     val validation      = rootValidations reduce append
 
@@ -133,11 +131,11 @@ object JNLP {
 private[jnlp] object JNLPDefaults {
 
   val ApplicationName                   = "Unnamed WebStart Application"
-  val Desc                              = "A NetLogo WebStart app"
-  val ShortDesc                         = "NetLogo (WebStart)"
+  val Desc                              = "A Java WebStart app"
+  val ShortDesc                         = "Java WebStart"
   val IsOfflineAllowed                  = true
-  val AppNameInMenu                     = "NetLogo (WebStart)"
-  val Vendor                            = "CCL"
+  val AppNameInMenu                     = "Java WebStart"
+  val Vendor                            = "[Unknown Vendor]"
   val DepsPath                          = "misc/deps"
   val OtherJars:  Seq[Jar]              = Seq()
   val Properties: Seq[(String, String)] = Seq()
