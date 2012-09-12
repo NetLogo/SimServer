@@ -16,11 +16,12 @@ object JNLP extends Controller {
 
   def generateJNLP = APIAction {
     request =>
-      request.body.asJson map { json =>
-        val filename  = TempFileManager.formatFilePath(json.toString, "jnlp")
-        val jnlpMaybe = JNLPParams.bindFromJson(json, filename)
-        val strMaybe  = jnlpMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, filename).toString replaceAllLiterally("\\", "/"))
-        strMaybe fold((ExpectationFailed(_)), (url => Redirect("/" + url)))
+      request.body.asJson map {
+        json =>
+          val filename  = TempFileManager.formatFilePath(json.toString, "jnlp")
+          val jnlpMaybe = JNLPParams.bindFromJson(json, filename)
+          val strMaybe  = jnlpMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, filename).toString replaceAllLiterally("\\", "/"))
+          strMaybe fold((ExpectationFailed(_)), (url => Redirect("/" + url)))
       } getOrElse BadRequest("Invalid POST body; expected a JSON object")
   }
 
