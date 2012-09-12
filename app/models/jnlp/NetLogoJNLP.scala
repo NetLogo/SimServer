@@ -2,6 +2,9 @@ package models.jnlp
 
 import java.net.URI
 
+import scalaz.Validation
+
+import models.web.ParamBox
 import NetLogoJNLPDefaults._
 
 /**
@@ -28,6 +31,49 @@ class NetLogoJNLP(
                 arguments: Seq[String]                = Arguments
  ) extends JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
                 isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars, properties, arguments)
+
+object NetLogoJNLP {
+
+  // Basically, applies the default values into the boxes if they are are currently `NoneParam`s
+  def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
+            mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
+            shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
+            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]],
+            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
+
+    val mainJar          = mainJarBox          orElseApply MainJar.jarName
+    val mainClass        = mainClassBox        orElseApply MainClass
+    val applicationName  = applicationNameBox  orElseApply ApplicationName
+    val desc             = descBox             orElseApply Desc
+    val shortDesc        = shortDescBox        orElseApply ShortDesc
+    val isOfflineAllowed = isOfflineAllowedBox orElseApply IsOfflineAllowed
+    val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
+    val vendor           = vendorBox           orElseApply Vendor
+    val depsPath         = depsPathBox         orElseApply DepsPath
+    val otherJars        = otherJarsBox        orElseApply (OtherJars map (jar => (jar.jarName, jar.isLazy)))
+    val properties       = propertiesBox       orElseApply Properties
+    val arguments        = argumentsBox        orElseApply Arguments
+
+    JNLP(
+      codebaseURIBox,
+      jnlpLocBox,
+      mainJar,
+      mainClass,
+      applicationName,
+      desc,
+      shortDesc,
+      isOfflineAllowed,
+      appNameInMenu,
+      vendor,
+      depsPath,
+      otherJars,
+      properties,
+      arguments
+    )
+
+  }
+
+}
 
 private[jnlp] object NetLogoJNLPDefaults {
   private val Defs                      = JNLPDefaults

@@ -161,7 +161,7 @@ object HubNet extends Controller {
               jnlpLoc           = fileName,
               mainClass         = mainClass,
               programName       = programName,
-              clientOrServerStr = clientOrServerStr,
+              roleStr           = clientOrServerStr,
               isOfflineAllowed  = false,
               otherJars         = otherJars,
               properties        = properties,

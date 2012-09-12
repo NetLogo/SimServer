@@ -19,11 +19,7 @@ trait JNLPParams {
   final def stringify : String = {
     def headerAndParamsFormat(header: String, params: String) = """%s
                                                                   |
-                                                                  |%s
-                                                                  |
-                                                                  |
-                                                                  |
-                                                                  |""".format(header, params).stripMargin
+                                                                  |%s""".format(header, params).stripMargin
     def headerFormat(header: String) = {
       val barrier = Stream.fill(header.length)("=").mkString
       """%s
@@ -34,12 +30,15 @@ trait JNLPParams {
                                          |
                                          |%s""".format(param.key, param.pathDescriptor).stripMargin
     val headerStr = headerFormat(paramCategoryLabel.toUpperCase)
-    val paramsStr = (JNLPParams.BaseParams ++ additionalParams map paramFormat).mkString
+    val paramsStr = (bonusStringifyParams ++ additionalParams map paramFormat).mkString(Stream.fill(4)("\n").mkString)
     headerAndParamsFormat(headerStr, paramsStr)
   }
 
-  protected def additionalParams   : Seq[Param[_]]
-  protected def paramCategoryLabel : String
+  protected def bonusStringifyParams : Seq[Param[_]] = Seq() // Should pretty much only be used by `BaseJNLPParams`
+  protected def additionalParams     : Seq[Param[_]]
+  protected def paramCategoryLabel   : String
+
+  private[jnlp] def doesAffiliate(js: JsValue) : Boolean
 
   def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP]
 
@@ -144,8 +143,11 @@ object BaseJNLPParams extends JNLPParams {
 
   import JNLPParams._
 
-  override val additionalParams   = Seq[Param[_]]()
-  override val paramCategoryLabel = "Base"
+  override val bonusStringifyParams = BaseParams
+  override val additionalParams     = Seq[Param[_]]()
+  override val paramCategoryLabel   = "Base"
+
+  override private[jnlp] def doesAffiliate(js: JsValue) = false
 
   override def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
     JNLP(
@@ -167,5 +169,81 @@ object BaseJNLPParams extends JNLPParams {
 
 }
 
+object NetLogoParams extends JNLPParams {
 
+  import JNLPParams._
 
+  private val IsNetLogoKey   = "is_netlogo"
+  private val IsNetLogoParam = Param[Boolean](IsNetLogoKey)
+
+  override val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam)
+  override val paramCategoryLabel              = "NetLogo"
+
+  override private[jnlp] def doesAffiliate(js: JsValue) = IsNetLogoParam(js) exists (_ == true)
+
+  override def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
+    NetLogoJNLP(
+      CodebaseURIParam(js),
+      ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
+      MainJarParam(js),
+      MainClassParam(js),
+      ApplicationNameParam(js),
+      DescParam(js),
+      ShortDescParam(js),
+      IsOfflineAllowedParam(js),
+      AppNameInMenuParam(js),
+      VendorParam(js),
+      DepsPathParam(js),
+      OtherJarsParam(js),
+      PropertiesParam(js),
+      ArgumentsParam(js)
+    )
+
+}
+
+object HubNetParams extends JNLPParams {
+
+  import JNLPParams._
+
+  private val IsHubNetKey   = "is_hubnet"
+  private val IsHubNetParam = Param[Boolean](IsHubNetKey)
+
+  private val ProgramNameKey   = "program_name"
+  private val ProgramNameParam = Param[String](ProgramNameKey)
+
+  private val RoleKey   = "role"
+  private val RoleParam = Param[String](RoleKey)
+
+  override private[jnlp] def doesAffiliate(js: JsValue) = IsHubNetParam(js) exists (_ == true)
+
+  override val additionalParams/*: Seq[Param[_]]*/ = Seq(IsHubNetParam, ProgramNameParam, RoleParam)
+  override val paramCategoryLabel              = "HubNet"
+
+  override def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
+    HubNetJNLP(
+      CodebaseURIParam(js),
+      ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
+      MainJarParam(js),
+      MainClassParam(js),
+      ApplicationNameParam(js),
+      DescParam(js),
+      ShortDescParam(js),
+      IsOfflineAllowedParam(js),
+      AppNameInMenuParam(js),
+      VendorParam(js),
+      DepsPathParam(js),
+      OtherJarsParam(js),
+      PropertiesParam(js),
+      ArgumentsParam(js),
+      ProgramNameParam(js),
+      RoleParam(js)
+    )
+
+}
+
+object JNLPParamSetManager {
+  private val paramTypes = Seq(BaseJNLPParams, NetLogoParams, HubNetParams)
+  private val default    = BaseJNLPParams
+  def determineSet(js: JsValue) : JNLPParams = paramTypes find (_.doesAffiliate(js)) getOrElse default
+  def stringifySets                          = paramTypes map (_.stringify) mkString(Stream.fill(4)("\n").mkString)
+}

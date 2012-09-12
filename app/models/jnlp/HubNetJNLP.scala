@@ -2,7 +2,11 @@ package models.jnlp
 
 import java.net.URI
 
+import scalaz.Validation
+
+import models.web.ParamBox
 import HubNetJNLPDefaults._
+import HubNetJNLP.{ generateAppName, generateDesc, generateShortDesc }
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,15 +34,15 @@ class HubNetJNLP(
                        isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars, properties, arguments) {
 
     def this(codebaseURI: URI, jnlpLoc: String, mainClass: String, programName: String,
-             clientOrServerStr: String, isOfflineAllowed: Boolean, otherJars: Seq[Jar],
+             roleStr: String, isOfflineAllowed: Boolean, otherJars: Seq[Jar],
              properties: Seq[Pair[String, String]], args: Seq[String])  {
       this(codebaseURI,
            jnlpLoc,
            MainJar,
            mainClass,
-           "%s HubNet %s".format(programName, clientOrServerStr),                   // applicationName
-           "A HubNet %s for %s".format(clientOrServerStr.toLowerCase, programName), // desc
-           "HubNet (%s)".format(programName),                                       // shortDesc
+           generateAppName(programName, roleStr),
+           generateDesc(programName, roleStr.toLowerCase),
+           generateShortDesc(programName),
            isOfflineAllowed,
            AppNameInMenu,
            Vendor,
@@ -47,6 +51,65 @@ class HubNetJNLP(
            properties,
            args)
     }
+
+}
+
+object HubNetJNLP {
+
+  def generateAppName(programName: String, roleStr: String) = "%s HubNet %s".format(programName, roleStr)
+  def generateDesc(programName: String, roleStr: String)    = "A HubNet %s for %s".format(roleStr, programName)
+  def generateShortDesc(programName: String)                = "HubNet (%s)".format(programName)
+
+  // Basically, applies the default values into the boxes if they are are currently `NoneParam`s
+  def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
+            mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
+            shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
+            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]],
+            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]],
+            programNameBox: ParamBox[String], roleStrBox: ParamBox[String]) : Validation[String, JNLP] = {
+
+    //@ Through proper use of applicatives, I should be able to abstract this over arity
+    def contextify2IntoBox[T, U](f: T => T => U) = (box1: ParamBox[T]) => (box2: ParamBox[T]) => {
+      for {
+        a <- box1
+        b <- box2
+      } yield (f(a)(b))
+    }
+
+    val generateAppNameBox = contextify2IntoBox((generateAppName _).curried)
+    val generateDescBox    = contextify2IntoBox((generateDesc _).curried)
+
+    val mainJar          = mainJarBox          orElseApply MainJar.jarName
+    val mainClass        = mainClassBox        orElseApply MainClass
+    val applicationName  = applicationNameBox  orElse      generateAppNameBox(programNameBox)(roleStrBox) orElseApply ApplicationName
+    val desc             = descBox             orElse      generateDescBox(programNameBox)(roleStrBox)    orElseApply Desc
+    val shortDesc        = shortDescBox        orElse      programNameBox map generateShortDesc           orElseApply ShortDesc
+    val isOfflineAllowed = isOfflineAllowedBox orElseApply IsOfflineAllowed
+    val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
+    val vendor           = vendorBox           orElseApply Vendor
+    val depsPath         = depsPathBox         orElseApply DepsPath
+    val otherJars        = otherJarsBox        orElseApply (OtherJars map (jar => (jar.jarName, jar.isLazy)))
+    val properties       = propertiesBox       orElseApply Properties
+    val arguments        = argumentsBox        orElseApply Arguments
+
+    JNLP(
+      codebaseURIBox,
+      jnlpLocBox,
+      mainJar,
+      mainClass,
+      applicationName,
+      desc,
+      shortDesc,
+      isOfflineAllowed,
+      appNameInMenu,
+      vendor,
+      depsPath,
+      otherJars,
+      properties,
+      arguments
+    )
+
+  }
 
 }
 
