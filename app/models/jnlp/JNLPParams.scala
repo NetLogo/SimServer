@@ -16,8 +16,6 @@ import models.util.Util.noneIfEmpty
 
 object JNLPParams {
 
-  private val RootDataKey = "data"  //@ Currently unused....  I feel like I did something wrong if I don't need this.  We'll see.
-
   private val CodebaseURIKey      = "codebase_uri"
   private val MainJarKey          = "main_jar"
   private val MainClassKey        = "main_class"
@@ -32,27 +30,24 @@ object JNLPParams {
   private val PropertiesKey       = "properties"
   private val ArgumentsKey        = "arguments"
 
+  private def parseJsArray[T, U](key: String)(js: JsValue)(parseFunc: JsValue => T)(validationFunc: PartialFunction[T, U]) : Option[Seq[U]] =
+    (js \ key).asOpt[Seq[JsValue]] map { _ map parseFunc collect validationFunc }
 
 
   // -------------------> OTHER JARS SPECIFICS START <------------------- //
 
-  private val OtherJarsArrElemKey       = "jar"
   private val OtherJarsArrElemNameKey   = "jar_name"
   private val OtherJarsArrElemIsLazyKey = "is_lazy"
 
   private def otherJarsParse(key: String)(js: JsValue) : Option[Seq[(String, Boolean)]] = {
-    val jars         = (js \\ key) map (_ \ OtherJarsArrElemKey)
-    val parsedJars   = jars map (jar => ((jar \ OtherJarsArrElemNameKey).asOpt[String], (jar \ OtherJarsArrElemIsLazyKey).asOpt[Boolean]))
-    val cleansedJars = parsedJars collect { case (Some(jarStr), Some(isLazy)) => (jarStr, isLazy) }
-    Option(cleansedJars)
+    val parseFunc = (jar: JsValue) => ((jar \ OtherJarsArrElemNameKey).asOpt[String], (jar \ OtherJarsArrElemIsLazyKey).asOpt[Boolean])
+    parseJsArray(key)(js)(parseFunc){ case (Some(jarStr), Some(isLazy)) => (jarStr, isLazy) }
   }
 
   private val OtherJarsParseDescriptor = """<root> ->
-                                           |  <array_name = %s> -> (
-                                           |    <object_name = %s> ->
-                                           |      (<name = %s> -> <string>), (<name = %s> -> <boolean>)
-                                           |  )*""".format(OtherJarsKey,
-                                                           OtherJarsArrElemKey,
+                                           |  <array_name = %s> -> {
+                                           |    (<name = %s> -> <string>), (<name = %s> -> <boolean>)
+                                           |  }*""".format(OtherJarsKey,
                                                            OtherJarsArrElemNameKey,
                                                            OtherJarsArrElemIsLazyKey).stripMargin
 
@@ -62,23 +57,18 @@ object JNLPParams {
 
   // -------------------> PROPERTIES SPECIFICS START <------------------- //
 
-  private val PropertiesArrElemKey      = "property"
   private val PropertiesArrElemNameKey  = "name"
   private val PropertiesArrElemValueKey = "value"
 
   private def propertiesParse(key: String)(js: JsValue) : Option[Seq[(String, String)]] = {
-    val properties    = (js \\ key) map (_ \ PropertiesArrElemKey)
-    val parsedProps   = properties map (prop => ((prop \ PropertiesArrElemNameKey).asOpt[String], (prop \ PropertiesArrElemValueKey).asOpt[String]))
-    val cleansedProps = parsedProps collect { case (Some(name), Some(value)) => (name, value) }
-    Option(cleansedProps)
+    val parseFunc = (prop: JsValue) => ((prop \ PropertiesArrElemNameKey).asOpt[String], (prop \ PropertiesArrElemValueKey).asOpt[String])
+    parseJsArray(key)(js)(parseFunc){ case (Some(name), Some(value)) => (name, value) }
   }
 
   private val PropertiesParseDescriptor = """<root> ->
-                                            |  <array_name = %s> -> (
-                                            |    <object_name = %s> ->
-                                            |      (<name = %s> -> <string>), (<name = %s> -> <string>)
-                                            |  )*""".format(PropertiesKey,
-                                                            PropertiesArrElemKey,
+                                            |  <array_name = %s> -> {
+                                            |    (<name = %s> -> <string>), (<name = %s> -> <string>)
+                                            |  }*""".format(PropertiesKey,
                                                             PropertiesArrElemNameKey,
                                                             PropertiesArrElemValueKey).stripMargin
 
@@ -90,15 +80,10 @@ object JNLPParams {
 
   private val ArgumentArrElemKey = "argument"
 
-  private def argumentsParse(key: String)(js: JsValue) : Option[Seq[String]] = {
-    val arguments    = js \\ key
-    val parsedArgs   = arguments map (arg => arg.asOpt[String])
-    val cleansedArgs = parsedArgs collect { case Some(arg) => arg }
-    Option(cleansedArgs)
-  }
+  private def argumentsParse(key: String)(js: JsValue) : Option[Seq[String]] = (js \ key).asOpt[Seq[String]]
 
   private val ArgumentsParseDescriptor = """<root> ->
-                                           |  <array_name = %s> -> (<string>)*""".format(ArgumentArrElemKey).stripMargin
+                                           |  <array_name = %s> -> <string>*""".format(ArgumentArrElemKey).stripMargin
 
   // -------------------> ARGUMENTS SPECIFICS END <------------------- //
 
