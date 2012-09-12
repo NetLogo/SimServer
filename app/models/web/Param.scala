@@ -62,9 +62,14 @@ sealed abstract class ParamBox[+T] {
   def get     : T
   def isEmpty : Boolean
 
-  def flatMap  [U]     (f: T => ParamBox[U]) : ParamBox[U] = if (isEmpty) NoneParam(key) else f(this.get)
-  def getOrElse[U >: T](default: => U)       : U           = if (isEmpty) default        else this.get
-  def map      [U]     (f: T => U)           : ParamBox[U] = if (isEmpty) NoneParam(key) else SomeParam(key, f(this.get))
+  def exists           (p: T => Boolean)      : Boolean     =      !isEmpty && p(this.get)
+  def flatMap  [U]     (f: T => ParamBox[U])  : ParamBox[U] =   if (isEmpty) NoneParam(this.key) else f(this.get)
+  def getOrElse[U >: T](default: => U)        : U           =   if (isEmpty) default             else this.get
+  def map      [U]     (f: T => U)            : ParamBox[U] =   if (isEmpty) NoneParam(this.key) else SomeParam(this.key, f(this.get))
+  def orElse   [U >: T](that: => ParamBox[U]) : ParamBox[U] =   if (isEmpty) that                else this
+
+  // Bizzle-made!
+  def orElseApply[U >: T](that: U) : ParamBox[U] = if (isEmpty) SomeParam(this.key, that) else this
 
 }
 
