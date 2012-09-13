@@ -3,6 +3,7 @@
 # ~~~~
 
 # Home page
+OPTIONS /*nonsense                  controllers.Application.options(nonsense)
 GET     /                           controllers.Application.index
 GET     /http                       controllers.Application.displayHttpRequest
 POST    /http                       controllers.Application.displayHttpRequest
