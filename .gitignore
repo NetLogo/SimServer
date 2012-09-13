@@ -18,3 +18,4 @@ demo.jnlp
 /.idea/runConfigurations
 /public/perm
 /.idea/misc.xml
+/.idea*
