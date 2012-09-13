@@ -33,7 +33,7 @@ object PlayUtil {
           Logger.info("Failed to parse text into JSON", ex)
           None
       }
-    } orElse { extractParamMapOpt(request) map paramMap2JSON }
+    } orElse { extractParamMapOpt(request) flatMap paramMap2JSON }
   }
 
   private def stringSeq2JSONOpt(seq: Seq[String]) : Option[JsValue] = {
@@ -51,10 +51,10 @@ object PlayUtil {
     }
   }
 
-  private def paramMap2JSON(paramMap: Map[String, Seq[String]]) : JsValue = {
+  private def paramMap2JSON(paramMap: Map[String, Seq[String]]) : Option[JsValue] = {
     val parsedParams    = paramMap map { case (k, v) => (k, stringSeq2JSONOpt(v)) }
     val validatedParams = parsedParams collect { case (k, Some(v)) => (k, v) }
-    new JsObject(validatedParams.toSeq)
+    if (!validatedParams.isEmpty) Option(new JsObject(validatedParams.toSeq)) else None
   }
 
 }
