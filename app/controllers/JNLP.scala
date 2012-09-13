@@ -4,6 +4,7 @@ import play.api.mvc.Controller
 
 import models.jnlp.JNLPParamSetManager
 import models.filemanager.TempFileManager
+import models.util.PlayUtil
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +17,7 @@ object JNLP extends Controller {
 
   def generateJNLP = APIAction {
     request =>
-      request.body.asJson map {
+      PlayUtil.extractJSONOpt(request) map {
         json =>
           val filename     = TempFileManager.formatFilePath(json.toString, "jnlp")
           val jnlpParamSet = JNLPParamSetManager.determineSet(json)
