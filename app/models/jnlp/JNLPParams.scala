@@ -108,12 +108,12 @@ private[jnlp] object JNLPParams {
 
   // -------------------> ARGUMENTS SPECIFICS START <------------------- //
 
-  val ArgumentArrElemKey = "argument"
+  val ArgumentsArrKey = "arguments"
 
   def argumentsParse(key: String)(js: JsValue) : Option[Seq[String]] = (js \ key).asOpt[Seq[String]]
 
   val ArgumentsParseDescriptor = """<root> ->
-                                   |  <array_name = %s> -> <string>*""".format(ArgumentArrElemKey).stripMargin
+                                   |  <array_name = %s> -> <string>*""".format(ArgumentsArrKey).stripMargin
 
   // -------------------> ARGUMENTS SPECIFICS END <------------------- //
 
