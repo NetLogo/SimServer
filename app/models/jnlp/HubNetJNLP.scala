@@ -67,6 +67,7 @@ object HubNetJNLP {
   def generateShortDesc(programName: String)                = "HubNet (%s)".format(programName)
   def generateUserIDArgs(userID: String)                    = generateArgs("--id", userID)
 
+  //@ None that I have params for whether or not it's the server, what's the point of `roleStr`?
   // Basically, applies the default values into the boxes if they are are currently `NoneParam`s
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
             mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
