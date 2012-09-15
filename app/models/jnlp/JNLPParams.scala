@@ -46,7 +46,7 @@ trait JNLPParams {
 
 private[jnlp] object JNLPParams {
 
-  val CodebaseURIKey      = "codebase_uri"
+  val CodebaseURLKey      = "codebase_url"
   val MainJarKey          = "main_jar"
   val MainClassKey        = "main_class"
   val ApplicationNameKey  = "application_name"
@@ -118,7 +118,7 @@ private[jnlp] object JNLPParams {
   // -------------------> ARGUMENTS SPECIFICS END <------------------- //
 
 
-  val CodebaseURIParam      = Param[String](CodebaseURIKey)
+  val CodebaseURLParam      = Param[String](CodebaseURLKey)
   val MainJarParam          = Param[String](MainJarKey)
   val MainClassParam        = Param[String](MainClassKey)
   val ApplicationNameParam  = Param[String](ApplicationNameKey)
@@ -133,7 +133,7 @@ private[jnlp] object JNLPParams {
   val ArgumentsParam        = Param[Seq[String]]           (ArgumentsKey,  argumentsParse  _, ArgumentsParseDescriptor)
 
   // --------------> Adding a param above?  THEN ADD IT TO THIS LIST! <-------------- //
-  val BaseParams = Seq(CodebaseURIParam, MainJarParam, MainClassParam, ApplicationNameParam, DescParam,
+  val BaseParams = Seq(CodebaseURLParam, MainJarParam, MainClassParam, ApplicationNameParam, DescParam,
                        ShortDescParam, IsOfflineAllowedParam, AppNameInMenuParam, VendorParam,
                        DepsPathParam, OtherJarsParam, PropertiesParam, ArgumentsParam)
 
@@ -151,7 +151,7 @@ object BaseJNLPParams extends JNLPParams {
 
   override def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
     JNLP(
-      CodebaseURIParam(js),
+      CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
       MainJarParam(js),
       MainClassParam(js),
@@ -183,7 +183,7 @@ object NetLogoParams extends JNLPParams {
 
   override def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
     NetLogoJNLP(
-      CodebaseURIParam(js),
+      CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
       MainJarParam(js),
       MainClassParam(js),
@@ -237,7 +237,7 @@ object HubNetParams extends JNLPParams {
 
   override def bindFromJson(js: JsValue, jnlpLoc: String) : Validation[String, JNLP] =
     HubNetJNLP(
-      CodebaseURIParam(js),
+      CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
       MainJarParam(js),
       MainClassParam(js),
