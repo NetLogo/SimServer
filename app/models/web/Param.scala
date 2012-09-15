@@ -62,14 +62,16 @@ sealed abstract class ParamBox[+T] {
   def get     : T
   def isEmpty : Boolean
 
-  def exists           (p: T => Boolean)      : Boolean     =      !isEmpty && p(this.get)
-  def flatMap  [U]     (f: T => ParamBox[U])  : ParamBox[U] =   if (isEmpty) NoneParam(this.key) else f(this.get)
-  def getOrElse[U >: T](default: => U)        : U           =   if (isEmpty) default             else this.get
-  def map      [U]     (f: T => U)            : ParamBox[U] =   if (isEmpty) NoneParam(this.key) else SomeParam(this.key, f(this.get))
-  def orElse   [U >: T](that: => ParamBox[U]) : ParamBox[U] =   if (isEmpty) that                else this
+  def exists           (p: T => Boolean)      : Boolean     =    !isEmpty && p(this.get)
+  def flatMap  [U]     (f: T => ParamBox[U])  : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else f(this.get)
+  def getOrElse[U >: T](default: => U)        : U           = if (isEmpty) default                   else this.get
+  def map      [U]     (f: T => U)            : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else SomeParam(this.key, f(this.get))
+  def replaceKey       (newKey: String)       : ParamBox[T] = if (isEmpty) NoneParam(newKey)         else SomeParam(newKey, this.get)
+  def orElse   [U >: T](that: => ParamBox[U]) : ParamBox[U] = if (isEmpty) that.replaceKey(this.key) else this
 
   // Bizzle-made!
-  def orElseApply[U >: T](that: U) : ParamBox[U] = if (isEmpty) SomeParam(this.key, that) else this
+  def is         [U >: T](that: U)           : Boolean     = this.get == that
+  def orElseApply[U >: T](that: U)           : ParamBox[U] = if (isEmpty) SomeParam(this.key, that) else this
 
 }
 
@@ -77,6 +79,7 @@ object ParamBox {
   def apply[T](key: String, opt: Option[T]) : ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam(key)
 }
 
+//@ Oh, god, I think I broke the monad laws!  If so, I need to fix this....  (Also check monoid laws)
 // I wanted to use an `OptionProxy`, but, apparently, one doesn't exist... :(
 case class SomeParam[T](override val key: String, value: T) extends ParamBox[T] {
   override def get     = value
