@@ -8,7 +8,7 @@ import java.net.URI
 import scalaz.{ Failure, Success, Validation }
 
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
-import models.jnlp.{ HubNetJNLP, Jar }
+import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar }
 import models.filemanager.TempFileManager
 import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
@@ -127,28 +127,28 @@ object HubNet extends Controller {
             getPortByTeacherName(teacherName)
         }
 
-        val PortArgKey      = "--port"
         val JNLPConnectPath = "http://abmplus.tech.northwestern.edu:9001/logging"
-        val ServerMainClass = "org.nlogo.app.App"
-        val ClientMainClass = "org.nlogo.hubnet.client.App"
 
         val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
         val fileName = TempFileManager.formatFilePath(input, "jnlp")
-        val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
+        val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client" //@ This logic should go to a JNLP class
 
         val (mainClass, argsMaybe) = {
+          import HubNetJNLP.{ generateIPArgs, generateModelURLArgs, generatePortArgs, generateUserIDArgs }
           if (isTeacher && !isHeadless) {
             val args =
               modelNameOpt map {
-                modelName => Seq("--url", Models.getHubNetModelURL(modelName)) ++
-                             ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq(PortArgKey, port.toString)} ) ++
-                             (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq)
+                modelName => generateModelURLArgs(Models.getHubNetModelURL(modelName)) ++
+                             ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => generatePortArgs(port)} ) ++
+                             (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq) //@ This "--logging" should get moved out to a JNLP class
               } map (Success(_)) getOrElse Failure("No model name supplied")
-            (ServerMainClass, args)
+            (HubNetJarManager.ServerMainClass, args)
           }
           else
-            (ClientMainClass, ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, PortArgKey, port.toString) })
+            (HubNetJarManager.ClientMainClass, ipPortMaybe map {
+              case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
+            })
         }
 
         val properties = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", JNLPConnectPath)).toSeq
