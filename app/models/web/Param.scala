@@ -79,7 +79,7 @@ object ParamBox {
   def apply[T](key: String, opt: Option[T]) : ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam(key)
 }
 
-//@ Oh, god, I think I broke the monad laws!  If so, I need to fix this....  (Also check monoid laws)
+//@ Oh, god, I think I broke the monad laws!  If so, I need to fix this....
 // I wanted to use an `OptionProxy`, but, apparently, one doesn't exist... :(
 case class SomeParam[T](override val key: String, value: T) extends ParamBox[T] {
   override def get     = value
