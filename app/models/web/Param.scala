@@ -70,7 +70,7 @@ sealed abstract class ParamBox[+T] {
   def orElse   [U >: T](that: => ParamBox[U]) : ParamBox[U] = if (isEmpty) that.replaceKey(this.key) else this
 
   // Bizzle-made!
-  def is         [U >: T](that: U)           : Boolean     = this.get == that
+  def is         [U >: T](that: U)           : Boolean     = if (isEmpty) false                     else this.get == that
   def orElseApply[U >: T](that: U)           : ParamBox[U] = if (isEmpty) SomeParam(this.key, that) else this
 
 }
