@@ -50,7 +50,7 @@ object NetLogoJNLP {
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
     val depsPath         = depsPathBox         orElseApply DepsPath
-    val otherJars        = otherJarsBox        orElseApply (OtherJars map (jar => (jar.jarName, jar.isLazy)))
+    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ (OtherJars map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
     val arguments        = argumentsBox        orElseApply Arguments
 
