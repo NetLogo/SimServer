@@ -253,7 +253,7 @@ object HubNetParams extends JNLPParams {
       ArgumentsParam(js),
       ProgramNameParam(js),
       RoleParam(js),
-      IsHubNetServerParam(js),
+      IsHubNetServerParam(js) orElse (IsHubNetClientParam(js) map (!_)),
       ModelURLParam(js),
       ServerIPParam(js),
       ServerPortParam(js),
