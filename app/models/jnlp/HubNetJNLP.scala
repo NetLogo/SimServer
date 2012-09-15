@@ -31,7 +31,7 @@ class HubNetJNLP(
                 properties: Seq[Pair[String, String]] = Properties,
                 arguments: Seq[String]                = Arguments
  ) extends NetLogoJNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                       isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars, properties, arguments) {
+                       isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars ++ NeededJars, properties, arguments) {
 
     def this(codebaseURI: URI, jnlpLoc: String, mainClass: String, programName: String,
              roleStr: String, isOfflineAllowed: Boolean, otherJars: Seq[Jar],
@@ -98,7 +98,7 @@ object HubNetJNLP {
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
     val depsPath         = depsPathBox         orElseApply DepsPath
-    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ (MyJars map (jar => (jar.jarName, jar.isLazy))))
+    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
     val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (modelURLBox   map generateModelURLArgs getOrElse Seq()) ++
                                                                               (serverIPBox   map generateIPArgs       getOrElse Seq()) ++
@@ -138,7 +138,7 @@ private[jnlp] object HubNetJNLPDefaults {
   val Vendor                            = Defs.Vendor
   val DepsPath                          = Defs.DepsPath
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
-  val MyJars:     Seq[Jar]              = Seq() // Yuck, need both this and `OtherJars` in order to avoid problems with constructor/API
+  val NeededJars: Seq[Jar]              = Defs.NeededJars
   val Properties: Seq[(String, String)] = Defs.Properties
   val Arguments:  Seq[String]           = Defs.Arguments
 }

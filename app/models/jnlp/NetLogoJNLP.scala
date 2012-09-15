@@ -30,7 +30,7 @@ class NetLogoJNLP(
                 properties: Seq[Pair[String, String]] = Properties,
                 arguments: Seq[String]                = Arguments
  ) extends JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars, properties, arguments)
+                isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars ++ NeededJars, properties, arguments)
 
 object NetLogoJNLP {
 
@@ -50,7 +50,7 @@ object NetLogoJNLP {
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
     val depsPath         = depsPathBox         orElseApply DepsPath
-    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ (OtherJars map (jar => (jar.jarName, jar.isLazy))))
+    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
     val arguments        = argumentsBox        orElseApply Arguments
 
@@ -86,7 +86,8 @@ private[jnlp] object NetLogoJNLPDefaults {
   val AppNameInMenu                     = "NetLogo (WebStart)"
   val Vendor                            = "CCL"
   val DepsPath                          = "misc/deps"
-  val OtherJars:  Seq[Jar]              = NetLogoJarManager.getDefaultJars ++: Defs.OtherJars
+  val OtherJars:  Seq[Jar]              = Defs.OtherJars
+  val NeededJars: Seq[Jar]              = NetLogoJarManager.getDefaultJars
   val Properties: Seq[(String, String)] = Defs.Properties
   val Arguments:  Seq[String]           = Defs.Arguments
 }
