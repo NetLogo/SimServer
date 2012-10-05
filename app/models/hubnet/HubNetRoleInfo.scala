@@ -1,8 +1,12 @@
 package models.hubnet
-import Converter.str2Option
+
+import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data._
-import models.util.ModelMap
+import play.api.Logger
+
+import models.util.ModelMapper
+
+import Converter.str2Option
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +16,7 @@ import models.util.ModelMap
  */
 
 private object Converter {
-  implicit def str2Option(str: String) = Option(str)
+  implicit def str2Option(str: String) = Option(str) // High potential for danger, but... I think it's safe here
 }
 
 sealed class HubNetRoleInfo(val modelName: Option[String] = None, val username: String, val isHeadless: Option[String] = None,
@@ -22,14 +26,23 @@ sealed trait InfoCompanion[T] {
 
   protected val RequiredText = text.verifying("Required Text", !(_: String).isEmpty)
 
-            val YesNoChoices = Seq("No", "Yes")
+   /*none*/ val YesNoChoices = Seq("No", "Yes")
   protected val YesNo        = text.verifying("""Invalid value; choose %s""".format(YesNoChoices map ("\"%s\"".format(_)) mkString " or "),
                                               YesNoChoices.contains((_: String)))
 
-  protected def numerical(min: Int, max: Int) = text.verifying("Not a number within the range [%s, %s] (inclusive)".format(min, max),
-                                                                  number => try { val x = number.toInt; x >= min && x <= max }
-                                                                            catch { case _ => false }
-                                                                )
+  protected def numerical(min: Int, max: Int) =
+    text.verifying(
+      "Not a number within the range [%s, %s] (inclusive)".format(min, max),
+      number =>
+        try   { val x = number.toInt; x >= min && x <= max }
+        catch {
+          case ex: NumberFormatException =>
+            false
+          case ex: Exception =>
+            Logger.warn("Unexpected error on string => number conversion", ex)
+            false
+        }
+    )
 
   def form : Form[T]
 
@@ -60,7 +73,7 @@ object TeacherInfo extends InfoCompanion[TeacherInfo] {
   override def form : Form[TeacherInfo] = {
     Form(
       mapping(
-        "Model Name"   -> text.verifying("Unknown model: Must come from the list of " + ModelMap.listModels.mkString("{ ", "; ", " }"), ModelMap.contains(_)),
+        "Model Name"   -> text.verifying("Unknown model: Must come from the list of " + ModelMapper.modelNames.mkString("{ ", "; ", " }"), ModelMapper.contains(_)),
         "User Name"    -> RequiredText,
         "Is Headless"  -> YesNo,
         "Teacher Name" -> RequiredText,

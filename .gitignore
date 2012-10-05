@@ -13,3 +13,9 @@ demo.jnlp
 /info_file
 /out
 /public/gen
+.DS_Store
+/*.iml
+/.idea/runConfigurations
+/public/perm
+/.idea/misc.xml
+/.idea*

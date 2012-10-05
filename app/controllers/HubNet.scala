@@ -5,11 +5,12 @@ import play.api.Logger
 
 import java.net.URI
 
-import scalaz.{Validation, Failure, Success}
+import scalaz.{ Failure, Success, Validation }
 
-import models.hubnet.{StudentInfo, TeacherInfo, HubNetServerManager}
-import models.jnlp.{Jar, MainJar, JNLP}
-import models.util._
+import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
+import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar }
+import models.filemanager.TempFileManager
+import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,20 +21,18 @@ import models.util._
 
 object HubNet extends Controller {
 
-  val CharEncoding = "UTF-8"
+  val HubNetKy     = "hubnet_data"
   val ModelsSubDir = "assets/misc/models"
   val DepsSubDir   = "assets/misc/deps"
 
   private lazy val thisIP = java.net.InetAddress.getLocalHost.getHostAddress
 
-  TempGenManager.removeAll()  // Clear all temp gen files on startup
+  TempFileManager.removeAll()  // Clear all temp gen files on startup
 
-  //@ For testing only (maybe?)
   def hubTest = Action {
     Ok(views.html.hubtest(StudentInfo.form))
   }
 
-  //@ For testing only (maybe)
   def bindStudent = Action {
     implicit request => StudentInfo.form.bindFromRequest.fold(
       errors => Ok(views.html.hubtest(errors)),  //@ Is this really `bindStudents`'s business?
@@ -49,12 +48,10 @@ object HubNet extends Controller {
     )
   }
 
-  //@ For testing only
   def hubTeach = Action {
     Ok(views.html.hubteach(TeacherInfo.form))
   }
 
-  //@ For testing only (maybe?)
   def bindTeacher = Action {
     implicit request => TeacherInfo.form.bindFromRequest.fold(
       errors => Ok(views.html.hubteach(errors)),  //@ Is this really `bindTeacher`'s business?
@@ -65,7 +62,7 @@ object HubNet extends Controller {
           val keys  = Seq(ModelNameKey, UserNameKey, TeacherNameKey, PortNumKey, IsHeadlessKey, IsLoggingKey)
           val pairs = keys zip vals
           val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
-          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(encode(str)))))
+          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(NetUtil.encode(str)))))
           // Fail or redirect to snoop the IP
       }
     )
@@ -79,9 +76,10 @@ object HubNet extends Controller {
       Success(encrypted)
     }
     catch {
-      case e =>
-        Logger.error(e.getLocalizedMessage)
-        Failure("Failed to encrypt HubNet info; " + e.getLocalizedMessage)
+      case ex: Exception =>
+        val errorStr = "Failed to encrypt HubNet info"
+        Logger.warn(errorStr, ex)
+        Failure("%s; %s".format(errorStr, ex.getMessage))
     }
   }
 
@@ -89,7 +87,7 @@ object HubNet extends Controller {
   private def morphPair2Opt(pair: Pair[String, String]) : Option[(String, String)] = {
     pair match {
       case (str, key) =>
-        (if (!str.isEmpty) Option(str) else None) map {
+        Util.noneIfEmpty(str) map {
           x =>      if (x == "Yes") "true"
                else if (x == "No")  "false"
                else                 x
@@ -98,10 +96,9 @@ object HubNet extends Controller {
   }
 
   def hubSnoop(encryptedInfo: String) = Action {
-    Ok(views.html.hubsnoop(encode(encryptedInfo)))
+    Ok(views.html.hubsnoop(NetUtil.encode(encryptedInfo)))
   }
 
-  // Encoding and decoding is working properly here (which isn't all that surprising to me)
   def handleTeacherProxy(encryptedStr: String, teacherIP: String) = Action {
     request => handleHubNet(Success(encryptedStr), true, Option(teacherIP))(request)
   }
@@ -109,8 +106,11 @@ object HubNet extends Controller {
   def handleHubNet(encryptedStrMaybe: Validation[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
                   (implicit request: Request[AnyContent]) : Result = {
 
-    // Could this benefit from using a `for` comprehension?
-    val inputAndSettingsMaybe = encryptedStrMaybe flatMap (input => DecryptionUtil.decodeForHubNet(input, isTeacher) map (settings => (input, settings)))
+    val inputAndSettingsMaybe =
+      for (
+        encryptedStr <- encryptedStrMaybe;
+        settings     <- DecryptionUtil.decodeForHubNet(encryptedStr, isTeacher)
+      ) yield (encryptedStr, settings)
 
     inputAndSettingsMaybe flatMap {
       case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, preferredPortOpt, isLogging)) =>
@@ -127,39 +127,49 @@ object HubNet extends Controller {
             getPortByTeacherName(teacherName)
         }
 
+        val JNLPConnectPath = "http://abmplus.tech.northwestern.edu:9001/logging"
+
         val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
-        val fileName = TempGenManager.formatFilePath(input, "jnlp")
-        val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client"
+        val fileName = TempFileManager.formatFilePath(input, "jnlp")
+        val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client" //@ This logic should go to a JNLP class
+
         val (mainClass, argsMaybe) = {
-          if (isTeacher && !isHeadless)
-            ("org.nlogo.app.App", modelNameOpt map {
-                                    modelName => Seq("--url", Models.getModelURL(modelName)) ++
-                                                 ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => Seq("--port", port.toString)} ) ++
-                                                 (if (isLogging) Seq("--logging") else Seq())
-                                  } map (Success(_)) getOrElse Failure("No model name supplied."))
+          import HubNetJNLP.{ generateIPArgs, generateModelURLArgs, generatePortArgs, generateUserIDArgs }
+          if (isTeacher && !isHeadless) {
+            val args =
+              modelNameOpt map {
+                modelName => generateModelURLArgs(Models.getHubNetModelURL(modelName)) ++
+                             ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => generatePortArgs(port)} ) ++
+                             (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq) //@ This "--logging" should get moved out to a JNLP class
+              } map (Success(_)) getOrElse Failure("No model name supplied")
+            (HubNetJarManager.ServerMainClass, args)
+          }
           else
-            ("org.nlogo.hubnet.client.App", ipPortMaybe map { case (ip, port) => Seq("--id", username, "--ip", ip, "--port", port.toString) })
+            (HubNetJarManager.ClientMainClass, ipPortMaybe map {
+              case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
+            })
         }
+
+        val properties = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", JNLPConnectPath)).toSeq
+        val otherJars  = Util.ifFirstWrapSecond(isLogging, new Jar("logging.jar", true)).toSeq
 
         val propsMaybe = argsMaybe map {
-          args => JNLP(
-            codebaseURI      = new URI(codebaseURL),
-            jnlpLoc          = fileName,
-            mainJar          = new MainJar("NetLogo.jar"),
-            applicationName  = "%s HubNet %s".format(programName, clientOrServerStr),
-            mainClass        = mainClass,
-            appTitle         = "NetLogo HubNet %s".format(clientOrServerStr),
-            desc             = "A HubNet %s for %s".format(clientOrServerStr.toLowerCase, programName),
-            shortDesc        = "HubNet (%s)".format(programName),
-            isOfflineAllowed = false,
-            otherJars        = if (isLogging) Seq(new Jar("logging.jar", true)) else Seq(),
-            properties       = if (isLogging) Seq(("jnlp.connectpath", "http://abmplus.tech.northwestern.edu:9001/logging")) else Seq(),
-            arguments        = args
-          )
+          args =>
+            new HubNetJNLP(
+              codebaseURI       = new URI(codebaseURL),
+              jnlpLoc           = fileName,
+              mainClass         = mainClass,
+              programName       = programName,
+              roleStr           = clientOrServerStr,
+              isOfflineAllowed  = false,
+              otherJars         = otherJars,
+              properties        = properties,
+              args              = args
+            )
         }
 
-        propsMaybe map (jnlp => TempGenManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
+        propsMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
 
     } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
 
@@ -173,8 +183,5 @@ object HubNet extends Controller {
       )
     ).as("text/javascript")
   }
-
-  //@ Does this really belong here?
-  private def encode(str: String) : String = java.net.URLEncoder.encode(str, CharEncoding)
 
 }

@@ -25,15 +25,15 @@ object ResourceManager {
     try {
       val src  = io.Source.fromFile(AccessFileName)
       try {
-        src.getLines().toIndexedSeq filter (KVMatcher.matches(_)) map (KVMatcher(_)) toMap
+        src.getLines().toSeq filter (KVMatcher.matches(_)) map (KVMatcher(_)) toMap
       }
       finally {
         src.close()
       }
     }
     catch {
-      case ex =>
-        Logger.error("Failed to read access info from file", ex)
+      case ex: Exception =>
+        Logger.error("Failed to read access info from file", ex) // One of the few errors in this system that should be log level "error"
         Map[String, String]()
     }
   }

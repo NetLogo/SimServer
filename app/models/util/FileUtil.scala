@@ -12,6 +12,16 @@ import java.io.{PrintWriter, File, FileWriter}
 
 object FileUtil {
 
+  val NetLogoFileExt  = "nlogo"
+  val ModelFileFilter = extFilter(NetLogoFileExt)
+
+  def extFilter(ext: String) = new java.io.FilenameFilter() { def accept(file: File, name: String) = name.toLowerCase.endsWith("." + ext) }
+
+  def dropExt(filename: String) : String = {
+    val index = filename.lastIndexOf(".")
+    if (index >= 0) filename.substring(0, index) else filename
+  }
+
   def printToFile(f: File)(op: PrintWriter => Unit) {
     val p = new PrintWriter(f)
     try { op(p) } finally { p.close() }

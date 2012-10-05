@@ -1,11 +1,11 @@
 package models.log
 
 import java.util.zip.GZIPInputStream
-import collection.mutable.{ArrayBuffer, HashMap}
+import collection.mutable.{ ArrayBuffer, HashMap }
 import io.Source
 import scala.util.Random
 import actors.Actor.State._
-import java.io.{FilenameFilter, ByteArrayInputStream, File}
+import java.io.{ FilenameFilter, ByteArrayInputStream, File }
 
 object LoggingHandler {
 
@@ -18,7 +18,7 @@ object LoggingHandler {
   def createNewLog(): Long = {
     ensureLogDirExists()
     //@ val id = { logCount += 1; logCount }
-    val id = Random.nextInt().abs.toInt
+    val id = Random.nextInt().abs
     val actor = new LogActor(id)
     idActorMap.put(id, actor)
     actor.start()
@@ -82,7 +82,9 @@ object LoggingHandler {
 
     }
     catch {
-      case _ => None
+      case ex: Exception =>
+        play.api.Logger.warn("Failed to un-GZIP log data",  ex)
+        None
     }
   }
 

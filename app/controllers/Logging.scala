@@ -3,6 +3,7 @@ package controllers
 import play.api._
 import play.api.mvc._
 import models.log.LoggingHandler
+import models.util.PlayUtil
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,25 +20,25 @@ object Logging extends Controller {
     Ok(views.html.ws())
   }
 
-  def startLogging = Action {
+  def startLogging = APIAction {
     Ok("/" + LoggingHandler.createNewLog())
   }
 
   //@ For testing only.  This has potential for trouble.
   // In the code that ends up being deployed, people should not be able to see other people's logs!
-  def retrieveData(id: String) = Action {
+  def retrieveData(id: String) = APIAction {
     Ok(LoggingHandler.retrieveLogText(id.toLong))
   }
 
-  def logData(id: String) = Action {
+  def logData(id: String) = APIAction {
     request =>
-      val data = request.body.asMultipartFormData.map(_.asFormUrlEncoded).
-                         orElse(request.body.asFormUrlEncoded flatMap { case argMap => if (!argMap.isEmpty) Some(argMap) else None }).
-                         orElse(Option(request.queryString)).
-                         flatMap(_.get(LoggingDataKey)).flatMap(_.headOption).
-                         map(LoggingHandler.log(id.toLong, _))
-      val response = data getOrElse ("ERROR_IN_PARSING")
-      Ok(response)
+      val paramMapOpt = PlayUtil.extractParamMapOpt(request)
+      val status = for {
+        paramMap   <- paramMapOpt
+        logDataSeq <- paramMap.get(LoggingDataKey)
+        logData    <- logDataSeq.headOption
+      } yield (LoggingHandler.log(id.toLong, logData))
+      status map (Ok(_)) getOrElse BadRequest("ERROR_IN_PARSING")
   }
 
 }

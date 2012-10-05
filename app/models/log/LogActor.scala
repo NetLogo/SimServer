@@ -11,17 +11,17 @@ class LogActor(id: Long) extends Actor {
   def act() {
     loop {
       reactWithin(15000) {
-        case TIMEOUT => replyCloseConnection(); markLogTimedOut(); exit("Timed out")
+        case TIMEOUT   => replyCloseConnection(); markLogTimedOut(); exit("Timed out")
         case s: String =>
           val (msgType, data) = LogActor.MessageSplitter.findFirstMatchIn(s) map (x => (x.group(1), x.group(2))) getOrElse ("unrecognized_type", "error_data")
           msgType match {
-            case "pulse" => replyOk()
-            case "write" => appendToFile(data, logFile); replyOk()
+            case "pulse"    => replyOk()
+            case "write"    => appendToFile(data, logFile); replyOk()
             case "finalize" => replyCloseConnection(); finalizeLog(); exit("Mission Accomplished")
-            case "abandon" => replyCloseConnection(); logFile.delete(); exit("Process abandoned; file deleted")
-            case msg => replyConfused(msg);
+            case "abandon"  => replyCloseConnection(); logFile.delete(); exit("Process abandoned; file deleted")
+            case msg        => replyConfused(msg)
           }
-        case msg => replyConfused(msg.toString);
+        case msg => replyConfused(msg.toString)
       }
     }
   }
