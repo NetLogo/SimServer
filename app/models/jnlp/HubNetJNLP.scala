@@ -144,8 +144,8 @@ private[jnlp] object HubNetJNLPDefaults {
   val Vendor                            = Defs.Vendor
   val DepsPath                          = Defs.DepsPath
   val VMArgs                            = ""
-  val OtherJars:  Seq[Jar]              = Defs.OtherJars
-  val NeededJars: Seq[Jar]              = Defs.NeededJars
+  val OtherJars:  Seq[Jar]              = Seq()
+  val NeededJars: Seq[Jar]              = Seq()
   val Properties: Seq[(String, String)] = Defs.Properties
   val Arguments:  Seq[String]           = Defs.Arguments
 }
