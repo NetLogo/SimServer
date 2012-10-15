@@ -56,6 +56,7 @@ private[jnlp] object JNLPParams {
   val AppNameInMenuKey    = "application_name_in_menu"
   val VendorKey           = "vendor"
   val DepsPathKey         = "dependencies_path"
+  val VMArgsKey           = "vm_args"
   val OtherJarsKey        = "other_jars"
   val PropertiesKey       = "properties"
   val ArgumentsKey        = "arguments"
@@ -128,6 +129,7 @@ private[jnlp] object JNLPParams {
   val AppNameInMenuParam    = Param[String](AppNameInMenuKey)
   val VendorParam           = Param[String](VendorKey)
   val DepsPathParam         = Param[String](DepsPathKey)
+  val VMArgsParam           = Param[String](VMArgsKey)
   val OtherJarsParam        = Param[Seq[(String, Boolean)]](OtherJarsKey,  otherJarsParse  _, OtherJarsParseDescriptor)
   val PropertiesParam       = Param[Seq[(String, String)]] (PropertiesKey, propertiesParse _, PropertiesParseDescriptor)
   val ArgumentsParam        = Param[Seq[String]]           (ArgumentsKey,  argumentsParse  _, ArgumentsParseDescriptor)
@@ -135,7 +137,7 @@ private[jnlp] object JNLPParams {
   // --------------> Adding a param above?  THEN ADD IT TO THIS LIST! <-------------- //
   val BaseParams = Seq(CodebaseURLParam, MainJarParam, MainClassParam, ApplicationNameParam, DescParam,
                        ShortDescParam, IsOfflineAllowedParam, AppNameInMenuParam, VendorParam,
-                       DepsPathParam, OtherJarsParam, PropertiesParam, ArgumentsParam)
+                       DepsPathParam, VMArgsParam, OtherJarsParam, PropertiesParam, ArgumentsParam)
 
 }
 
@@ -162,6 +164,7 @@ object BaseJNLPParams extends JNLPParams {
       AppNameInMenuParam(js),
       VendorParam(js),
       DepsPathParam(js),
+      VMArgsParam(js),
       OtherJarsParam(js),
       PropertiesParam(js),
       ArgumentsParam(js)
@@ -194,6 +197,7 @@ object NetLogoParams extends JNLPParams {
       AppNameInMenuParam(js),
       VendorParam(js),
       DepsPathParam(js),
+      VMArgsParam(js),
       OtherJarsParam(js),
       PropertiesParam(js),
       ArgumentsParam(js)
@@ -248,10 +252,11 @@ object HubNetParams extends JNLPParams {
       AppNameInMenuParam(js),
       VendorParam(js),
       DepsPathParam(js),
+      VMArgsParam(js),
       OtherJarsParam(js),
       PropertiesParam(js),
       ArgumentsParam(js),
-      ProgramNameParam(js),
+      ProgramNameParam(js))(
       RoleParam(js),
       IsHubNetServerParam(js) orElse (IsHubNetClientParam(js) map (!_)),
       ModelURLParam(js),

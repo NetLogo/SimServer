@@ -134,8 +134,9 @@ object HubNet extends Controller {
         val fileName = TempFileManager.formatFilePath(input, "jnlp")
         val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client" //@ This logic should go to a JNLP class
 
-        val (mainClass, argsMaybe) = {
+        val (mainClass, jvmArgs, argsMaybe) = {
           import HubNetJNLP.{ generateIPArgs, generateModelURLArgs, generatePortArgs, generateUserIDArgs }
+          import HubNetJarManager._
           if (isTeacher && !isHeadless) {
             val args =
               modelNameOpt map {
@@ -143,10 +144,10 @@ object HubNet extends Controller {
                              ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => generatePortArgs(port)} ) ++
                              (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq) //@ This "--logging" should get moved out to a JNLP class
               } map (Success(_)) getOrElse Failure("No model name supplied")
-            (HubNetJarManager.ServerMainClass, args)
+            (ServerMainClass, ServerVMArgs, args)
           }
           else
-            (HubNetJarManager.ClientMainClass, ipPortMaybe map {
+            (ClientMainClass, ClientVMArgs, ipPortMaybe map {
               case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
             })
         }
@@ -163,6 +164,7 @@ object HubNet extends Controller {
               programName       = programName,
               roleStr           = clientOrServerStr,
               isOfflineAllowed  = false,
+              vmArgs            = jvmArgs,
               otherJars         = otherJars,
               properties        = properties,
               args              = args

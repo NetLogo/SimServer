@@ -27,14 +27,15 @@ class HubNetJNLP(
                 appNameInMenu: String                 = AppNameInMenu,
                 vendor: String                        = Vendor,
                 depsPath: String                      = DepsPath,
+                vmArgs: String                        = VMArgs,
                 otherJars: Seq[Jar]                   = OtherJars,
                 properties: Seq[Pair[String, String]] = Properties,
                 arguments: Seq[String]                = Arguments
  ) extends NetLogoJNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                       isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars ++ NeededJars, properties, arguments) {
+                       isOfflineAllowed, appNameInMenu, vendor, depsPath, vmArgs, otherJars ++ NeededJars, properties, arguments) {
 
     def this(codebaseURI: URI, jnlpLoc: String, mainClass: String, programName: String,
-             roleStr: String, isOfflineAllowed: Boolean, otherJars: Seq[Jar],
+             roleStr: String, isOfflineAllowed: Boolean, vmArgs: String, otherJars: Seq[Jar],
              properties: Seq[Pair[String, String]], args: Seq[String])  {
       this(codebaseURI,
            jnlpLoc,
@@ -47,6 +48,7 @@ class HubNetJNLP(
            AppNameInMenu,
            Vendor,
            DepsPath,
+           vmArgs,
            otherJars,
            properties,
            args)
@@ -72,11 +74,11 @@ object HubNetJNLP {
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
             mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
-            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]],
-            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]],
-            programNameBox: ParamBox[String], roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean],
-            modelURLBox: ParamBox[String], serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],
-            userIDBox: ParamBox[String]) : Validation[String, JNLP] = {
+            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
+            otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
+            argumentsBox: ParamBox[Seq[String]], programNameBox: ParamBox[String])
+           (roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean], modelURLBox: ParamBox[String],
+            serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],  userIDBox: ParamBox[String]) : Validation[String, JNLP] = {
 
     //@ Through proper use of applicatives, I should be able to abstract this over arity
     def contextify2IntoBox[T, U](f: T => T => U) = (box1: ParamBox[T]) => (box2: ParamBox[T]) => {
@@ -85,6 +87,8 @@ object HubNetJNLP {
         b <- box2
       } yield (f(a)(b))
     }
+
+    import HubNetJarManager.{ ServerVMArgs, ClientVMArgs }
 
     val generateAppNameBox   = contextify2IntoBox((generateAppName _).curried)
     val generateDescBox      = contextify2IntoBox((generateDesc _).curried)
@@ -98,6 +102,7 @@ object HubNetJNLP {
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
     val depsPath         = depsPathBox         orElseApply DepsPath
+    val vmArgs           = vmArgsBox           orElse      (isServerBox map (_ => ServerVMArgs))          orElseApply ClientVMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
     val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (modelURLBox   map generateModelURLArgs getOrElse Seq()) ++
@@ -117,6 +122,7 @@ object HubNetJNLP {
       appNameInMenu,
       vendor,
       depsPath,
+      vmArgs,
       otherJars,
       properties,
       arguments
@@ -137,6 +143,7 @@ private[jnlp] object HubNetJNLPDefaults {
   val AppNameInMenu                     = "HubNet (WebStart)"
   val Vendor                            = Defs.Vendor
   val DepsPath                          = Defs.DepsPath
+  val VMArgs                            = ""
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
   val NeededJars: Seq[Jar]              = Defs.NeededJars
   val Properties: Seq[(String, String)] = Defs.Properties
@@ -146,4 +153,6 @@ private[jnlp] object HubNetJNLPDefaults {
 object HubNetJarManager {
   val ServerMainClass = "org.nlogo.app.App"
   val ClientMainClass = "org.nlogo.hubnet.client.App"
+  val ServerVMArgs    = NetLogoJNLPDefaults.VMArgs
+  val ClientVMArgs    = ""
 }

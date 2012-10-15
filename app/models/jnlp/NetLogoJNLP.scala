@@ -26,11 +26,12 @@ class NetLogoJNLP(
                 appNameInMenu: String                 = AppNameInMenu,
                 vendor: String                        = Vendor,
                 depsPath: String                      = DepsPath,
+                vmArgs: String                        = VMArgs,
                 otherJars: Seq[Jar]                   = OtherJars,
                 properties: Seq[Pair[String, String]] = Properties,
                 arguments: Seq[String]                = Arguments
  ) extends JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                isOfflineAllowed, appNameInMenu, vendor, depsPath, otherJars ++ NeededJars, properties, arguments)
+                isOfflineAllowed, appNameInMenu, vendor, depsPath, vmArgs, otherJars ++ NeededJars, properties, arguments)
 
 object NetLogoJNLP {
 
@@ -38,8 +39,9 @@ object NetLogoJNLP {
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
             mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
-            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]],
-            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
+            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
+            otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
+            argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
 
     val mainJar          = mainJarBox          orElseApply MainJar.jarName
     val mainClass        = mainClassBox        orElseApply MainClass
@@ -50,6 +52,7 @@ object NetLogoJNLP {
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
     val depsPath         = depsPathBox         orElseApply DepsPath
+    val vmArgs           = vmArgsBox           orElseApply VMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
     val arguments        = argumentsBox        orElseApply Arguments
@@ -66,6 +69,7 @@ object NetLogoJNLP {
       appNameInMenu,
       vendor,
       depsPath,
+      vmArgs,
       otherJars,
       properties,
       arguments
@@ -86,6 +90,7 @@ private[jnlp] object NetLogoJNLPDefaults {
   val AppNameInMenu                     = "NetLogo (WebStart)"
   val Vendor                            = "CCL"
   val DepsPath                          = "misc/deps"
+  val VMArgs                            = Defs.VMArgs + " -XX:MaxPermSize=128m -Xmx1024m"
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
   val NeededJars: Seq[Jar]              = NetLogoJarManager.getDefaultJars
   val Properties: Seq[(String, String)] = Defs.Properties
