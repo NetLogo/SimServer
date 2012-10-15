@@ -116,6 +116,7 @@ private object NetLogoJarManager {
     "jogl-1.1.1.jar",
     "log4j-1.2.16.jar",
     "mrjadapter-1.2.jar",
+    "knockoff_2.9.2-0.8.1.jar",
     "picocontainer-2.13.6.jar",
     "quaqua-7.3.4.jar",
     "scala-library.jar",
