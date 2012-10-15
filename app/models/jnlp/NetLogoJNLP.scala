@@ -80,6 +80,7 @@ object NetLogoJNLP {
 }
 
 private[jnlp] object NetLogoJNLPDefaults {
+  import models.util.Util.noneIfEmpty
   private val Defs                      = JNLPDefaults
   val MainJar                           = new MainJar("NetLogo.jar")
   val MainClass                         = "org.nlogo.app.App"
@@ -90,7 +91,7 @@ private[jnlp] object NetLogoJNLPDefaults {
   val AppNameInMenu                     = "NetLogo (WebStart)"
   val Vendor                            = "CCL"
   val DepsPath                          = "misc/deps"
-  val VMArgs                            = Defs.VMArgs + " -XX:MaxPermSize=128m -Xmx1024m"
+  val VMArgs                            = (noneIfEmpty(Defs.VMArgs) map (_ + " ") getOrElse "") + "-XX:MaxPermSize=128m -Xmx1024m"
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
   val NeededJars: Seq[Jar]              = NetLogoJarManager.getDefaultJars
   val Properties: Seq[(String, String)] = Defs.Properties
