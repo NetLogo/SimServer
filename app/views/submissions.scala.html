@@ -20,7 +20,7 @@
         @for(comment <- submission.comments.sortBy(_.timestamp)) {
           <table style="width: 100%;">
             <tr>
-              <td style="width: 20%;">
+              <td style="width: 10%;">
               </td>
               <td class="comment">
                 <table style="width: 100%;">
@@ -37,6 +37,26 @@
             </tr>
           </table>
         }
+        <table style="width: 100%;">
+          <tr>
+            <td style="width: 10%;">
+            </td>
+            <td class="comment">
+              <form method="post" action="">
+                <fieldset class="field_set">
+                  <div style="float: right; width: 50%;" align=right>
+                    <input placeholder="Type your comment here..." name="comment" id="comment" type="text" style="width: 90%;" tabindex="@(submission.id.get * 2 + 1)"/>
+                  </div>
+                  <div style="width: 16%;">
+                    <input placeholder="Your name" name="user_id" id="user_id" type="text" style="width: 90%;" tabindex="@(submission.id.get * 2)"/>
+                  </div>
+                  <input type="hidden" name="ref_id" value="@submission.id.get">
+                </fieldset>
+                <input type="submit" value="Submit" style="display: none;">
+              </form>
+            </td>
+          </tr>
+        </table>
       </div>
   }
 }
