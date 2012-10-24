@@ -33,6 +33,7 @@ GET     /jnlp/params                controllers.JNLP.getParamFormats
 POST    /jnlp/gen                   controllers.JNLP.generateJNLP
 
 GET     /work/:period/:run/:id      controllers.Submission.viewWork(period, run, id)
+POST    /work/:period/:run/:id      controllers.Submission.updateAndViewWork(period, run, id)
 POST    /submit-work                controllers.Submission.submitWork
 POST    /submit-comment             controllers.Submission.submitComment
 POST    /submit-supplement          controllers.Submission.submitSupplement
