@@ -1,0 +1,7 @@
+@(submissions: Seq[models.submission.UserWork])
+
+@main("Welcome to Play 2.0") {
+  User:        @submissions(0).userID
+  <br>
+  Description: @submissions(0).description
+}
