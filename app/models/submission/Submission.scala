@@ -7,20 +7,17 @@ package models.submission
  * Time: 2:00 PM
  */
 
-trait Submission {
+sealed trait Submission {
   def id: Option[Long]
 }
 
-trait Association extends Submission {
+sealed trait Association extends Submission {
   def refID : Option[Long]
 }
 
-trait Entry extends Submission
+sealed trait Entry extends Submission
 
 
-
-//@ Do this as some point
-sealed trait UserWorkSupplement extends Association
 
 case class UserWork(override val id:          Option[Long] = None,
                                  timestamp:   Long = System.currentTimeMillis(),
@@ -49,6 +46,12 @@ case class UserWork(override val id:          Option[Long] = None,
     UserWork(id, timestamp, periodID, runID, userID, data, metadata, description, supplements, comments)
 
 }
+
+case class UserWorkSupplement(override val id:       Option[Long],
+                              override val refID:    Option[Long],
+                                           typ:      String,
+                                           data:     String,
+                                           metadata: String) extends Association
 
 case class UserWorkComment(override val id:        Option[Long],
                            override val refID:     Option[Long],
