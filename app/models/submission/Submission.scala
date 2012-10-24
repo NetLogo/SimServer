@@ -12,7 +12,7 @@ trait Submission {
 }
 
 trait Association extends Submission {
-  def refId : Option[Long]
+  def refID : Option[Long]
 }
 
 trait Entry extends Submission
@@ -51,7 +51,7 @@ case class UserWork(override val id:          Option[Long] = None,
 }
 
 case class UserWorkComment(override val id:        Option[Long],
-                           override val refId:     Option[Long],
+                           override val refID:     Option[Long],
                                         timestamp: Long = System.currentTimeMillis(),
-                                        userId:    String,
+                                        userID:    String,
                                         comment:   String) extends Association
