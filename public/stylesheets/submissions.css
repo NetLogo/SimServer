@@ -1,5 +1,4 @@
 .comment {
-  border: 2px solid black;
   border-radius: 10px;
   background-color: #77BBFF;
   padding: 7px;
@@ -8,9 +7,21 @@
 }
 
 .submission {
-  border: 2px solid black;
   border-radius: 10px;
   background-color: #FFFF77;
   padding: 7px;
   margin-bottom: 10px;
+}
+
+.entry {
+  border: 3px solid white;
+  border-radius: 10px;
+  width: 40%;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #343434;
+}
+
+.main_body {
+  background: #343434;
 }
