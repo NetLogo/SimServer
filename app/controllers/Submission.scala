@@ -19,8 +19,13 @@ object Submission extends Controller {
   def viewWork(period: String, run: String, user: String) = Action {
     val userWorks    = SubmissionManager.getUserWork(period, run, user)
     Ok(views.html.submissions(userWorks))
-//@    val withComments = userWorks map (work => work.addComments(SubmissionManager.getWorkComments(work): _*))
-//    Ok(views.html.submissions(withComments))
+  }
+
+  def updateAndViewWork(period: String, run: String, user: String) = Action {
+    (submit { SubmissionParser.parseOutWorkComment(_) } _) andThen {
+      case x if (x.header.status == 200) => Redirect(routes.Submission.viewWork(period, run, user))
+      case x                             => x
+    }
   }
 
   private def submit[T <% Submittable](func: (Map[String, String] => Option[T]))(request: Request[AnyContent]) : SimpleResult[_] = {
