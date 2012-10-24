@@ -32,7 +32,8 @@ object SubmissionManager {
         long("id") ~ long("timestamp") ~ str("period_id") ~ str("run_id") ~ str("user_id") ~
           str("data") ~ str("metadata") ~ str("description") map {
           case id ~ timestamp ~ session ~ run ~ user ~ data ~ metadata ~ description =>
-            UserWork(Option(id), timestamp, session, run, user, data, metadata, description, Seq(), getWorkCommentsByRefID(id))
+            UserWork(Option(id), timestamp, session, run, user, data, metadata, description,
+                     getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
           case _ => throw new Exception("Bad format, newb!")
         } *
       }
@@ -51,6 +52,24 @@ object SubmissionManager {
       ) as {
         long("id") ~ long("ref_id") ~ long("timestamp") ~ str("user_id") ~ str("comment") map {
           case id ~ refID ~ timestamp ~ user ~ comment => UserWorkComment(Option(id), Option(refID), timestamp, user, comment)
+          case _ => throw new Exception("Bad format, newb!")
+        } *
+      }
+    }
+  }
+
+  def getWorkSupplementsByRefID(workRefID: Long) : Seq[UserWorkSupplement] = {
+    DB.withConnection { implicit connection =>
+      SQL (
+        """
+          SELECT * FROM user_work_supplements
+          WHERE ref_id = {refID};
+        """
+      ) on (
+        "refID" -> workRefID
+      ) as {
+        long("id") ~ long("ref_id") ~ str("type") ~ str("data") ~ str("metadata") map {
+          case id ~ refID ~ typ ~ data ~ metadata => UserWorkSupplement(Option(id), Option(refID), typ, data, metadata)
           case _ => throw new Exception("Bad format, newb!")
         } *
       }
