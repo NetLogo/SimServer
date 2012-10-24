@@ -1,7 +1,24 @@
 @(submissions: Seq[models.submission.UserWork])
 
 @main("Welcome to Play 2.0") {
-  User:        @submissions(0).userID
-  <br>
-  Description: @submissions(0).description
+  @for(submission <- submissions) {
+      <div style="border: 4px solid black; width: 40%; margin-bottom: 10px;">
+        <table>
+          <tr>
+            <td align=center style="width: 20%;">
+              <div>User: @submission.userID</div>
+            </td>
+            <td align=center style="width: 40%;">
+              <div>HERE'S YOUR DOWNLOAD LINK</div>
+            </td>
+            <td align=center style="width: 40%;">
+              <div>Description: @submission.description</div>
+            </td>
+          </tr>
+        </table>
+        @for(comment <- submission.comments.sortBy(_.timestamp)) {
+          <br>@comment.userID says: @comment.comment
+        }
+      </div>
+  }
 }
