@@ -12,7 +12,8 @@ object ApplicationBuild extends Build {
     )
 
     val appDependencies = Seq(
-      "org.scalaz" %% "scalaz-core" % "6.0.4"
+      "org.scalaz" %% "scalaz-core" % "6.0.4",
+      "mysql" % "mysql-connector-java" % "5.1.18"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
