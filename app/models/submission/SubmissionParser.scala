@@ -34,14 +34,37 @@ object SubmissionParser {
 
   }
 
-  //@ Do this...
   def parseOutWorkComment(params: Input) : Output[UserWorkComment] = {
-    None
+
+    val RefIDKey   = "ref_id"
+    val UserIDKey  = "user_id"
+    val CommentKey = "comment"
+
+    for {
+      refID   <- params.get(RefIDKey)
+      userID  <- params.get(UserIDKey)
+      comment <- params.get(CommentKey)
+    } yield {
+      UserWorkComment(None, Option(refID.toLong), System.currentTimeMillis(), userID, comment)
+    }
+
   }
 
-  //@ Do this...
   def parseOutWorkSupplement(params: Input) : Output[UserWorkSupplement] = {
-    None
+
+    val RefIDKey    = "ref_id"
+    val TypeKey     = "type"
+    val DataKey     = "data"
+    val MetadataKey = "metadata"
+
+    for {
+      refID    <- params.get(RefIDKey)
+      data     <- params.get(DataKey)
+      metadata <- params.get(MetadataKey)
+    } yield {
+      UserWorkSupplement(None, Option(refID.toLong), params.get(TypeKey) getOrElse (SupplementMetadataParser(metadata).getType), data, metadata)
+    }
+
   }
 
 }
