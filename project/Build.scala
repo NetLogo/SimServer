@@ -12,7 +12,7 @@ object ApplicationBuild extends Build {
     )
 
     val appDependencies = Seq(
-      "org.scalaz" %% "scalaz-core" % "6.0.4",
+      "org.scalaz" %% "scalaz-core" % "7.0-SNAPSHOT",
       "mysql" % "mysql-connector-java" % "5.1.18"
     )
 
