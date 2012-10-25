@@ -17,7 +17,6 @@ object SubmissionManager {
 
   import AnormExtras._
 
-  //@ It would be good to have a better way of doing this...
   def getUserWork(period: String, run: String, user: String) : Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       SQL (
@@ -88,12 +87,31 @@ sealed trait Submittable {
 private object Submittable {
 
   implicit def userWork2Submittable(userWork: UserWork) = new Submittable {
-    override def submit : Long = 0 //@
+    override def submit : Long = DB.withConnection { implicit connection =>
+
+        val sql = SQL (
+          """
+            INSERT INTO user_work
+            (timestamp, period_id, run_id, user_id, data, metadata, description) VALUES
+            ({timestamp}, {periodID}, {runID}, {usedID}, {data}, {metadata}, {description});
+          """
+        ) on (
+          "timestamp"   -> userWork.timestamp,
+          "periodID"    -> userWork.periodID,
+          "runID"       -> userWork.runID,
+          "userID"      -> userWork.userID,
+          "data"        -> userWork.data,
+          "metadata"    -> userWork.metadata,
+          "description" -> userWork.description
+          )
+
+        sql.executeInsert().get
+
+    }
   }
 
   implicit def workComment2Submittable(workComment: UserWorkComment) = new Submittable {
-    override def submit : Long = {
-      DB.withConnection { implicit connection =>
+    override def submit : Long = DB.withConnection { implicit connection =>
 
         val sql = SQL (
           """
@@ -110,12 +128,28 @@ private object Submittable {
 
         sql.executeInsert().get
 
-      }
     }
   }
 
-  implicit def workSupplement2Submittable(workAssoc: UserWorkSupplement) = new Submittable {
-    override def submit : Long = 0 //@
+  implicit def workSupplement2Submittable(workSupplement: UserWorkSupplement) = new Submittable {
+    override def submit : Long = DB.withConnection { implicit connection =>
+
+        val sql = SQL (
+          """
+            INSERT INTO user_work_supplements
+            (ref_id, type, data, metadata) VALUES
+            ({refID}, {type}, {data}, {metadata});
+          """
+        ) on (
+          "refID"    -> workSupplement.refID,
+          "type"     -> workSupplement.typ,
+          "data"     -> workSupplement.data,
+          "metadata" -> workSupplement.metadata
+        )
+
+        sql.executeInsert().get
+
+    }
   }
 
 }
