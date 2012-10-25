@@ -11,10 +11,11 @@ import play.api.db.DB
  * Time: 1:58 PM
  */
 
-//!
+import play.api.Play.current
+
 object SubmissionManager {
 
-  import play.api.Play.current
+  import AnormExtras._
 
   //@ It would be good to have a better way of doing this...
   def getUserWork(period: String, run: String, user: String) : Seq[UserWork] = {
@@ -29,7 +30,7 @@ object SubmissionManager {
         "run"       -> run,
         "user"      -> user
       ) as {
-        long("id") ~ long("timestamp") ~ str("period_id") ~ str("run_id") ~ str("user_id") ~
+        long("id") ~ timestamp("timestamp") ~ str("period_id") ~ str("run_id") ~ str("user_id") ~
           str("data") ~ str("metadata") ~ str("description") map {
           case id ~ timestamp ~ session ~ run ~ user ~ data ~ metadata ~ description =>
             UserWork(Option(id), timestamp, session, run, user, data, metadata, description,
@@ -50,7 +51,7 @@ object SubmissionManager {
       ) on (
         "refID" -> workRefID
       ) as {
-        long("id") ~ long("ref_id") ~ long("timestamp") ~ str("user_id") ~ str("comment") map {
+        long("id") ~ long("ref_id") ~ timestamp("timestamp") ~ str("user_id") ~ str("comment") map {
           case id ~ refID ~ timestamp ~ user ~ comment => UserWorkComment(Option(id), Option(refID), timestamp, user, comment)
           case _ => throw new Exception("Bad format, newb!")
         } *
@@ -76,26 +77,50 @@ object SubmissionManager {
     }
   }
 
-  def submit[T <% Submittable](submission: T) : BigInt = submission.submit
+  def submit[T <% Submittable](submission: T) : Long = submission.submit
 
 }
 
 sealed trait Submittable {
-  def submit : BigInt
+  def submit : Long
 }
 
 private object Submittable {
 
   implicit def userWork2Submittable(userWork: UserWork) = new Submittable {
-    override def submit : BigInt = 0 //@
+    override def submit : Long = 0 //@
   }
 
-  implicit def workComment2Submittable(workAssoc: UserWorkComment) = new Submittable {
-    override def submit : BigInt = 0 //@
+  implicit def workComment2Submittable(workComment: UserWorkComment) = new Submittable {
+    override def submit : Long = {
+      DB.withConnection { implicit connection =>
+
+        val sql = SQL (
+          """
+            INSERT INTO user_work_comments
+            (ref_id, timestamp, user_id, comment) VALUES
+            ({refID}, {timestamp}, {userID}, {comment});
+          """
+        ) on (
+          "refID"     -> workComment.refID,
+          "timestamp" -> workComment.timestamp,
+          "userID"    -> workComment.userID,
+          "comment"   -> workComment.comment
+        )
+
+        sql.executeInsert().get
+
+      }
+    }
   }
 
   implicit def workSupplement2Submittable(workAssoc: UserWorkSupplement) = new Submittable {
-    override def submit : BigInt = 0 //@
+    override def submit : Long = 0 //@
   }
 
+}
+
+object AnormExtras {
+  import java.math.{ BigInteger => JBigInt }
+  def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
 }
