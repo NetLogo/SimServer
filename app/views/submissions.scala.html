@@ -1,64 +1,86 @@
 @(submissions: Seq[models.submission.UserWork])
 
+@import models.submission.{ UserWork, UserWorkComment }
+
 @main("Welcome to Play 2.0") {
   <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/submissions.css")">
+  @insertSubmissions(submissions)
+}
+
+
+
+@** Nitty-gritty presentation details start here... **@
+
+@insertSubmissions(submissions: Seq[UserWork]) = {
   <div align=center>
-    @for(submission <- submissions.sortBy(_.timestamp)) {
-      <div class="entry">
-        <table class="submission">
-          <tr>
-            <td align=center style="width: 20%;">
-              <div>User: <b>@submission.userID</b></div>
-            </td>
-            <td align=center style="width: 40%;">
-              <div>HERE'S YOUR DOWNLOAD LINK</div>
-            </td>
-            <td align=center style="width: 40%;">
-              <div>Description: @submission.description</div>
-            </td>
-          </tr>
-        </table>
-        @for(comment <- submission.comments.sortBy(_.timestamp)) {
-          <table style="width: 100%;">
-            <tr>
-              <td style="width: 10%;">
-              </td>
-              <td class="comment">
-                <table style="width: 100%;">
-                  <tr>
-                    <td style="width: 25%;">
-                      <b>@comment.userID</b> says:
-                    </td>
-                    <td style="width: 75%;" align=right>
-                      @comment.comment
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        }
+    @submissions.sortBy(_.timestamp).map(insertWorkEntry _)
+  </div>
+}
+
+@insertWorkEntry(submission: UserWork) = {
+  <div class="entry">
+    @insertUserWorkRow(submission)
+    @submission.comments.sortBy(_.timestamp).map(insertCommentRow _)
+    @insertCommentInputRow(submission)
+  </div>
+}
+
+@insertUserWorkRow(submission: UserWork) = {
+  <table class="submission">
+    <tr>
+      <td align=center style="width: 20%;">
+        <div>User: <b>@submission.userID</b></div>
+      </td>
+      <td align=center style="width: 40%;">
+        <div>HERE'S YOUR DOWNLOAD LINK</div>
+      </td>
+      <td align=center style="width: 40%;">
+        <div>Description: @submission.description</div>
+      </td>
+    </tr>
+  </table>
+}
+
+@insertCommentRow(comment: UserWorkComment) = {
+  <table style="width: 100%;">
+    <tr>
+      <td style="width: 10%;">
+      </td>
+      <td class="comment">
         <table style="width: 100%;">
           <tr>
-            <td style="width: 10%;">
+            <td style="width: 25%;">
+              <b>@comment.userID</b> says:
             </td>
-            <td class="comment">
-              <form method="post" action="">
-                <fieldset class="field_set">
-                  <div style="float: right; width: 50%;" align=right>
-                    <input placeholder="Type your comment here..." name="comment" id="comment" type="text" style="width: 90%;" tabindex="@(submission.id.get * 2 + 1)"/>
-                  </div>
-                  <div style="width: 16%;">
-                    <input placeholder="Your name" name="user_id" id="user_id" type="text" style="width: 90%;" tabindex="@(submission.id.get * 2)"/>
-                  </div>
-                  <input type="hidden" name="ref_id" value="@submission.id.get">
-                </fieldset>
-                <input type="submit" value="Submit" style="display: none;">
-              </form>
+            <td style="width: 75%;" align=right>
+              @comment.comment
             </td>
           </tr>
         </table>
-      </div>
-    }
-  </div>
+      </td>
+    </tr>
+  </table>
+}
+
+@insertCommentInputRow(submission: UserWork) = {
+  <table style="width: 100%;">
+    <tr>
+      <td style="width: 10%;">
+      </td>
+      <td class="comment">
+        <form method="post" action="">
+          <fieldset class="field_set">
+            <div style="float: right; width: 50%;" align=right>
+              <input placeholder="Type your comment here..." name="comment" id="comment" type="text" style="width: 90%;" tabindex="@(submission.id.get * 2 + 1)"/>
+            </div>
+            <div style="width: 16%;">
+              <input placeholder="Your name" name="user_id" id="user_id" type="text" style="width: 90%;" tabindex="@(submission.id.get * 2)"/>
+            </div>
+            <input type="hidden" name="ref_id" value="@submission.id.get">
+          </fieldset>
+          <input type="submit" value="Submit" style="display: none;">
+        </form>
+      </td>
+    </tr>
+  </table>
 }
