@@ -2,10 +2,11 @@ package controllers
 
 import play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
-import scalaz.{ Failure, Success }
+import scalaz.{ Success, Validation }
 
-import models.submission.{ SubmissionManager, SubmissionParser, Submittable }
+import models.submission.{ SubmissionManager, Submittable }
 import models.util.PlayUtil
+import models.parse.submission.{ CommentParser, SupplementParser, WorkParser }
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,37 +18,36 @@ import models.util.PlayUtil
 object Submission extends Controller {
 
   def viewWork(period: String, run: String, user: String) = Action {
-    val userWorks    = SubmissionManager.getUserWork(period, run, user)
+    val userWorks = SubmissionManager.getUserWork(period, run, user)
     Ok(views.html.submissions(userWorks))
   }
 
   def updateAndViewWork(period: String, run: String, user: String) = Action {
-    (submit { SubmissionParser.parseOutWorkComment(_) } _) andThen {
-      case x if (x.header.status == 200) => Redirect(routes.Submission.viewWork(period, run, user))
-      case x                             => x
+    (submit { CommentParser(_) } _) andThen {
+      case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork(period, run, user))
+      case x                            => x
     }
   }
 
-  private def submit[T <% Submittable](func: (Map[String, String] => Option[T]))(request: Request[AnyContent]) : SimpleResult[_] = {
+  private def submit[T <% Submittable](func: (Map[String, String] => Validation[String, T]))(request: Request[AnyContent]) : SimpleResult[_] = {
     val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
-    val status = func(params) map {
+    func(params) map {
       submittable =>
         val result = SubmissionManager.submit(submittable)
         Success(result)
-    } getOrElse (Failure("Invalid POST data"))
-    status fold ((ExpectationFailed(_)), (x => Ok(x.toString)))
+    } fold ((ExpectationFailed(_)), (x => Ok(x.toString)))
   }
 
   def submitWork = APIAction {
-    submit { SubmissionParser.parseOutUserWork(_) } _
+    submit { WorkParser(_) } _
   }
 
   def submitComment = APIAction {
-    submit { SubmissionParser.parseOutWorkComment(_) } _
+    submit { CommentParser(_) } _
   }
 
   def submitSupplement = APIAction{
-    submit { SubmissionParser.parseOutWorkSupplement(_) } _
+    submit { SupplementParser(_) } _
   }
 
 }
