@@ -2,7 +2,8 @@
 
 @main("Welcome to Play 2.0") {
   <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/submissions.css")">
-  @for(submission <- submissions.sortBy(_.timestamp)) {
+  <div align=center>
+    @for(submission <- submissions.sortBy(_.timestamp)) {
       <div class="entry">
         <table class="submission">
           <tr>
@@ -58,5 +59,6 @@
           </tr>
         </table>
       </div>
-  }
+    }
+  </div>
 }
