@@ -30,9 +30,9 @@ object SubmissionManager {
         "user"      -> user
       ) as {
         long("id") ~ timestamp("timestamp") ~ str("period_id") ~ str("run_id") ~ str("user_id") ~
-          str("data") ~ str("metadata") ~ str("description") map {
-          case id ~ timestamp ~ session ~ run ~ user ~ data ~ metadata ~ description =>
-            UserWork(Option(id), timestamp, session, run, user, data, metadata, description,
+          str("type") ~ str("data") ~ str("metadata") ~ str("description") map {
+          case id ~ timestamp ~ session ~ run ~ user ~ typ ~ data ~ metadata ~ description =>
+            UserWork(Option(id), timestamp, session, run, user, typ, data, metadata, description,
                      getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
           case _ => throw new Exception("Bad format, newb!")
         } *
@@ -92,14 +92,15 @@ private object Submittable {
         val sql = SQL (
           """
             INSERT INTO user_work
-            (timestamp, period_id, run_id, user_id, data, metadata, description) VALUES
-            ({timestamp}, {periodID}, {runID}, {usedID}, {data}, {metadata}, {description});
+            (timestamp, period_id, run_id, user_id, type, data, metadata, description) VALUES
+            ({timestamp}, {periodID}, {runID}, {userID}, {type}, {data}, {metadata}, {description});
           """
         ) on (
           "timestamp"   -> userWork.timestamp,
           "periodID"    -> userWork.periodID,
           "runID"       -> userWork.runID,
           "userID"      -> userWork.userID,
+          "type"        -> userWork.typ,
           "data"        -> userWork.data,
           "metadata"    -> userWork.metadata,
           "description" -> userWork.description

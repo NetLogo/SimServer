@@ -17,3 +17,6 @@ trait Association extends Submission {
 
 trait Entry extends Submission
 
+trait Presentable {
+  def typ: String
+}
