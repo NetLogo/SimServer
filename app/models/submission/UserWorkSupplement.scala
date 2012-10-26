@@ -1,22 +1,27 @@
-package models.parse.submission
-
-import models.submission.UserWorkSupplement
-import models.datastructure.FullFailValidationList.vsl2Enhanced
-
-import scalaz.{ Failure, Success, Validation }
+package models.submission
 
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
- * Date: 10/25/12
- * Time: 4:39 PM
+ * Date: 10/26/12
+ * Time: 12:36 PM
  */
 
-object SupplementParser extends ParamParser[UserWorkSupplement] {
+case class UserWorkSupplement(override val id:       Option[Long],
+                              override val refID:    Option[Long],
+                                           typ:      String,
+                                           data:     String,
+                                           metadata: String) extends Association
 
+object UserWorkSupplement extends FromMapParser {
+
+  import models.datastructure.FullFailValidationList.vsl2Enhanced
+  import scalaz.{ Failure, Success, Validation }
+
+  override protected type Target    = UserWorkSupplement
   override protected type ConsTuple = (Option[Long], Option[Long], String, String, String)
 
-  override def apply(params: Input) : Output[UserWorkSupplement] = {
+  override def fromMap(params: MapInput) : Output = {
 
     val RefIDKey    = "ref_id"
     val DataKey     = "data"
@@ -32,7 +37,7 @@ object SupplementParser extends ParamParser[UserWorkSupplement] {
     val valueTupleMaybe = valueMaybes reduce (_ fullFailAppend _) map {
       case refID :: data :: Nil =>
         val metadata = params.getOrElse(MetadataKey, "")
-        val typ      = params.getOrElse(TypeKey, SupplementMetadataParser(metadata).getType)
+        val typ      = params.getOrElse(TypeKey, SupplementMetadata.fromString(metadata).fold((_ => ""), (_.getType)))
         (refID, typ, data, metadata)
       case _ =>
         throw new IllegalArgumentException("Broken Supplement validation format!")
@@ -44,7 +49,7 @@ object SupplementParser extends ParamParser[UserWorkSupplement] {
 
   protected def validate(refID: String, typ: String, data: String, metadata: String) : Validation[String, ConsTuple] = {
 
-    val refIDMaybe = ParamParser.validateRefID(refID)
+    val refIDMaybe = Validator.validateRefID(refID)
     val typeMaybe  = Success(typ)
     val dataMaybe  = Success(data)
     val metaMaybe  = Success(metadata)
@@ -57,6 +62,4 @@ object SupplementParser extends ParamParser[UserWorkSupplement] {
         throw new IllegalArgumentException("Broken Supplement constructor validation format!")
     }
 
-  }
-
-}
+  }}

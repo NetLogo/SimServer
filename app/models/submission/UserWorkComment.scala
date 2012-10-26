@@ -1,22 +1,27 @@
-package models.parse.submission
-
-import models.submission.UserWorkComment
-import models.datastructure.FullFailValidationList.vsl2Enhanced
-
-import scalaz.{ Failure, Success, Validation }
+package models.submission
 
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
- * Date: 10/25/12
- * Time: 4:36 PM
+ * Date: 10/26/12
+ * Time: 12:32 PM
  */
 
-object CommentParser extends ParamParser[UserWorkComment] {
+case class UserWorkComment(override val id:        Option[Long],
+                           override val refID:     Option[Long],
+                           timestamp: Long = System.currentTimeMillis(),
+                           userID:    String,
+                           comment:   String) extends Association
 
+object UserWorkComment extends FromMapParser {
+
+  import models.datastructure.FullFailValidationList.vsl2Enhanced
+  import scalaz.{ Failure, Success, Validation }
+
+  override protected type Target    = UserWorkComment
   override protected type ConsTuple = (Option[Long], Option[Long], Long, String, String)
 
-  override def apply(params: Input) : Output[UserWorkComment] = {
+  override def fromMap(params: MapInput) : Output = {
 
     val RefIDKey   = "ref_id"
     val UserIDKey  = "user_id"
@@ -38,9 +43,9 @@ object CommentParser extends ParamParser[UserWorkComment] {
 
   protected def validate(refID: String, timestamp: Long, userID: String, comment: String) : Validation[String, ConsTuple] = {
 
-    val refIDMaybe     = ParamParser.validateRefID(refID)
-    val timestampMaybe = ParamParser.validateTimestamp(timestamp)
-    val userIDMaybe    = ParamParser.validateUserID(userID)
+    val refIDMaybe     = Validator.validateRefID(refID)
+    val timestampMaybe = Validator.validateTimestamp(timestamp)
+    val userIDMaybe    = Validator.validateUserID(userID)
     val commentMaybe   = Success(comment) flatMap {
       case x if (x.isEmpty) => Failure("Invalid comment; comment cannot be empty")
       case x                => Success(x)
@@ -55,7 +60,4 @@ object CommentParser extends ParamParser[UserWorkComment] {
         throw new IllegalArgumentException("Broken Comment constructor validation format!")
     }
 
-  }
-
-}
-
+  }}

@@ -4,9 +4,8 @@ import play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
 import scalaz.{ Success, Validation }
 
-import models.submission.{ SubmissionManager, Submittable }
+import models.submission.{ SubmissionManager, Submittable, UserWork, UserWorkComment, UserWorkSupplement }
 import models.util.PlayUtil
-import models.parse.submission.{ CommentParser, SupplementParser, WorkParser }
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,7 +22,7 @@ object Submission extends Controller {
   }
 
   def updateAndViewWork(period: String, run: String, user: String) = Action {
-    (submit { CommentParser(_) } _) andThen {
+    (submit { UserWorkComment.fromMap(_) } _) andThen {
       case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork(period, run, user))
       case x                            => x
     }
@@ -39,15 +38,15 @@ object Submission extends Controller {
   }
 
   def submitWork = APIAction {
-    submit { WorkParser(_) } _
+    submit { UserWork.fromMap(_) } _
   }
 
   def submitComment = APIAction {
-    submit { CommentParser(_) } _
+    submit { UserWorkComment.fromMap(_) } _
   }
 
   def submitSupplement = APIAction{
-    submit { SupplementParser(_) } _
+    submit { UserWorkSupplement.fromMap(_) } _
   }
 
 }

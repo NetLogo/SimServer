@@ -1,28 +1,15 @@
-package models.parse.submission
-
-import models.submission.Submission
+package models.submission
 
 import scalaz.{ Failure, Success, Validation }
 
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
- * Date: 10/25/12
- * Time: 4:32 PM
+ * Date: 10/26/12
+ * Time: 12:17 PM
  */
 
-// Unless I wanna go all `shapeless` on this thing's ass, there's not really a good way to enforce having a `validate` method... --JAB
-private[submission] trait ParamParser[T <: Submission] {
-
-  protected type ConsTuple
-  protected type Input     = Map[String, String]
-  protected type Output[U] = Validation[String, U]
-
-  def apply(params: Input) : Output[T]
-
-}
-
-private[submission] object ParamParser {
+private[submission] object Validator {
 
   def validateRefID(refID: String) : Validation[String, Long] =
     failUnderCond(refID, StringEmptyCond, "Invalid value given for ref ID; ref ID cannot be empty") flatMap {
@@ -49,3 +36,4 @@ private[submission] object ParamParser {
   }
 
 }
+
