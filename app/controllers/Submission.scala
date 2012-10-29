@@ -18,7 +18,12 @@ object Submission extends Controller {
 
   def viewWork(period: String, run: String, user: String) = Action {
     val userWorks = SubmissionManager.getUserWork(period, run, user)
-    Ok(views.html.submissions(userWorks, "")) //@ Add JS
+    val js = userWorks.map(_.typ).distinct.map {
+      name =>
+        val funcBody = SubmissionManager.getTypeBundleByName(name) map (_.js) getOrElse (generateDefaultJS(name))
+        finalizeJS(funcBody, name)
+    }.mkString
+    Ok(views.html.submissions(userWorks, js))
   }
 
   def updateAndViewWork(period: String, run: String, user: String) = Action {
@@ -27,6 +32,15 @@ object Submission extends Controller {
       case x                            => x
     }
   }
+
+  private def finalizeJS(funcBody: String, name: String) : String =
+    """
+      function do_custom_%s() {
+        %s
+      }
+    """.format(name, funcBody)
+
+  private def generateDefaultJS(name: String) : String = """alert("No action defined for content type '%s'");""".format(name)
 
   private def submit[T <% Submittable](func: (Map[String, String] => Validation[String, T]))(request: Request[AnyContent]) : SimpleResult[_] = {
     val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }

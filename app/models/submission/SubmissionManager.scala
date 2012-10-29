@@ -76,6 +76,24 @@ object SubmissionManager {
     }
   }
 
+  def getTypeBundleByName(name: String) : Option[TypeBundle] = {
+    DB.withConnection { implicit connection =>
+      SQL (
+        """
+          SELECT * FROM type_bundles
+          WHERE name = {name};
+        """
+      ) on (
+        "name" -> name
+      ) as {
+        str("name") ~ str("js") map {
+          case name ~ js => TypeBundle(name, js)
+          case _ => throw new Exception("Bad format, newb!")
+        } *
+      } headOption
+    }
+  }
+
   def submit[T <% Submittable](submission: T) : Long = submission.submit
 
 }
@@ -149,6 +167,25 @@ private object Submittable {
         )
 
         sql.executeInsert().get
+
+    }
+  }
+
+  implicit def typeBundle2Submittable(bundle: TypeBundle) = new Submittable {
+    override def submit : Long = DB.withConnection { implicit connection =>
+
+      val sql = SQL (
+        """
+          INSERT INTO type_bundles
+          (name, js) VALUES
+          ({name}, {js});
+        """
+      ) on (
+        "name" -> bundle.name,
+        "js"   -> bundle.js
+      )
+
+      sql.executeInsert(); 0L // It makes no sense to get an ID back here, since the unique key for these is their already-known names
 
     }
   }
