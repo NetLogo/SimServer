@@ -4,7 +4,7 @@ import play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
 import scalaz.{ Success, Validation }
 
-import models.submission.{ SubmissionManager, Submittable, UserWork, UserWorkComment, UserWorkSupplement }
+import models.submission.{ SubmissionManager, Submittable, TypeBundle, UserWork, UserWorkComment, UserWorkSupplement }
 import models.util.PlayUtil
 
 /**
@@ -15,6 +15,32 @@ import models.util.PlayUtil
  */
 
 object Submission extends Controller {
+
+  def viewTypeCreationForm = Action {
+    Ok(views.html.create_sub_type())
+  }
+
+  def createType = Action {
+    request =>
+      val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
+      val bundle = TypeBundle(params("name"), "") //@ Validate better
+      SubmissionManager.submit(bundle)
+      Redirect(routes.Submission.viewTypeEditForm(bundle.name))
+  }
+
+  def viewTypeEditForm(name: String) = Action {
+    request =>
+      val bundleOpt = SubmissionManager.getTypeBundleByName(name)
+      Ok(views.html.edit_sub_type(bundleOpt.get)) //@ Validate better
+  }
+
+  def editType(name: String) = Action {
+    request =>
+      val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
+      val bundle = TypeBundle(name, params("js")) //@ Validate better
+      SubmissionManager.update(bundle)
+      Redirect(routes.Submission.viewTypeEditForm(name))
+  }
 
   def viewWork(period: String, run: String, user: String) = Action {
     val userWorks = SubmissionManager.getUserWork(period, run, user)

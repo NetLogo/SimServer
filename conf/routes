@@ -32,6 +32,11 @@ GET     /models/hubnet/list/:rType  controllers.Models.modelNames(rType: String)
 GET     /jnlp/params                controllers.JNLP.getParamFormats
 POST    /jnlp/gen                   controllers.JNLP.generateJNLP
 
+GET     /work-type/create           controllers.Submission.viewTypeCreationForm
+POST    /work-type/create           controllers.Submission.createType
+GET     /work-type/edit/:name       controllers.Submission.viewTypeEditForm(name)
+POST    /work-type/edit/:name       controllers.Submission.editType(name)
+
 GET     /work/:period/:run/:id      controllers.Submission.viewWork(period, run, id)
 POST    /work/:period/:run/:id      controllers.Submission.updateAndViewWork(period, run, id)
 POST    /submit-work                controllers.Submission.submitWork

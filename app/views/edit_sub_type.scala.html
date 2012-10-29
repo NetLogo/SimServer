@@ -1,0 +1,14 @@
+@(bundle: models.submission.TypeBundle)
+
+@main("%s - Edit".format(bundle.name)) {
+  <form method="post" action="">
+    @generateTextArea(bundle.js)
+    <input type="submit" value="Submit"/>
+  </form>
+}
+
+@generateTextArea(js: String) = {
+  @defining("<textarea name='js' id='js' placeholder='Input your desired JavaScript routine here'>%s</textarea>".format(js)) { elem =>
+    @Html(elem)
+  }
+}

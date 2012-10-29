@@ -95,6 +95,7 @@ object SubmissionManager {
   }
 
   def submit[T <% Submittable](submission: T) : Long = submission.submit
+  def update[T <% Updatable]  (update: T)            { update.update() }
 
 }
 
@@ -190,6 +191,31 @@ private object Submittable {
     }
   }
 
+}
+
+sealed trait Updatable {
+  def update()
+}
+
+private object Updatable {
+  implicit def typeBundle2Updatable(bundle: TypeBundle) = new Updatable {
+    override def update() { DB.withConnection { implicit connection =>
+
+      val sql = SQL (
+        """
+          UPDATE type_bundles
+          SET js={js}
+          WHERE name={name};
+        """
+      ) on (
+        "name" -> bundle.name,
+        "js"   -> bundle.js
+      )
+
+      sql.executeUpdate()
+
+    }}
+  }
 }
 
 object AnormExtras {
