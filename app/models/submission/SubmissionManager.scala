@@ -34,7 +34,7 @@ object SubmissionManager {
           case id ~ timestamp ~ session ~ run ~ user ~ typ ~ data ~ metadata ~ description =>
             UserWork(Option(id), timestamp, session, run, user, typ, data, metadata, description,
                      getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
-          case _ => throw new Exception("Bad format, newb!")
+          case _ => throw new Exception("Bad format, newb!") //@
         } *
       }
     }
