@@ -7,19 +7,23 @@ package views
  * Time: 3:06 PM
  */
 
+//@ This whole system has gotten really gross, really quick... --JAB
 object ItemBasedHtmlGenerator {
 
   // Return HTML from this... OR DIE!  --JAB
   def apply(implicit p: models.submission.Presentable) : String = {
-    val AssetsPath = "/assets/" //@ FIX!!!!
+    val AssetsPath       = "/assets/" //@ FIX!!!!
+    val ImageNotFoundURL = AssetsPath + "images/not_found.png"
     p.typ match {
       case t @ "export_world" =>
-        val urlOpt = ensuring[models.submission.UserWork, Option[String]] {
-          _.supplements find (s => s.typ == "export_interface" || s.typ == "export_view") map
-                             (s => AssetsPath + "uploads/%s/%s".format(s.typ, s.data))
+        ensuring[models.submission.UserWork, String] {
+          work =>
+            val imageOpt    = work.supplements find (s => s.typ == "export_interface" || s.typ == "export_view")
+            val imageURLOpt = imageOpt map (s => "%s/uploads/%s/%s".format(AssetsPath, s.typ, s.data))
+            val modelName   = (play.api.libs.json.Json.parse(work.metadata) \ "model").as[String] //@ Validate better
+            val tag         = """<img src="%s" class="work_image" />""".format(imageURLOpt getOrElse ImageNotFoundURL)
+            basicWrap(tag, t, """{ path: "%s/export_world/%s", model: "%s" }""".format(AssetsPath, work.data, modelName))
         }
-        val out = """<img src="%s" class="work_image" />""".format(urlOpt getOrElse (AssetsPath + "images/not_found.png"))
-        basicWrap(out, t)
       case t =>
         basicWrap("No presentation available for type '%s'".format(t), t)
     }
@@ -33,6 +37,7 @@ object ItemBasedHtmlGenerator {
   }
 
   // Creates a fake link that runs custom JavaScript on-click
-  protected def basicWrap(str: String, typ: String) = "<a href='javascript:void(0)' onclick='do_custom_%s()'>%s</a>".format(typ, str)
+  protected def basicWrap(str: String, typ: String, arg: String ="") =
+    "<a href='javascript:void(0)' onclick='do_custom_%s('%s')'>%s</a>".format(typ, arg, str)
 
 }

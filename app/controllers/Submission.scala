@@ -16,6 +16,8 @@ import models.util.PlayUtil
 
 object Submission extends Controller {
 
+  //@ Ensure that the 'uploads' folder exists on init
+
   def viewTypeCreationForm = Action {
     Ok(views.html.create_sub_type())
   }
@@ -61,16 +63,16 @@ object Submission extends Controller {
 
   private def finalizeJS(funcBody: String, name: String) : String =
     """
-      function do_custom_%s() {
+      function do_custom_%s(data) {
         %s
       }
     """.format(name, funcBody)
 
   private def generateDefaultJS(name: String) : String = """alert("No action defined for content type '%s'");""".format(name)
 
-  private def submit[T <% Submittable](func: (Map[String, String] => Validation[String, T]))(request: Request[AnyContent]) : SimpleResult[_] = {
+  private def submit[T <% Submittable](f: (Map[String, String] => Validation[String, T]))(request: Request[AnyContent]) : SimpleResult[_] = {
     val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
-    func(params) map {
+    f(params) map {
       submittable =>
         val result = SubmissionManager.submit(submittable)
         Success(result)
@@ -85,7 +87,7 @@ object Submission extends Controller {
     submit { UserWorkComment.fromMap(_) } _
   }
 
-  def submitSupplement = APIAction{
+  def submitSupplement = APIAction {
     submit { UserWorkSupplement.fromMap(_) } _
   }
 
