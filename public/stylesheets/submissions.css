@@ -31,3 +31,8 @@
   border: none;
   padding: 0;
 }
+
+.work_image {
+  width: 100%;
+  height: auto;
+}
