@@ -12,17 +12,17 @@ object ItemBasedHtmlGenerator {
 
   // Return HTML from this... OR DIE!  --JAB
   def apply(implicit p: models.submission.Presentable) : String = {
-    val AssetsPath       = "/assets/" //@ FIX!!!!
-    val ImageNotFoundURL = AssetsPath + "images/not_found.png"
+    val AssetsPath       = "/assets" //@ FIX!!!!
+    val ImageNotFoundURL = AssetsPath + "/images/not_found.png"
     p.typ match {
       case t @ "export_world" =>
         ensuring[models.submission.UserWork, String] {
           work =>
             val imageOpt    = work.supplements find (s => s.typ == "export_interface" || s.typ == "export_view")
             val imageURLOpt = imageOpt map (s => "%s/uploads/%s/%s".format(AssetsPath, s.typ, s.data))
-            val modelName   = (play.api.libs.json.Json.parse(work.metadata) \ "model").as[String] //@ Validate better
+            val modelURL    = (play.api.libs.json.Json.parse(work.metadata) \ "model_url").as[String] //@ Validate better
             val tag         = """<img src="%s" class="work_image" />""".format(imageURLOpt getOrElse ImageNotFoundURL)
-            basicWrap(tag, t, """{ path: "%s/export_world/%s", model: "%s" }""".format(AssetsPath, work.data, modelName))
+            basicWrap(tag, t, """{ "path": "%s/export_world/%s", "model_url": "%s" }""".format(AssetsPath, work.data, modelURL))
         }
       case t =>
         basicWrap("No presentation available for type '%s'".format(t), t)
@@ -38,6 +38,6 @@ object ItemBasedHtmlGenerator {
 
   // Creates a fake link that runs custom JavaScript on-click
   protected def basicWrap(str: String, typ: String, arg: String ="") =
-    "<a href='javascript:void(0)' onclick='do_custom_%s('%s')'>%s</a>".format(typ, arg, str)
+    "<a href='javascript:void(0)' onclick='do_custom_%s(%s)'>%s</a>".format(typ, arg, str)
 
 }
