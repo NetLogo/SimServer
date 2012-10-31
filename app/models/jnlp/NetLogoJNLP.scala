@@ -36,7 +36,7 @@ class NetLogoJNLP(
 object NetLogoJNLP {
 
   private def generateArgs(key: String, value: String) = Seq(key, value)
-  def generateModelURLArgs(url: String)                = generateArgs("--url", url)
+  def generateModelURLArgs(url: String)                = generateArgs("--url", url.replaceAll(" ", "+"))
 
   // Basically, applies the default values into the boxes if they are are currently `NoneParam`s
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
