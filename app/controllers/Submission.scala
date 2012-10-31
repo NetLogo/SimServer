@@ -25,7 +25,7 @@ object Submission extends Controller {
   def createType = Action {
     request =>
       val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
-      val bundle = TypeBundle(params("name"), "") //@ Validate better
+      val bundle = TypeBundle(params("name"), "", "") //@ Validate better
       SubmissionManager.submit(bundle)
       Redirect(routes.Submission.viewTypeEditForm(bundle.name))
   }
@@ -39,19 +39,27 @@ object Submission extends Controller {
   def editType(name: String) = Action {
     request =>
       val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
-      val bundle = TypeBundle(name, params("js")) //@ Validate better
+      val bundle = TypeBundle(name, params("action_js"), params("presentation_js")) //@ Validate better
       SubmissionManager.update(bundle)
       Redirect(routes.Submission.viewTypeEditForm(name))
   }
 
   def viewWork(period: String, run: String, user: String) = Action {
+
+    val ActionFuncType       = "do"
+    val PresentationFuncType = "present"
+
     val userWorks = SubmissionManager.getUserWork(period, run, user)
-    val js = userWorks.map(_.typ).distinct.map {
+    val (actionJsSeq, presentationJsSeq) = userWorks.map(_.typ).distinct.map {
       name =>
-        val funcBody = SubmissionManager.getTypeBundleByName(name) map (_.js) getOrElse (generateDefaultJS(name))
-        finalizeJS(funcBody, name)
-    }.mkString
-    Ok(views.html.submissions(userWorks, js))
+        val bundle               = SubmissionManager.getTypeBundleByName(name)
+        val actionFuncBody       = bundle map (_.actionJS)       getOrElse (generateDefaultJS(name, ActionFuncType))
+        val presentationFuncBody = bundle map (_.presentationJS) getOrElse (generateDefaultJS(name, PresentationFuncType))
+        (finalizeJS(actionFuncBody, name, ActionFuncType), finalizeJS(presentationFuncBody, name, PresentationFuncType))
+    }.unzip
+
+    Ok(views.html.submissions(userWorks, actionJsSeq.mkString, presentationJsSeq.mkString))
+
   }
 
   def updateAndViewWork(period: String, run: String, user: String) = Action {
@@ -61,14 +69,15 @@ object Submission extends Controller {
     }
   }
 
-  private def finalizeJS(funcBody: String, name: String) : String =
+  private def finalizeJS(funcBody: String, name: String, funcType: String) : String =
     """
-      function do_custom_%s(data) {
+      function %s_custom_%s(data) {
         %s
       }
-    """.format(name, funcBody)
+    """.format(funcType, name, funcBody)
 
-  private def generateDefaultJS(name: String) : String = """alert("No action defined for content type '%s'");""".format(name)
+  private def generateDefaultJS(name: String, funcType: String) : String =
+    """alert("No '%s' action defined for content type '%s'");""".format(funcType, name)
 
   private def submit[T <% Submittable](f: (Map[String, String] => Validation[String, T]))(request: Request[AnyContent]) : SimpleResult[_] = {
     val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }

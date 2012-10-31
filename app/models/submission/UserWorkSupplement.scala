@@ -1,5 +1,7 @@
 package models.submission
 
+import play.api.libs.json._
+
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
@@ -11,7 +13,17 @@ case class UserWorkSupplement(override val id:       Option[Long],
                               override val refID:    Option[Long],
                                            typ:      String,
                                            data:     String,
-                                           metadata: String) extends Association
+                                           metadata: String) extends Association with JsonWritable {
+
+  override def toJsonObj : JsObject = {
+    val typeTuple     = ("type",     JsString(typ))
+    val dataTuple     = ("data",     JsString(data))
+    val metadataTuple = ("metadata", Json.parse(metadata))
+    val tuples         = Seq(typeTuple, dataTuple, metadataTuple)
+    JsObject(tuples)
+  }
+
+}
 
 object UserWorkSupplement extends FromMapParser {
 
@@ -62,4 +74,6 @@ object UserWorkSupplement extends FromMapParser {
         throw new IllegalArgumentException("Broken Supplement constructor validation format!")
     }
 
-  }}
+  }
+
+}

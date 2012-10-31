@@ -86,9 +86,9 @@ object SubmissionManager {
       ) on (
         "name" -> name
       ) as {
-        str("name") ~ str("js") map {
-          case name ~ js => TypeBundle(name, js)
-          case _ => throw new Exception("Bad format, newb!")
+        str("name") ~ str("action_js") ~ str("presentation_js") map {
+          case name ~ action ~ presentation => TypeBundle(name, action, presentation)
+          case _                            => throw new Exception("Bad format, newb!")
         } *
       } headOption
     }
@@ -178,12 +178,13 @@ private object Submittable {
       val sql = SQL (
         """
           INSERT INTO type_bundles
-          (name, js) VALUES
-          ({name}, {js});
+          (name, action_js, presentation_js) VALUES
+          ({name}, {action_js}, {presentation_js});
         """
       ) on (
-        "name" -> bundle.name,
-        "js"   -> bundle.js
+        "name"            -> bundle.name,
+        "action_js"       -> bundle.actionJS,
+        "presentation_js" -> bundle.presentationJS
       )
 
       sql.executeInsert(); 0L // It makes no sense to get an ID back here, since the unique key for these is their already-known names
@@ -204,12 +205,13 @@ private object Updatable {
       val sql = SQL (
         """
           UPDATE type_bundles
-          SET js={js}
+          SET action_js={action_js}, presentation_js={presentation_js}
           WHERE name={name};
         """
       ) on (
-        "name" -> bundle.name,
-        "js"   -> bundle.js
+        "name"            -> bundle.name,
+        "action_js"       -> bundle.actionJS,
+        "presentation_js" -> bundle.presentationJS
       )
 
       sql.executeUpdate()

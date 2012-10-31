@@ -2,13 +2,14 @@
 
 @main("%s - Edit".format(bundle.name)) {
   <form method="post" action="">
-    @generateTextArea(bundle.js)
-    <input type="submit" value="Submit"/>
+    @generateTextArea(bundle.presentationJS, "presentation_js")
+    @generateTextArea(bundle.actionJS, "action_js")
+    <input type="submit" value="Update"/>
   </form>
 }
 
-@generateTextArea(js: String) = {
-  @defining("<textarea name='js' id='js' placeholder='Input your desired JavaScript routine here'>%s</textarea>".format(js)) { elem =>
+@generateTextArea(js: String, name: String) = {
+  @defining("<textarea name='%s' id='%s' placeholder='Input your desired JavaScript routine here'>%s</textarea>".format(name, name, js)) { elem =>
     @Html(elem)
   }
 }
