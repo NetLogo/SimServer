@@ -1,7 +1,7 @@
 package models.util
 
-import play.api.{ libs, Logger, mvc }
-import libs.json.{ JsArray, JsObject, Json, JsValue }
+import play.api.{ Logger, mvc }
+import play.api.libs.json._
 import mvc.{ AnyContent, Request }
 
 /**
@@ -37,11 +37,19 @@ object PlayUtil {
   }
 
   private def stringSeq2JSONOpt(seq: Seq[String]) : Option[JsValue] = {
+
+    def generousParse(str: String) : JsValue = {
+      try Json.parse(str)
+      catch {
+        case ex: com.codahale.jerkson.ParsingException => JsString(str)
+      }
+    }
+
     try {
       seq.toList match {
         case Nil      => None
-        case h :: Nil => Option(Json.parse(h))
-        case arr      => Option(new JsArray(arr map (Json.parse(_))))
+        case h :: Nil => Option(generousParse(h))
+        case arr      => Option(new JsArray(arr map (generousParse(_))))
       }
     }
     catch {
@@ -49,6 +57,7 @@ object PlayUtil {
         Logger.info("Failed to parse string sequence into JSON", ex)
         None
     }
+
   }
 
   private def paramMap2JSON(paramMap: Map[String, Seq[String]]) : Option[JsValue] = {
