@@ -135,7 +135,7 @@ object HubNet extends Controller {
         val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client" //@ This logic should go to a JNLP class
 
         val (mainClass, jvmArgs, argsMaybe) = {
-          import HubNetJNLP.{ generateIPArgs, generateModelURLArgs, generatePortArgs, generateUserIDArgs }
+          import HubNetJNLP.{ generateIPArgs, generatePortArgs, generateUserIDArgs }, models.jnlp.NetLogoJNLP.generateModelURLArgs
           import HubNetJarManager._
           if (isTeacher && !isHeadless) {
             val args =

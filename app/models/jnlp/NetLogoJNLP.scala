@@ -35,13 +35,16 @@ class NetLogoJNLP(
 
 object NetLogoJNLP {
 
+  private def generateArgs(key: String, value: String) = Seq(key, value)
+  def generateModelURLArgs(url: String)                = generateArgs("--url", url)
+
   // Basically, applies the default values into the boxes if they are are currently `NoneParam`s
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
             mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
-            otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
-            argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
+            otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
+            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
 
     val mainJar          = mainJarBox          orElseApply MainJar.jarName
     val mainClass        = mainClassBox        orElseApply MainClass
@@ -55,7 +58,7 @@ object NetLogoJNLP {
     val vmArgs           = vmArgsBox           orElseApply VMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
-    val arguments        = argumentsBox        orElseApply Arguments
+    val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (modelURLBox map generateModelURLArgs getOrElse Seq()))
 
     JNLP(
       codebaseURIBox,

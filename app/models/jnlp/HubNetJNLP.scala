@@ -64,7 +64,6 @@ object HubNetJNLP {
   def generateDesc(programName: String, roleStr: String)    = "A HubNet %s for %s".format(roleStr, programName)
   def generateIPArgs(ip: String)                            = generateArgs("--ip", ip)
   def generateMainClass(isServer: Boolean)                  = if (isServer) HubNetJarManager.ServerMainClass else HubNetJarManager.ClientMainClass
-  def generateModelURLArgs(url: String)                     = generateArgs("--url", url)
   def generatePortArgs(port: Int)                           = generateArgs("--port", port.toString)
   def generateShortDesc(programName: String)                = "HubNet (%s)".format(programName)
   def generateUserIDArgs(userID: String)                    = generateArgs("--id", userID)
@@ -105,8 +104,7 @@ object HubNetJNLP {
     val vmArgs           = vmArgsBox           orElse      (isServerBox map (_ => ServerVMArgs))          orElseApply ClientVMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
-    val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (modelURLBox   map generateModelURLArgs getOrElse Seq()) ++
-                                                                              (serverIPBox   map generateIPArgs       getOrElse Seq()) ++
+    val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (serverIPBox   map generateIPArgs       getOrElse Seq()) ++
                                                                               (serverPortBox map generatePortArgs     getOrElse Seq()) ++
                                                                               (userIDBox     map generateUserIDArgs   getOrElse Seq()))
 
@@ -124,6 +122,7 @@ object HubNetJNLP {
       depsPath,
       vmArgs,
       otherJars,
+      modelURLBox,
       properties,
       arguments
     )

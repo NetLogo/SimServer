@@ -179,7 +179,10 @@ object NetLogoParams extends JNLPParams {
   private val IsNetLogoKey   = "is_netlogo"
   private val IsNetLogoParam = Param[Boolean](IsNetLogoKey)
 
-  override val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam)
+  private val ModelURLKey   = "model_url"
+  private val ModelURLParam = Param[String](ModelURLKey)
+
+  override val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam, ModelURLParam)
   override val paramCategoryLabel              = "NetLogo"
 
   override private[jnlp] def doesAffiliate(js: JsValue) = IsNetLogoParam(js) is true
@@ -199,6 +202,7 @@ object NetLogoParams extends JNLPParams {
       DepsPathParam(js),
       VMArgsParam(js),
       OtherJarsParam(js),
+      ModelURLParam(js),
       PropertiesParam(js),
       ArgumentsParam(js)
     )
