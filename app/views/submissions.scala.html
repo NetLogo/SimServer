@@ -13,14 +13,15 @@
 
     // Get the dynamic presentation for each submission
     window.onload = function (data) {
-      @submissions.zipWithIndex.map{ case (submission, index) =>
-        @Html("""
-          var index = %s;
-          var submission = %s;
-          var presentation = present_custom_%s(submission);
-          $('#temp_' + index).replaceWith(presentation);
-         """.format(index, submission.toJson, submission.typ))
+
+      var makeReplacement = function (index, presentation) {
+        $('#temp_' + index).replaceWith(presentation);
       }
+
+      @submissions.zipWithIndex.map{ case (submission, index) =>
+        @Html("makeReplacement(%s, present_custom_%s(%s));".format(index, submission.typ, submission.toJson))
+      }
+
     }
 
   </script>
