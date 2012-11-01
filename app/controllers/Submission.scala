@@ -25,7 +25,7 @@ object Submission extends Controller {
   def createType = Action {
     request =>
       val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
-      val bundle = TypeBundle(params("name"), "", "") //@ Validate better
+      val bundle = TypeBundle(params("name"), "", "", "") //@ Validate better
       SubmissionManager.submit(bundle)
       Redirect(routes.Submission.viewTypeEditForm(bundle.name))
   }
@@ -39,7 +39,7 @@ object Submission extends Controller {
   def editType(name: String) = Action {
     request =>
       val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
-      val bundle = TypeBundle(name, params("action_js"), params("presentation_js")) //@ Validate better
+      val bundle = TypeBundle(name, params("action_js"), params("presentation_js"), params("file_extension")) //@ Validate better
       SubmissionManager.update(bundle)
       Redirect(routes.Submission.viewTypeEditForm(name))
   }

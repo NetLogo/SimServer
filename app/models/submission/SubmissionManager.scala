@@ -86,9 +86,9 @@ object SubmissionManager {
       ) on (
         "name" -> name
       ) as {
-        str("name") ~ str("action_js") ~ str("presentation_js") map {
-          case name ~ action ~ presentation => TypeBundle(name, action, presentation)
-          case _                            => throw new Exception("Bad format, newb!")
+        str("name") ~ str("action_js") ~ str("presentation_js") ~ str("file_extension") map {
+          case name ~ action ~ presentation ~ ext => TypeBundle(name, action, presentation, ext)
+          case _                                  => throw new Exception("Bad format, newb!")
         } *
       } headOption
     }
@@ -178,13 +178,14 @@ private object Submittable {
       val sql = SQL (
         """
           INSERT INTO type_bundles
-          (name, action_js, presentation_js) VALUES
-          ({name}, {action_js}, {presentation_js});
+          (name, action_js, presentation_js, file_extension) VALUES
+          ({name}, {action_js}, {presentation_js}, {file_extension});
         """
       ) on (
         "name"            -> bundle.name,
         "action_js"       -> bundle.actionJS,
-        "presentation_js" -> bundle.presentationJS
+        "presentation_js" -> bundle.presentationJS,
+        "file_extension"  -> bundle.fileExtension
       )
 
       sql.executeInsert(); 0L // It makes no sense to get an ID back here, since the unique key for these is their already-known names
@@ -205,13 +206,14 @@ private object Updatable {
       val sql = SQL (
         """
           UPDATE type_bundles
-          SET action_js={action_js}, presentation_js={presentation_js}
+          SET action_js={action_js}, presentation_js={presentation_js}, file_extension={file_extension}
           WHERE name={name};
         """
       ) on (
         "name"            -> bundle.name,
         "action_js"       -> bundle.actionJS,
-        "presentation_js" -> bundle.presentationJS
+        "presentation_js" -> bundle.presentationJS,
+        "file_extension"  -> bundle.fileExtension
       )
 
       sql.executeUpdate()

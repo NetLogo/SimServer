@@ -4,6 +4,7 @@
   <form method="post" action="">
     @generateTextArea(bundle.presentationJS, "presentation_js")
     @generateTextArea(bundle.actionJS, "action_js")
+    <input name='file_extension' id='file_extension' type="text" placeholder='File extension' value='@bundle.fileExtension'>
     <input type="submit" value="Update"/>
   </form>
 }

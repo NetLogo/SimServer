@@ -7,5 +7,5 @@ package models.submission
  * Time: 2:56 PM
  */
 
-case class TypeBundle(name: String, actionJS: String, presentationJS: String)
+case class TypeBundle(name: String, actionJS: String, presentationJS: String, fileExtension: String)
 
