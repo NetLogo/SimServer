@@ -4,7 +4,7 @@ import play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
 import scalaz.{ Success, Validation }
 
-import models.submission.{ SubmissionManager, Submittable, TypeBundle, UserWork, UserWorkComment, UserWorkSupplement }
+import models.submission._
 import models.util.PlayUtil
 
 /**
@@ -63,7 +63,7 @@ object Submission extends Controller {
   }
 
   def updateAndViewWork(period: String, run: String, user: String) = Action {
-    (submit { UserWorkComment.fromMap(_) } _) andThen {
+    (submit { UserWorkComment.fromMap(_) } (_._2) _) andThen {
       case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork(period, run, user))
       case x                            => x
     }
@@ -79,25 +79,49 @@ object Submission extends Controller {
   private def generateDefaultJS(name: String, funcType: String) : String =
     """alert("No '%s' action defined for content type '%s'");""".format(funcType, name)
 
-  private def submit[T <% Submittable](f: (Map[String, String] => Validation[String, T]))(request: Request[AnyContent]) : SimpleResult[_] = {
+  private def submit[T <% Submittable](f: (Map[String, String]) => Validation[String, T])
+                                      (cleanup: ((T, Validation[String, Long])) => Validation[String, Long])
+                                      (request: Request[AnyContent]) : SimpleResult[_] = {
     val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
-    f(params) map {
+    f(params) flatMap {
       submittable =>
         val result = SubmissionManager.submit(submittable)
-        Success(result)
+        cleanup(submittable, Success(result))
     } fold ((ExpectationFailed(_)), (x => Ok(x.toString)))
   }
 
+  //@ Kinda messy, but... about as good as it's going to get.  Maybe I could unify this data-replacement code...? --JAB
+  //@ Detect the error here on `getTypeBundle... == None`
   def submitWork = APIAction {
-    submit { UserWork.fromMap(_) } _
+    submit { UserWork.fromMap(_) } {
+      case (work, validation) =>
+        validation map { case id =>
+          SubmissionManager.getTypeBundleByName(work.typ) map {
+            bundle =>
+              val newData = SubmissionFileManager.registerFile(work.data, id.toString, bundle)
+              SubmissionManager.update(work.cloneWith(id = Option(id), data = newData))
+          }
+          id
+        }
+    } _
   }
 
   def submitComment = APIAction {
-    submit { UserWorkComment.fromMap(_) } _
+    submit { UserWorkComment.fromMap(_) } (_._2) _
   }
 
   def submitSupplement = APIAction {
-    submit { UserWorkSupplement.fromMap(_) } _
+    submit { UserWorkSupplement.fromMap(_) } {
+      case (supplement, validation) =>
+        validation map { case id =>
+          SubmissionManager.getTypeBundleByName(supplement.typ) map {
+            bundle =>
+              val newData = SubmissionFileManager.registerFile(supplement.data, id.toString, bundle)
+              SubmissionManager.update(supplement.cloneWith(id = Option(id), data = newData))
+          }
+          id
+        }
+    } _
   }
 
 }
