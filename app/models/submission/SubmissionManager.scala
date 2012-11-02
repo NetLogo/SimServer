@@ -200,6 +200,56 @@ sealed trait Updatable {
 }
 
 private object Updatable {
+
+  implicit def userWork2Updatable(userWork: UserWork) = new Updatable {
+    override def update() { DB.withConnection { implicit connection =>
+
+      val sql = SQL (
+        """
+          UPDATE user_work
+          SET timestamp={timestamp}, period_id={period_id}, run_id={run_id}, user_id={user_id},
+              type={type}, data={data}, metadata={metadata}, description={description}
+          WHERE id={id};
+        """
+      ) on (
+        "id"          -> userWork.id,
+        "timestamp"   -> userWork.timestamp,
+        "period_id"   -> userWork.periodID,
+        "run_id"      -> userWork.runID,
+        "user_id"     -> userWork.userID,
+        "type"        -> userWork.typ,
+        "data"        -> userWork.data,
+        "metadata"    -> userWork.metadata,
+        "description" -> userWork.description
+      )
+
+      sql.executeUpdate()
+
+    }}
+  }
+
+  implicit def workSupplement2Updatable(workSupplement: UserWorkSupplement) = new Updatable {
+    override def update() { DB.withConnection { implicit connection =>
+
+      val sql = SQL (
+        """
+          UPDATE user_work_supplements
+          SET ref_id={ref_id}, type={type}, data={data}, metadata={metadata}
+          WHERE id={id};
+        """
+      ) on (
+        "id"       -> workSupplement.id,
+        "ref_id"   -> workSupplement.refID,
+        "type"     -> workSupplement.typ,
+        "data"     -> workSupplement.data,
+        "metadata" -> workSupplement.metadata
+      )
+
+      sql.executeUpdate()
+
+    }}
+  }
+
   implicit def typeBundle2Updatable(bundle: TypeBundle) = new Updatable {
     override def update() { DB.withConnection { implicit connection =>
 
@@ -220,6 +270,7 @@ private object Updatable {
 
     }}
   }
+
 }
 
 object AnormExtras {
