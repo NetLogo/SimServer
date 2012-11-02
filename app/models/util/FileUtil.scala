@@ -1,7 +1,8 @@
 package models.util
 
-import java.io.{PrintWriter, File, FileWriter}
+import java.io.{FileOutputStream, PrintWriter, File, FileWriter}
 
+import org.apache.commons.codec.binary.Base64
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,6 +12,9 @@ import java.io.{PrintWriter, File, FileWriter}
  */
 
 object FileUtil {
+
+  private val ImageExtensions     = List("jpeg", "jpg", "png", "bmp", "gif")
+  private val DefaultByteEncoding = "UTF-8"
 
   val NetLogoFileExt  = "nlogo"
   val ModelFileFilter = extFilter(NetLogoFileExt)
@@ -22,17 +26,23 @@ object FileUtil {
     if (index >= 0) filename.substring(0, index) else filename
   }
 
+  //@ Make this support writing images, too!  -JAB (11/2/12)
   def printToFile(f: File)(op: PrintWriter => Unit) {
     val p = new PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
 
   def printToFile(filename: String)(data: String) {
-    using (new FileWriter(filename))(fileWriter => fileWriter.write(data))
+    if (ImageExtensions.exists(filename.endsWith(_)))
+      using (new FileOutputStream(filename))(_.write(decodeBase64(data)))
+    else
+      using (new FileWriter(filename))(fileWriter => fileWriter.write(data))
   }
 
   private def using[A <: { def close() }, B](param: A)(f: A => B) : B = {
     try { f(param) } finally { param.close() }
   }
+
+  private def decodeBase64(str: String) = Base64.decodeBase64(str.getBytes(DefaultByteEncoding))
 
 }
