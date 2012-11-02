@@ -7,10 +7,11 @@ package models
  * Time: 2:40 PM
  */
 
-sealed trait TempGenMessage
-case class  Write(contents: String) extends TempGenMessage
-case object Delete extends TempGenMessage
-case object Initialize extends TempGenMessage
+sealed trait FileActorMessage
+case object Get                     extends FileActorMessage
+case object Delete                  extends FileActorMessage
+case object Initialize              extends FileActorMessage
+case class  Write(contents: String) extends FileActorMessage
 
 sealed trait HubNetMessage
 case class Start(modelName: String, portNum: Int) extends HubNetMessage

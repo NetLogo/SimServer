@@ -2,11 +2,14 @@ package models.filemanager
 
 import java.io.File
 
-import akka.util.Duration
-import akka.actor.{PoisonPill, ActorSystem, Actor, Props}
+import akka.actor._
+import akka.dispatch.Await
+import akka.pattern.ask
+import akka.util.{ duration, Duration, Timeout }, duration._
 
-import models.{Initialize, Write, Delete}
+import models.{ Get, Delete, Initialize, Write }
 import models.util.FileUtil
+import models.Write
 
 /**
  * Created by IntelliJ IDEA.
@@ -34,14 +37,22 @@ trait FileManager extends Delayer {
     "%s/%s.%s".format(MyFolderName, fileNameBasis, fileExt)
   }
 
-  def registerFile(contents: String, fileNameBasis: String, fileExt: String) : String =
-    registerFile(contents, formatFilePath(fileNameBasis, fileExt))
-  
-  def registerFile(contents: String, fileName: String) : String = {
+  def registerFile(contents: String, fileNameBasis: String, fileExt: String = "") : String = {
+    val filename  = if (!fileExt.isEmpty) formatFilePath(fileNameBasis, fileExt) else fileNameBasis
+    saveFile(contents, filename, fileNameBasis)
+  }
 
-    // Create an actor with a handle to the file, write the contents to it
-    val file = new File("%s%s%s".format(PublicPath, File.separator, fileName))
-    val fileActor = system.actorOf(Props(new FileActor(file)))
+  protected def saveFile(contents: String, filename: String, actorID: String) : String = {
+
+    val file      = new File("%s%s%s".format(PublicPath, File.separator, filename))
+    val fileActor = {
+      val actorName = idToActorName(actorID)
+      try system.actorOf(Props(new FileActor(file)), name = actorName)
+      catch {
+        case ex: InvalidActorNameException => system.actorFor(actorName)
+      }
+    }
+
     fileActor ! Initialize
     fileActor ! Write(contents)
 
@@ -51,10 +62,17 @@ trait FileManager extends Delayer {
 
   }
 
+  def retrieveFile(fileNameBasis: String) : File = {
+    implicit val timeout = Timeout(3 seconds)
+    Await.result(system.actorFor(idToActorName(fileNameBasis)) ? Get, timeout.duration).asInstanceOf[File]
+  }
+
   // Could _easily_ be more efficient (at least for small numbers of files), but I want to stick to having actors manage the files
   def removeAll() {
     fileFolder.listFiles foreach { file => system.actorOf(Props(new FileActor(file))) ! Delete }
   }
+
+  protected def idToActorName(id: String) = id.replaceAll("/", "&~&")
 
 }
 
@@ -62,9 +80,10 @@ trait FileManager extends Delayer {
 
 class FileActor(file: File) extends Actor {
   override protected def receive = {
-    case Initialize      => file.delete(); file.createNewFile()
-    case Write(contents) => FileUtil.printToFile(file)(_.write(contents))
+    case Get             => file
     case Delete          => file.delete(); self ! PoisonPill // Terminate self after file is gone
+    case Initialize      => file.getParentFile.mkdirs(); file.delete(); file.createNewFile()
+    case Write(contents) => FileUtil.printToFile(file.getAbsolutePath)(contents)
   }
 }
 
