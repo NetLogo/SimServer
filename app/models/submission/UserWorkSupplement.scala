@@ -15,6 +15,13 @@ case class UserWorkSupplement(override val id:       Option[Long],
                                            data:     String,
                                            metadata: String) extends Association with JsonWritable {
 
+  def cloneWith(id:       Option[Long]    = this.id,
+                refID:    Option[Long]    = this.refID,
+                typ:      String          = this.typ,
+                data:     String          = this.data,
+                metadata: String          = this.metadata) =
+    UserWorkSupplement(id, refID, typ, data, metadata)
+
   override def toJsonObj : JsObject = {
     val typeTuple     = ("type",     JsString(typ))
     val dataTuple     = ("data",     JsString(data))
