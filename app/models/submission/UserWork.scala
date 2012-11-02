@@ -110,7 +110,7 @@ object UserWork extends FromMapParser {
     maybes reduce (_ fullFailAppend _) map {
       case (timestamp: Long) :: (periodID: String) :: (runID: String) :: (userID: String) ::
            (typ: String) :: (data: String) :: (metadata: String) :: (description: String) :: Nil =>
-        (None, timestamp, periodID, userID, runID, typ, data, metadata, description, Seq(), Seq())
+        (None, timestamp, periodID, runID, userID, typ, data, metadata, description, Seq(), Seq())
       case _ =>
         throw new IllegalArgumentException("Broken Work constructor validation format!")
     }
