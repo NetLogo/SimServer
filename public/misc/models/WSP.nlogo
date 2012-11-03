@@ -1,6 +1,6 @@
 extensions [web props]
 
-globals [grass]  ;; keep track of how much grass there is
+globals [grass my-description]  ;; keep track of how much grass there is
 ;; Sheep and wolves are both breeds of turtle.
 breed [sheep a-sheep]  ;; sheep is its own plural, so we use "a-sheep" as the singular.
 breed [wolves wolf]
@@ -124,6 +124,7 @@ to display-labels
 end
 
 to export-to [root-url]
+  set my-description  user-input "Gimme a description:"
   
   let period-id-tuple ["period_id" "apples"]
   let user-id-tuple   ["user_id"   "oranges"]
@@ -132,7 +133,7 @@ to export-to [root-url]
   let model-url (props:get "netlogo.model_source_url")
   
   let work-meta-tuple  (list "metadata" (word "{ \"type\": \"export_world\", \"model_url\": \"" model-url "\" }"))
-  let work-desc-tuple  ["description"   "My really cool export world"]
+  let work-desc-tuple  (list "description"   my-description)
   
   let work-url      (word root-url "-work")
   let work-method   "POST"
@@ -444,10 +445,10 @@ NIL
 INPUTBOX
 146
 510
-381
+548
 570
 export-url
-http://localhost:9001/submit
+http://abmplus.tech.northwestern.edu:9005/submit
 1
 0
 String
