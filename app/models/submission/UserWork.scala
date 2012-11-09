@@ -38,8 +38,8 @@ case class UserWork(override val id:          Option[Long] = None,
     JsObject(tuples)
   }
 
-  def addComments   (newComments:    UserWorkComment*)    = this.cloneWith(comments = this.comments ++ newComments)
-  def addSupplements(newSupplements: UserWorkSupplement*) = this.cloneWith(supplements = this.supplements ++ newSupplements)
+  def addComments   (newComments:    Comment*)    = this.cloneWith(comments = this.comments ++ newComments)
+  def addSupplements(newSupplements: Supplement*) = this.cloneWith(supplements = this.supplements ++ newSupplements)
 
   def cloneWith(id:          Option[Long]    = this.id,
                 timestamp:   Long            = this.timestamp,
