@@ -81,21 +81,12 @@ object Submission extends Controller {
   private def generateDefaultJS(name: String, funcType: String) : String =
     """alert("No '%s' action defined for content type '%s'");""".format(funcType, name)
 
-  //@ Kinda messy, but... about as good as it's going to get.  Maybe I could unify this data-replacement code...? --JAB
   //@ Detect the error here on `getTypeBundle... == None`
   def submitWork = APIAction {
     implicit request =>
-      val fileRegistrationFunc = (workAndValidation: (UserWork, Validation[String, Long])) => {
-        val (work, validation) = workAndValidation
-        validation map { case id =>
-          SubmissionManager.getTypeBundleByName(work.typ) map {
-            bundle =>
-              val newData = SubmissionFileManager.registerFile(work.data, id.toString, bundle)
-              SubmissionManager.update(work.cloneWith(id = Option(id), data = newData))
-          }
-          id
-        }
-      }
+      val fileRegistrationFunc = registerFile[UserWork](_.typ)(_.data) {
+        (id, newData) => _.cloneWith(id = Option(id), data = newData)
+      } _
       submit(request, UserWork.fromMap(_), fileRegistrationFunc)
   }
 
@@ -106,18 +97,26 @@ object Submission extends Controller {
 
   def submitSupplement = APIAction {
     implicit request =>
-      val fileRegistrationFunc = (supplementAndValidation: (UserWorkSupplement, Validation[String, Long])) => {
-        val (supplement, validation) = supplementAndValidation
-        validation map { case id =>
-          SubmissionManager.getTypeBundleByName(supplement.typ) map {
-            bundle =>
-              val newData = SubmissionFileManager.registerFile(supplement.data, id.toString, bundle)
-              SubmissionManager.update(supplement.cloneWith(id = Option(id), data = newData))
-          }
-          id
-        }
-      }
+      val fileRegistrationFunc = registerFile[UserWorkSupplement](_.typ)(_.data) {
+        (id, newData) => _.cloneWith(id = Option(id), data = newData)
+      } _
       submit(request, UserWorkSupplement.fromMap(_), fileRegistrationFunc)
+  }
+
+
+  private def registerFile[T <% Updatable](getTypeNameFunc:     T => String)
+                                          (getFileContentsFunc: T => String)
+                                          (cloneFunc:           (Long, String) => T => T)
+                                          (subjectAndStatus:   (T, Validation[String, Long])) : Validation[String, Long] = {
+    val (subject, status) = subjectAndStatus
+    status map { case id =>
+      SubmissionManager.getTypeBundleByName(getTypeNameFunc(subject)) map {
+        typeBundle =>
+          val newData = SubmissionFileManager.registerFile(getFileContentsFunc(subject), id.toString, typeBundle)
+          SubmissionManager.update(cloneFunc(id, newData)(subject))
+      }
+      id
+    }
   }
 
   private def submit[T <% Submittable](request: Request[AnyContent],
