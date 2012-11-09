@@ -1,7 +1,5 @@
 package models.submission
 
-import play.api.libs.json._
-
 import models.submission, submission.{ UserWorkComment => Comment }, submission.{ UserWorkSupplement => Supplement }
 
 /**
@@ -21,22 +19,7 @@ case class UserWork(override val id:          Option[Long] = None,
                                  metadata:    String,
                                  description: String,
                                  supplements: Seq[Supplement],
-                                 comments:    Seq[Comment]) extends Entry with JsonWritable {
-
-  override def toJsonObj : JsObject = {
-    val periodIDTuple    = ("period_id",   JsString(periodID))
-    val runIDTuple       = ("run_id",      JsString(runID))
-    val userIDTuple      = ("user_id",     JsString(userID))
-    val typeTuple        = ("type",        JsString(typ))
-    val dataTuple        = ("data",        JsString(data))
-    val metadataTuple    = ("metadata",    Json.parse(metadata))
-    val descriptionTuple = ("description", JsString(description))
-    val supplementsTuple = ("supplements", Json.toJson(supplements map (_.toJsonObj)))
-    val commentsTuple    = ("comments",    Json.toJson(comments map (_.toJsonObj)))
-    val tuples         = Seq(periodIDTuple, runIDTuple, userIDTuple, typeTuple, dataTuple,
-                             metadataTuple, descriptionTuple, supplementsTuple, commentsTuple)
-    JsObject(tuples)
-  }
+                                 comments:    Seq[Comment]) extends Entry {
 
   def addComments   (newComments:    Comment*)    = this.cloneWith(comments = this.comments ++ newComments)
   def addSupplements(newSupplements: Supplement*) = this.cloneWith(supplements = this.supplements ++ newSupplements)

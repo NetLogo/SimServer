@@ -1,6 +1,6 @@
 @(submissions: Seq[models.submission.UserWork], actionJs: String, presentationJs: String)
 
-@import models.submission.{ UserWork, UserWorkComment }
+@import models.submission.{ ToJsonConverters, UserWork, UserWorkComment }, ToJsonConverters._
 
 @main("Welcome to Play 2.0") {
   <link rel="stylesheet" media="screen" href='@routes.Assets.at("stylesheets/submissions.css")'>

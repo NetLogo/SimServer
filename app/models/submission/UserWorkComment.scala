@@ -1,7 +1,5 @@
 package models.submission
 
-import play.api.libs.json._
-
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
@@ -13,17 +11,7 @@ case class UserWorkComment(override val id:        Option[Long],
                            override val refID:     Option[Long],
                            timestamp: Long = System.currentTimeMillis(),
                            userID:    String,
-                           comment:   String) extends Association with JsonWritable {
-
-  override def toJsonObj : JsObject = {
-    val timestampTuple = ("timestamp", JsNumber(timestamp))
-    val userIDTuple    = ("user_id",   JsString(userID))
-    val commentTuple   = ("comment",   JsString(comment))
-    val tuples         = Seq(timestampTuple, userIDTuple, commentTuple)
-    JsObject(tuples)
-  }
-
-}
+                           comment:   String) extends Association
 
 object UserWorkComment extends FromMapParser {
 

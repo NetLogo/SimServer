@@ -1,7 +1,5 @@
 package models.submission
 
-import play.api.libs.json._
-
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
@@ -13,7 +11,7 @@ case class UserWorkSupplement(override val id:       Option[Long],
                               override val refID:    Option[Long],
                                            typ:      String,
                                            data:     String,
-                                           metadata: String) extends Association with JsonWritable {
+                                           metadata: String) extends Association {
 
   def cloneWith(id:       Option[Long]    = this.id,
                 refID:    Option[Long]    = this.refID,
@@ -21,14 +19,6 @@ case class UserWorkSupplement(override val id:       Option[Long],
                 data:     String          = this.data,
                 metadata: String          = this.metadata) =
     UserWorkSupplement(id, refID, typ, data, metadata)
-
-  override def toJsonObj : JsObject = {
-    val typeTuple     = ("type",     JsString(typ))
-    val dataTuple     = ("data",     JsString(data))
-    val metadataTuple = ("metadata", Json.parse(metadata))
-    val tuples         = Seq(typeTuple, dataTuple, metadataTuple)
-    JsObject(tuples)
-  }
 
 }
 

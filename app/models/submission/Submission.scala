@@ -17,7 +17,3 @@ trait Association extends Submission {
 
 trait Entry extends Submission
 
-trait JsonWritable {
-  def toJsonObj : play.api.libs.json.JsObject
-  def toJson = toJsonObj.toString
-}
