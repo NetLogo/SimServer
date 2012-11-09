@@ -44,7 +44,7 @@ object Application extends Controller {
       val RunIDKey       = "run_id"
       val WorkgroupIDKey = "workgroup_id"
 
-      val paramMap = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
+      val paramMap = PlayUtil.commonExtractMap(request)
       val status = (for {
         input    <- paramMap.get(ExportKey)
         periodID <- paramMap.get(PeriodIDKey)
