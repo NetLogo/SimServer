@@ -13,6 +13,9 @@ import mvc.{ AnyContent, Request }
 
 object PlayUtil {
 
+  def commonExtractMap(request: Request[AnyContent]) : Map[String, String] =
+    extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
+
   // If Play actually made a good-faith effort at parameter extraction, I wouldn't have to go through this rubbish...
   def extractParamMapOpt(request: Request[AnyContent]) : Option[Map[String, Seq[String]]] =
     request.body.asMultipartFormData.map(_.asFormUrlEncoded).

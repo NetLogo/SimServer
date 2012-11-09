@@ -25,22 +25,22 @@ object Submission extends Controller {
   }
 
   def createType = Action {
-    request =>
-      val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
+    implicit request =>
+      val params = PlayUtil.commonExtractMap(request)
       val bundle = TypeBundle(params("name"), "", "", "") //@ Validate better
       SubmissionManager.submit(bundle)
       Redirect(routes.Submission.viewTypeEditForm(bundle.name))
   }
 
   def viewTypeEditForm(name: String) = Action {
-    request =>
+    implicit request =>
       val bundleOpt = SubmissionManager.getTypeBundleByName(name)
       Ok(views.html.edit_sub_type(bundleOpt.get)) //@ Validate better
   }
 
   def editType(name: String) = Action {
-    request =>
-      val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) } //@ Unify this code
+    implicit request =>
+      val params = PlayUtil.commonExtractMap(request)
       val bundle = TypeBundle(name, params("action_js"), params("presentation_js"), params("file_extension")) //@ Validate better
       SubmissionManager.update(bundle)
       Redirect(routes.Submission.viewTypeEditForm(name))
@@ -123,10 +123,10 @@ object Submission extends Controller {
   private def submit[T <% Submittable](request: Request[AnyContent],
                                        constructorFunc: (Map[String, String]) => Validation[String, T],
                                        cleanup: ((T, Validation[String, Long])) => Validation[String, Long]) : SimpleResult[_] = {
-    val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
+    val params = PlayUtil.commonExtractMap(request)
     constructorFunc(params) flatMap {
       submittable =>
-        val result = SubmissionManager.submit(submittable)
+        val result = SubmissionManager.submit(submittable) //@ Validate this; should not auto-`Success` on next line
         cleanup(submittable, Success(result))
     } fold ((ExpectationFailed(_)), (x => Ok(x.toString)))
   }
