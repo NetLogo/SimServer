@@ -4,7 +4,7 @@ import actors.{Actor, TIMEOUT}
 import scala.util.control.Exception
 import java.io.File
 
-class LogActor(id: Long) extends Actor {
+class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
 
   private val logFile = generateFile(id)
 
@@ -32,7 +32,7 @@ class LogActor(id: Long) extends Actor {
   }
 
   private def replyCloseConnection() {
-    LoggingHandler.closeLog(id) //@ This yucky two-way dependency should probably go away somehow
+    closeFunc(id)
     reply("Close connection")
   }
 

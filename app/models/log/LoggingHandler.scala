@@ -19,7 +19,7 @@ object LoggingHandler {
     ensureLogDirExists()
     //@ val id = { logCount += 1; logCount }
     val id = Random.nextInt().abs
-    val actor = new LogActor(id)
+    val actor = new LogActor(id, closeLog(_))
     idActorMap.put(id, actor)
     actor.start()
     id
