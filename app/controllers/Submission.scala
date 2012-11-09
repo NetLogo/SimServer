@@ -16,6 +16,8 @@ import models.util.PlayUtil
 
 object Submission extends Controller {
 
+  private val noCleanup = ((_: (_, Validation[String, Long]))._2)
+
   //@ Ensure that the 'uploads' folder exists on init
 
   def viewTypeCreationForm = Action {
@@ -63,7 +65,7 @@ object Submission extends Controller {
   }
 
   def updateAndViewWork(period: String, run: String, user: String) = Action {
-    (submit { UserWorkComment.fromMap(_) } (_._2) _) andThen {
+    (submit(_: Request[AnyContent], UserWorkComment.fromMap(_), noCleanup)) andThen {
       case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork(period, run, user))
       case x                            => x
     }
@@ -79,22 +81,12 @@ object Submission extends Controller {
   private def generateDefaultJS(name: String, funcType: String) : String =
     """alert("No '%s' action defined for content type '%s'");""".format(funcType, name)
 
-  private def submit[T <% Submittable](f: (Map[String, String]) => Validation[String, T])
-                                      (cleanup: ((T, Validation[String, Long])) => Validation[String, Long])
-                                      (request: Request[AnyContent]) : SimpleResult[_] = {
-    val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
-    f(params) flatMap {
-      submittable =>
-        val result = SubmissionManager.submit(submittable)
-        cleanup(submittable, Success(result))
-    } fold ((ExpectationFailed(_)), (x => Ok(x.toString)))
-  }
-
   //@ Kinda messy, but... about as good as it's going to get.  Maybe I could unify this data-replacement code...? --JAB
   //@ Detect the error here on `getTypeBundle... == None`
   def submitWork = APIAction {
-    submit { UserWork.fromMap(_) } {
-      case (work, validation) =>
+    implicit request =>
+      val fileRegistrationFunc = (workAndValidation: (UserWork, Validation[String, Long])) => {
+        val (work, validation) = workAndValidation
         validation map { case id =>
           SubmissionManager.getTypeBundleByName(work.typ) map {
             bundle =>
@@ -103,16 +95,19 @@ object Submission extends Controller {
           }
           id
         }
-    } _
+      }
+      submit(request, UserWork.fromMap(_), fileRegistrationFunc)
   }
 
   def submitComment = APIAction {
-    submit { UserWorkComment.fromMap(_) } (_._2) _
+    implicit request =>
+      submit(request, UserWorkComment.fromMap(_), noCleanup)
   }
 
   def submitSupplement = APIAction {
-    submit { UserWorkSupplement.fromMap(_) } {
-      case (supplement, validation) =>
+    implicit request =>
+      val fileRegistrationFunc = (supplementAndValidation: (UserWorkSupplement, Validation[String, Long])) => {
+        val (supplement, validation) = supplementAndValidation
         validation map { case id =>
           SubmissionManager.getTypeBundleByName(supplement.typ) map {
             bundle =>
@@ -121,7 +116,19 @@ object Submission extends Controller {
           }
           id
         }
-    } _
+      }
+      submit(request, UserWorkSupplement.fromMap(_), fileRegistrationFunc)
+  }
+
+  private def submit[T <% Submittable](request: Request[AnyContent],
+                                       constructorFunc: (Map[String, String]) => Validation[String, T],
+                                       cleanup: ((T, Validation[String, Long])) => Validation[String, Long]) : SimpleResult[_] = {
+    val params = PlayUtil.extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
+    constructorFunc(params) flatMap {
+      submittable =>
+        val result = SubmissionManager.submit(submittable)
+        cleanup(submittable, Success(result))
+    } fold ((ExpectationFailed(_)), (x => Ok(x.toString)))
   }
 
 }
