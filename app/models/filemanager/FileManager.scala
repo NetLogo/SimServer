@@ -83,7 +83,7 @@ class FileActor(file: File) extends Actor {
     case Get             => file
     case Delete          => file.delete(); self ! PoisonPill // Terminate self after file is gone
     case Initialize      => file.getParentFile.mkdirs(); file.delete(); file.createNewFile()
-    case Write(contents) => FileUtil.printToFile(file.getAbsolutePath)(contents)
+    case Write(contents) => FileUtil.printBytesToFile(file.getAbsolutePath)(contents)
   }
 }
 

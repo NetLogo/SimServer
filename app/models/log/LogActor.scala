@@ -33,9 +33,7 @@ class LogActor(id: Long) extends Actor {
 
   private def replyCloseConnection() {
     LoggingHandler.closeLog(id) //@ This yucky two-way dependency should probably go away somehow
-    reply("Close connection") // This is insufficient for --^, because no one's really listening for the replies right now, which is difficult for timeouts
-    // Maybe make handler an actor, send it in the constructor, send messages to it?
-    //@ Ugh, responsibilities are very unclear here...
+    reply("Close connection")
   }
 
   private def replyConfused(msg: String) {
@@ -70,7 +68,7 @@ class LogActor(id: Long) extends Actor {
 
   // May not function properly with empty/improperly-formed files
   private def markLogTimedOut() {
-    val terminator = "" //@ if (!logProperlyTerminated(logFile)) LogActor.LogTerminator else ""
+    val terminator = "" // if (!logProperlyTerminated(logFile)) LogActor.LogTerminator else ""
     val timeOutData = terminator + "\n<!-- Log terminated due to connection with WebStart client timing out -->"
     appendToFile(timeOutData, logFile)
   }
@@ -82,7 +80,7 @@ class LogActor(id: Long) extends Actor {
   }
 
   private def logProperlyTerminated(file: File): Boolean = {
-    //@ readLastLineOfText(file).trim() == LogActor.LogTerminator
+    // readLastLineOfText(file).trim() == LogActor.LogTerminator
     true
   }
 
@@ -99,6 +97,6 @@ class LogActor(id: Long) extends Actor {
 object LogActor {
   val ExpectedLogDir = "nl_logs"
   val LogFileExtension = ".txt"
-  //@ val LogTerminator = "</eventSet>"
+  // val LogTerminator = "</eventSet>"
   private val MessageSplitter = """(?s)([\w]+)\|?(.*)""".r // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
 }

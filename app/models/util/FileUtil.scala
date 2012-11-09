@@ -26,13 +26,11 @@ object FileUtil {
     if (index >= 0) filename.substring(0, index) else filename
   }
 
-  //@ Make this support writing images, too!  -JAB (11/2/12)
-  def printToFile(f: File)(op: PrintWriter => Unit) {
-    val p = new PrintWriter(f)
-    try { op(p) } finally { p.close() }
+  def printTextToFile(f: File)(op: PrintWriter => Unit) {
+    using(new PrintWriter(f))(op)
   }
 
-  def printToFile(filename: String)(data: String) {
+  def printBytesToFile(filename: String)(data: String) {
     if (ImageExtensions.exists(filename.endsWith(_)))
       using (new FileOutputStream(filename))(_.write(decodeBase64(data)))
     else

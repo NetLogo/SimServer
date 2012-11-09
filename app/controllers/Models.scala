@@ -12,8 +12,6 @@ import models.util.{ NetUtil, ModelMapper }
  * Time: 3:43 PM
  */
 
-//@ The proliferation of controllers in the 'controllers' package is getting a bit out of hand
-//  I feel like I should do something about this; this architecture kinda sucks.... --JAB (8/29/12)
 object Models extends Controller {
 
   private val PlainType = "plain"

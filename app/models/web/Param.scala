@@ -9,7 +9,6 @@ import play.api.libs.json.{ JsValue, Reads }
  * Time: 1:47 PM
  */
 
-//@ It also wouldn't be unthinkable to make some sort of validator a passed-in parameter of this class (running before and after defaulting)
 // Modeling necessary information for interpreting input parameters (which could be getting interpreted as either JSON or `Map`s)
 // Essentially, models how something with a parameter key can become realized parameters/`ParamBox`s
 class Param[T] private (val key: String, jsFunc: (JsValue) => Option[T], val pathDescriptor: String, defaulter: Option[() => T] = None) {

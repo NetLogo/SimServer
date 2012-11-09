@@ -10,7 +10,6 @@ import scalaz.Success
  * Time: 1:30 PM
  */
 
-//@ Not sure how I want to handle this right now...
 trait SupplementMetadata {
   def getType: String
 }

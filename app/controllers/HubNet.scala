@@ -35,7 +35,7 @@ object HubNet extends Controller {
 
   def bindStudent = Action {
     implicit request => StudentInfo.form.bindFromRequest.fold(
-      errors => Ok(views.html.hubtest(errors)),  //@ Is this really `bindStudents`'s business?
+      errors => Ok(views.html.hubtest(errors)),
       {
         case StudentInfo(userName, teacherName) =>
           import HubNetSettings._
@@ -54,7 +54,7 @@ object HubNet extends Controller {
 
   def bindTeacher = Action {
     implicit request => TeacherInfo.form.bindFromRequest.fold(
-      errors => Ok(views.html.hubteach(errors)),  //@ Is this really `bindTeacher`'s business?
+      errors => Ok(views.html.hubteach(errors)),
       {
         case TeacherInfo(modelName, userName, isHeadless, teacherName, portNumber, isLogging) =>
           import HubNetSettings._
@@ -80,18 +80,6 @@ object HubNet extends Controller {
         val errorStr = "Failed to encrypt HubNet info"
         Logger.warn(errorStr, ex)
         Failure("%s; %s".format(errorStr, ex.getMessage))
-    }
-  }
-
-  //@ Not currently used....  Should be used for optional parameters in conjunction with `encryptHubNetInfoPairs`
-  private def morphPair2Opt(pair: Pair[String, String]) : Option[(String, String)] = {
-    pair match {
-      case (str, key) =>
-        Util.noneIfEmpty(str) map {
-          x =>      if (x == "Yes") "true"
-               else if (x == "No")  "false"
-               else                 x
-        } map (key -> _)
     }
   }
 

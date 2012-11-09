@@ -17,7 +17,7 @@ class HubNetServerActor extends Actor {
 
     case Start(modelName, port) =>
 
-      val workspace = null //@ HeadlessWorkspace.newInstance(portNum)
+      val workspace = null // HeadlessWorkspace.newInstance(portNum)
       openModel(workspace, modelName)
       runCommand(workspace, "hubnet-reset")
       runCommand(workspace, "setup")

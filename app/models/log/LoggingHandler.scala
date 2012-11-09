@@ -15,7 +15,7 @@ object LoggingHandler {
   val DefaultEncoding = "ISO-8859-1"
   private val idActorMap = new HashMap[Long, LogActor]()
 
-  def createNewLog(): Long = {
+  def createNewLog() : Long = {
     ensureLogDirExists()
     //@ val id = { logCount += 1; logCount }
     val id = Random.nextInt().abs
@@ -25,12 +25,12 @@ object LoggingHandler {
     id
   }
 
-  def log(key: Long, data: String): String = {
+  def log(key: Long, data: String) : String = {
     idActorMap.get(key) map { case x if (x.getState != Terminated) => (x !? prepareData(data)).asInstanceOf[String] + '\n' } getOrElse ("File already closed")
   }
 
   //@ This really needs to be wrapped behind a login-/password-check (as does abandoning)
-  def retrieveLogText(key: Long): String = {
+  def retrieveLogText(key: Long) : String = {
     val logDir = new File(LogActor.ExpectedLogDir)
     val arr = logDir.listFiles(new FilenameFilter() {
       def accept(file: File, name: String): Boolean = {
@@ -50,7 +50,7 @@ object LoggingHandler {
     if (!logDir.exists()) logDir.mkdir()
   }
 
-  private def prepareData(data: String, encoding: String = DefaultEncoding): String = {
+  private def prepareData(data: String, encoding: String = DefaultEncoding) : String = {
     (unGzip(data.getBytes(encoding)) flatMap (validateData(_))).
       orElse (decompressData(data, encoding) orElse Option(data) flatMap (validateData(_))).
       getOrElse ("ERROR   DATA MUST BE TEXT OR GZIP COMPRESSED" replaceAll(" ", "_"))
@@ -60,15 +60,15 @@ object LoggingHandler {
   /* Some(data)  if valid
    * None        if invalid
    */
-  private def validateData(data: String): Option[String] = {
+  private def validateData(data: String) : Option[String] = {
     if (isValid(data)) Option(data) else None
   }
 
-  private def decompressData(data: String, encoding: String = DefaultEncoding): Option[String] = {
+  private def decompressData(data: String, encoding: String = DefaultEncoding) : Option[String] = {
     unGzip(java.net.URLDecoder.decode(data, encoding).getBytes(encoding))
   }
 
-  private def unGzip(data: Array[Byte]): Option[String] = {
+  private def unGzip(data: Array[Byte]) : Option[String] = {
     try {
 
       val in = new GZIPInputStream(new ByteArrayInputStream(data))
@@ -88,7 +88,7 @@ object LoggingHandler {
     }
   }
 
-  private def isValid(data: String): Boolean = {
+  private def isValid(data: String) : Boolean = {
     data.toLowerCase.matches("""(?s)^[a-z]{%d}.*""".format(3)) //@ Pretty unmaginificent validation on my part...
   }
 
