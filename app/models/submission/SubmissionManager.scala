@@ -17,6 +17,23 @@ object SubmissionManager {
 
   import AnormExtras._
 
+  //@ I should really make a `users` table...
+  def getStudentsByRunAndPeriod(runID: String, periodID: String) : Seq[String] = {
+    DB.withConnection { implicit connect =>
+      SQL (
+        """
+          |SELECT DISTINCT user_id FROM user_work
+          |WHERE run_id = {run_id} AND period_id = {period_id};
+        """.stripMargin
+      ) on (
+        "run_id"    -> runID,
+        "period_id" -> periodID
+      ) as {
+        str("user_id") map { identity } *
+      }
+    }
+  }
+
   def getUserWork(period: String, run: String, user: String) : Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       SQL (

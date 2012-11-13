@@ -20,6 +20,11 @@ object Submission extends Controller {
 
   //@ Ensure that the 'uploads' folder exists on init
 
+  //@ Everything about this is questionable; new controller and manager?
+  def listStudentsIn(runID: String, periodID: String) = Action {
+    Ok(SubmissionManager.getStudentsByRunAndPeriod(runID, periodID).mkString("\n"))
+  }
+
   def viewTypeCreationForm = Action {
     Ok(views.html.create_sub_type())
   }
@@ -46,6 +51,7 @@ object Submission extends Controller {
       Redirect(routes.Submission.viewTypeEditForm(name))
   }
 
+  //@ I think that I have periods and runs backwards in order...
   def viewWork(period: String, run: String, user: String) = Action {
 
     val ActionFuncType       = "do"
