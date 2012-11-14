@@ -41,8 +41,7 @@ case class UserWork(override val id:          Option[Long] = None,
 
 object UserWork extends FromMapParser {
 
-  import models.datastructure.FullFailValidationList.vsl2Enhanced
-  import scalaz.{ Failure, Success, Validation }
+  import scalaz.{ Scalaz, ValidationNEL }, Scalaz._
 
   override protected type Target    = UserWork
   override protected type ConsTuple = (Option[Long], Long, String, String, String, String, String, String, String, Seq[Supplement], Seq[Comment])
@@ -60,10 +59,10 @@ object UserWork extends FromMapParser {
     val DescriptionKey = "description"
 
     val valueMaybes = Keys map {
-      key => params.get(key) map (Success(_)) getOrElse (Failure("No item with key '%s' passed in\n".format(key))) map (List(_))
+      key => params.get(key) map (_.succeed) getOrElse ("No item with key '%s' passed in".format(key).failNel) map (List(_))
     } // We `map` the `Success`es into lists so that `append` (called below) will give me something pattern-matchable --JAB
 
-    val valueTupleMaybe = valueMaybes reduce (_ fullFailAppend _) map {
+    val valueTupleMaybe = valueMaybes reduce (_ append _) map {
       case periodID :: runID :: userID :: data :: Nil =>
         val metadata = params.getOrElse(MetadataKey, "")
         val typ      = params.getOrElse(TypeKey, SupplementMetadata.fromString(metadata).fold((_ => ""), (_.getType)))
@@ -77,20 +76,20 @@ object UserWork extends FromMapParser {
   }
 
   protected def validate(timestamp: Long, periodID: String, runID: String, userID: String,
-                         typ: String, data: String, metadata: String, description: String) : Validation[String, ConsTuple] = {
+                         typ: String, data: String, metadata: String, description: String) : ValidationNEL[F, ConsTuple] = {
 
     val timestampMaybe   = Validator.validateTimestamp(timestamp)
     val periodIDMaybe    = Validator.validatePeriodID(periodID)
     val runIDMaybe       = Validator.validateRunID(runID)
     val userIDMaybe      = Validator.validateUserID(userID)
-    val typeMaybe        = Success(typ)
-    val dataMaybe        = Success(data)
-    val metadataMaybe    = Success(metadata)
-    val descriptionMaybe = Success(description)
+    val typeMaybe        = typ.succeed
+    val dataMaybe        = data.succeed
+    val metadataMaybe    = metadata.succeed
+    val descriptionMaybe = description.succeed
     val maybes           = List(timestampMaybe, periodIDMaybe, runIDMaybe, userIDMaybe,
                                 typeMaybe, dataMaybe, metadataMaybe, descriptionMaybe) map (_ map (List(_)))
 
-    maybes reduce (_ fullFailAppend _) map {
+    maybes reduce (_ append _) map {
       case (timestamp: Long) :: (periodID: String) :: (runID: String) :: (userID: String) ::
            (typ: String) :: (data: String) :: (metadata: String) :: (description: String) :: Nil =>
         (None, timestamp, periodID, runID, userID, typ, data, metadata, description, Seq(), Seq())

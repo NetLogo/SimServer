@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
-import scalaz.{ Success, Validation }
+import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 import models.submission._
 import models.util.PlayUtil
@@ -16,7 +16,7 @@ import models.util.PlayUtil
 
 object Submission extends Controller {
 
-  private val noCleanup = ((_: (_, Validation[String, Long]))._2)
+  private val noCleanup = ((_: (_, ValidationNEL[String, Long]))._2)
 
   //@ Ensure that the 'uploads' folder exists on init
 
@@ -113,7 +113,7 @@ object Submission extends Controller {
   private def registerFile[T <% Updatable](getTypeNameFunc:     T => String)
                                           (getFileContentsFunc: T => String)
                                           (cloneFunc:           (Long, String) => T => T)
-                                          (subjectAndStatus:   (T, Validation[String, Long])) : Validation[String, Long] = {
+                                          (subjectAndStatus:   (T, ValidationNEL[String, Long])) : ValidationNEL[String, Long] = {
     val (subject, status) = subjectAndStatus
     status map { case id =>
       SubmissionManager.getTypeBundleByName(getTypeNameFunc(subject)) map {
@@ -126,14 +126,14 @@ object Submission extends Controller {
   }
 
   private def submit[T <% Submittable](request: Request[AnyContent],
-                                       constructorFunc: (Map[String, String]) => Validation[String, T],
-                                       cleanup: ((T, Validation[String, Long])) => Validation[String, Long]) : SimpleResult[_] = {
+                                       constructorFunc: (Map[String, String]) => ValidationNEL[String, T],
+                                       cleanup: ((T, ValidationNEL[String, Long])) => ValidationNEL[String, Long]) : SimpleResult[_] = {
     val params = PlayUtil.commonExtractMap(request)
     constructorFunc(params) flatMap {
       submittable =>
         val result = SubmissionManager.submit(submittable) //@ Validate this; should not auto-`Success` on next line
-        cleanup(submittable, Success(result))
-    } fold ((ExpectationFailed(_)), (x => Ok(x.toString)))
+        cleanup(submittable, result.successNel[String])
+    } fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (x => Ok(x.toString)))
   }
 
 }

@@ -24,8 +24,7 @@ case class UserWorkSupplement(override val id:       Option[Long],
 
 object UserWorkSupplement extends FromMapParser {
 
-  import models.datastructure.FullFailValidationList.vsl2Enhanced
-  import scalaz.{ Failure, Success, Validation }
+  import scalaz.{ Scalaz, ValidationNEL }, Scalaz._
 
   override protected type Target    = UserWorkSupplement
   override protected type ConsTuple = (Option[Long], Option[Long], String, String, String)
@@ -40,10 +39,10 @@ object UserWorkSupplement extends FromMapParser {
     val MetadataKey = "metadata"
 
     val valueMaybes = Keys map {
-      key => params.get(key) map (Success(_)) getOrElse (Failure("No item with key '%s' passed in\n".format(key))) map (List(_))
+      key => params.get(key) map (_.succeed) getOrElse ("No item with key '%s' passed in".format(key).failNel) map (List(_))
     } // We `map` the `Success`es into lists so that `append` (called below) will give me something pattern-matchable --JAB
 
-    val valueTupleMaybe = valueMaybes reduce (_ fullFailAppend _) map {
+    val valueTupleMaybe = valueMaybes reduce (_ append _) map {
       case refID :: data :: Nil =>
         val metadata = params.getOrElse(MetadataKey, "")
         val typ      = params.getOrElse(TypeKey, SupplementMetadata.fromString(metadata).fold((_ => ""), (_.getType)))
@@ -56,15 +55,15 @@ object UserWorkSupplement extends FromMapParser {
 
   }
 
-  protected def validate(refID: String, typ: String, data: String, metadata: String) : Validation[String, ConsTuple] = {
+  protected def validate(refID: String, typ: String, data: String, metadata: String) : ValidationNEL[F, ConsTuple] = {
 
     val refIDMaybe = Validator.validateRefID(refID)
-    val typeMaybe  = Success(typ)
-    val dataMaybe  = Success(data)
-    val metaMaybe  = Success(metadata)
+    val typeMaybe  = typ.succeed
+    val dataMaybe  = data.succeed
+    val metaMaybe  = metadata.succeed
     val maybes     = List(refIDMaybe, typeMaybe, dataMaybe, metaMaybe) map (_ map (List(_)))
 
-    maybes reduce (_ fullFailAppend _) map {
+    maybes reduce (_ append _) map {
       case (refID: Long) :: (typ: String) :: (data: String) :: (metadata: String) :: Nil =>
         (None, Option(refID), typ, data, metadata)
       case _ =>

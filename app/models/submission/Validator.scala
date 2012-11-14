@@ -1,6 +1,6 @@
 package models.submission
 
-import scalaz.{ Failure, Success, Validation }
+import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,14 +11,14 @@ import scalaz.{ Failure, Success, Validation }
 
 private[submission] object Validator {
 
-  def validateRefID(refID: String) : Validation[String, Long] =
+  def validateRefID(refID: String) : ValidationNEL[String, Long] =
     failUnderCond(refID, StringEmptyCond, "Invalid value given for ref ID; ref ID cannot be empty") flatMap {
       x =>
         try {
-          Success(x.toLong)
+          x.toLong.successNel
         }
         catch {
-          case ex: NumberFormatException => Failure("Cannot convert '%s' to Long; either not numerical or too many digits.\n".format(x))
+          case ex: NumberFormatException => "Cannot convert '%s' to Long; either not numerical or too many digits.".format(x).failNel
         }
     }
 
@@ -30,9 +30,9 @@ private[submission] object Validator {
   protected val StringEmptyCond = (_: String).isEmpty
   protected val LongLTEZeroCond = (_: Long) <= 0
 
-  protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: String) : Validation[String, T] = Success(param) flatMap {
-    case x if cond(x) => Failure(errorStr + "\n")
-    case x            => Success(x)
+  protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: String) : ValidationNEL[String, T] = param.successNel[String] flatMap {
+    case x if cond(x) => errorStr.failNel
+    case x            => x.successNel
   }
 
 }
