@@ -21,7 +21,7 @@ object Submission extends Controller {
   //@ Ensure that the 'uploads' folder exists on init
 
   //@ Everything about this is questionable; new controller and manager?
-  def listStudentsIn(runID: String, periodID: String) = Action {
+  def listStudentsIn(runID: String, periodID: String) = APIAction {
     Ok(SubmissionManager.getStudentsByRunAndPeriod(runID, periodID).mkString("\n"))
   }
 
