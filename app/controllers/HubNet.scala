@@ -8,7 +8,7 @@ import java.net.URI
 import scalaz.{ Failure, Success, Validation } //@ Stop misuse of 'Validation'
 
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
-import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar }
+import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar, NetLogoJNLP }
 import models.filemanager.TempFileManager
 import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
@@ -24,8 +24,6 @@ object HubNet extends Controller {
   val HubNetKy     = "hubnet_data"
   val ModelsSubDir = "assets/misc/models"
   val DepsSubDir   = "assets/misc/deps"
-
-  private lazy val thisIP = java.net.InetAddress.getLocalHost.getHostAddress
 
   TempFileManager.removeAll()  // Clear all temp gen files on startup
 
@@ -114,17 +112,16 @@ object HubNet extends Controller {
         val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
         val fileName = TempFileManager.formatFilePath(input, "jnlp")
-        val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client" //@ This logic should go to a JNLP class
+        val clientOrServerStr = if (isTeacher) "Server" else "Client"
 
         val (mainClass, jvmArgs, argsMaybe) = {
-          import HubNetJNLP.{ generateIPArgs, generatePortArgs, generateUserIDArgs }, models.jnlp.NetLogoJNLP.generateModelURLArgs
-          import HubNetJarManager._
+          import HubNetJNLP._, NetLogoJNLP._, HubNetJarManager._
           if (isTeacher) {
             val args =
               modelNameOpt map {
                 modelName => generateModelURLArgs(Models.getHubNetModelURL(modelName)) ++
                              ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => generatePortArgs(port)} ) ++
-                             (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq) //@ This "--logging" should get moved out to a JNLP class
+                             generateLoggingArgs(isLogging)
               } map (Success(_)) getOrElse Failure("No model name supplied")
             (ServerMainClass, ServerVMArgs, args)
           }
