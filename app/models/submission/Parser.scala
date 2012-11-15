@@ -18,7 +18,7 @@ private[submission] trait Parser {
   protected class ValidationP[T](that: T) { def succeed = that.successNel[F] }
 
   protected type Target
-  protected type ConsTuple
+  protected type ConsTuple <: Product
   protected type Output = ValidationNEL[F, Target]
 
 }
