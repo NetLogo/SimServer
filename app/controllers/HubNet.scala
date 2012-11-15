@@ -109,7 +109,7 @@ object HubNet extends Controller {
           else           getPortByTeacherName(teacherName)
         }
 
-        val JNLPConnectPath = "http://abmplus.tech.northwestern.edu:9001/logging" //@ Fix
+        val JNLPConnectPath = "http://%s/logging".format(request.host)
 
         val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
