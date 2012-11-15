@@ -11,7 +11,6 @@ POST    /export                     controllers.Application.handleNetLogoExportW
 
 GET     /ws                         controllers.Logging.ws
 GET     /logging                    controllers.Logging.startLogging
-GET     /logging/:id                controllers.Logging.retrieveData(id)
 POST    /logging/:id                controllers.Logging.logData(id)
 
 GET     /hubtest                    controllers.HubNet.hubTest

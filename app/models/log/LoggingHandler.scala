@@ -9,15 +9,11 @@ import java.io.{ FilenameFilter, ByteArrayInputStream, File }
 
 object LoggingHandler {
 
-  //@ Will need a better ID-distro system than this, because we need this to persist and not overread people's stuff!
-  private var logCount = 0L
-
   val DefaultEncoding = "ISO-8859-1"
   private val idActorMap = new HashMap[Long, LogActor]()
 
   def createNewLog() : Long = {
     ensureLogDirExists()
-    //@ val id = { logCount += 1; logCount }
     val id = Random.nextInt().abs
     val actor = new LogActor(id, closeLog(_))
     idActorMap.put(id, actor)
@@ -29,17 +25,17 @@ object LoggingHandler {
     idActorMap.get(key) map { case x if (x.getState != Terminated) => (x !? prepareData(data)).asInstanceOf[String] + '\n' } getOrElse ("File already closed")
   }
 
-  //@ This really needs to be wrapped behind a login-/password-check (as does abandoning)
-  def retrieveLogText(key: Long) : String = {
-    val logDir = new File(LogActor.ExpectedLogDir)
-    val arr = logDir.listFiles(new FilenameFilter() {
-      def accept(file: File, name: String): Boolean = {
-        name.toLowerCase.endsWith("sid%d%s".format(key, LogActor.LogFileExtension))
-      }
-    })
-    arr.lastOption map {  x => val src = Source.fromFile(x); val lines = src.getLines().mkString("\n"); src.close(); lines } getOrElse
-    ("Invalid log key given: " + key)
-  }
+  // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably should exist.
+//  def retrieveLogText(key: Long) : String = {
+//    val logDir = new File(LogActor.ExpectedLogDir)
+//    val arr = logDir.listFiles(new FilenameFilter() {
+//      def accept(file: File, name: String): Boolean = {
+//        name.toLowerCase.endsWith("sid%d%s".format(key, LogActor.LogFileExtension))
+//      }
+//    })
+//    arr.lastOption map {  x => val src = Source.fromFile(x); val lines = src.getLines().mkString("\n"); src.close(); lines } getOrElse
+//    ("Invalid log key given: " + key)
+//  }
 
   private[models] def closeLog(id: Long) {
     idActorMap.remove(id)
@@ -88,8 +84,7 @@ object LoggingHandler {
     }
   }
 
-  private def isValid(data: String) : Boolean = {
-    data.toLowerCase.matches("""(?s)^[a-z]{%d}.*""".format(3)) //@ Pretty unmaginificent validation on my part...
-  }
+  // I used to sass this validation, but, honestly... it's not the worst
+  private def isValid(data: String) : Boolean = data.toLowerCase.matches("""(?s)^[a-z]{%d}.*""".format(3))
 
 }
