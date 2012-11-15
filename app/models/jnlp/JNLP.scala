@@ -165,7 +165,7 @@ private[jnlp] object JNLPDefaults {
     <resources>
 
         <!-- Application Resources -->
-        <j2se version="1.5+ 1.6+ 1.7+" java-vm-args=""" + '"' + vmArgs + '"' + """ href="http://java.sun.com/products/autodl/j2se"/>""" +
+        <j2se version="1.6+ 1.7+" java-vm-args=""" + '"' + vmArgs + '"' + """ href="http://java.sun.com/products/autodl/j2se"/>""" +
         jarsStr + """
 
         <!-- System Properties -->""" +
