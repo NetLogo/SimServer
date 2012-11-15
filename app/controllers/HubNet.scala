@@ -5,7 +5,7 @@ import play.api.Logger
 
 import java.net.URI
 
-import scalaz.{ Failure, Success, Validation }
+import scalaz.{ Failure, Success, Validation } //@ Stop misuse of 'Validation'
 
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
 import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar }
@@ -105,17 +105,11 @@ object HubNet extends Controller {
 
         val ipPortMaybe = {
           import HubNetServerManager._
-          if (isTeacher) {
-            if (isHeadless)
-              startUpServer(modelNameOpt, teacherName, thisIP)
-            else
-              registerTeacherIPAndPort(teacherName, teacherIP.get, preferredPortOpt)
-          }
-          else
-            getPortByTeacherName(teacherName)
+          if (isTeacher) registerTeacherIPAndPort(teacherName, teacherIP.get, preferredPortOpt)
+          else           getPortByTeacherName(teacherName)
         }
 
-        val JNLPConnectPath = "http://abmplus.tech.northwestern.edu:9001/logging"
+        val JNLPConnectPath = "http://abmplus.tech.northwestern.edu:9001/logging" //@ Fix
 
         val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
@@ -125,7 +119,7 @@ object HubNet extends Controller {
         val (mainClass, jvmArgs, argsMaybe) = {
           import HubNetJNLP.{ generateIPArgs, generatePortArgs, generateUserIDArgs }, models.jnlp.NetLogoJNLP.generateModelURLArgs
           import HubNetJarManager._
-          if (isTeacher && !isHeadless) {
+          if (isTeacher) {
             val args =
               modelNameOpt map {
                 modelName => generateModelURLArgs(Models.getHubNetModelURL(modelName)) ++
@@ -134,10 +128,10 @@ object HubNet extends Controller {
               } map (Success(_)) getOrElse Failure("No model name supplied")
             (ServerMainClass, ServerVMArgs, args)
           }
-          else
-            (ClientMainClass, ClientVMArgs, ipPortMaybe map {
-              case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
-            })
+          else {
+            val args = ipPortMaybe map { case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port) }
+            (ClientMainClass, ClientVMArgs, args)
+          }
         }
 
         val properties = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", JNLPConnectPath)).toSeq
