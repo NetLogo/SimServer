@@ -4,6 +4,8 @@ import anorm._
 import anorm.SqlParser._
 import play.api.db.DB
 
+import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+
 /**
  * Created with IntelliJ IDEA.
  * User: Jason
@@ -13,9 +15,27 @@ import play.api.db.DB
 
 import play.api.Play.current
 
+//@ Constantify field names
+
 object SubmissionDBManager {
 
   import AnormExtras._
+
+  def getStudentsByRunAndPeriod(runID: String, periodID: String) : Seq[String] = {
+    DB.withConnection { implicit connect =>
+      SQL (
+        """
+          |SELECT DISTINCT user_id FROM user_work
+          |WHERE run_id = {run_id} AND period_id = {period_id};
+        """.stripMargin
+      ) on (
+        "run_id"    -> runID,
+        "period_id" -> periodID
+        ) as {
+        str("user_id") map { identity } *
+      }
+    }
+  }
 
   def getUserWork(period: String, run: String, user: String) : Seq[UserWork] = {
     DB.withConnection { implicit connection =>
@@ -34,7 +54,7 @@ object SubmissionDBManager {
           case id ~ timestamp ~ session ~ run ~ user ~ typ ~ data ~ metadata ~ description =>
             UserWork(Option(id), timestamp, session, run, user, typ, data, metadata, description,
                      getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
-          case _ => throw new Exception("Bad format, newb!") //@
+          case _ => raiseDBAccessException
         } *
       }
     }
@@ -52,7 +72,7 @@ object SubmissionDBManager {
       ) as {
         long("id") ~ long("ref_id") ~ timestamp("timestamp") ~ str("user_id") ~ str("comment") map {
           case id ~ refID ~ timestamp ~ user ~ comment => UserWorkComment(Option(id), Option(refID), timestamp, user, comment)
-          case _ => throw new Exception("Bad format, newb!")
+          case _ => raiseDBAccessException
         } *
       }
     }
@@ -70,15 +90,15 @@ object SubmissionDBManager {
       ) as {
         long("id") ~ long("ref_id") ~ str("type") ~ str("data") ~ str("metadata") map {
           case id ~ refID ~ typ ~ data ~ metadata => UserWorkSupplement(Option(id), Option(refID), typ, data, metadata)
-          case _ => throw new Exception("Bad format, newb!")
+          case _ => raiseDBAccessException
         } *
       }
     }
   }
 
-  def getTypeBundleByName(name: String) : Option[TypeBundle] = {
+  def getTypeBundleByName(name: String) : ValidationNEL[String, TypeBundle] = {
     DB.withConnection { implicit connection =>
-      SQL (
+      val opt = SQL (
         """
           SELECT * FROM type_bundles
           WHERE name = {name};
@@ -88,25 +108,26 @@ object SubmissionDBManager {
       ) as {
         str("name") ~ str("action_js") ~ str("presentation_js") ~ str("file_extension") map {
           case name ~ action ~ presentation ~ ext => TypeBundle(name, action, presentation, ext)
-          case _                                  => throw new Exception("Bad format, newb!")
+          case _                                  => raiseDBAccessException
         } *
-      } headOption
+      } headOption;
+      opt map (_.successNel[String]) getOrElse ("No type bundle found with name %s".format(name).failNel)
     }
   }
 
-  def submit[T <% Submittable](submission: T) : Long = submission.submit
-  def update[T <% Updatable]  (update: T)            { update.update() }
+  def submit[T <% Submittable](submission: T) : ValidationNEL[String, Long] = submission.submit
+  def update[T <% Updatable]  (update: T)                                   { update.update() }
 
 }
 
 sealed trait Submittable {
-  def submit : Long
+  def submit : ValidationNEL[String, Long]
 }
 
 private object Submittable {
 
   implicit def userWork2Submittable(userWork: UserWork) = new Submittable {
-    override def submit : Long = DB.withConnection { implicit connection =>
+    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
 
         val sql = SQL (
           """
@@ -125,13 +146,13 @@ private object Submittable {
           "description" -> userWork.description
           )
 
-        sql.executeInsert().get
+        sql.executeInsert().get.successNel[String]
 
     }
   }
 
   implicit def workComment2Submittable(workComment: UserWorkComment) = new Submittable {
-    override def submit : Long = DB.withConnection { implicit connection =>
+    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
 
         val sql = SQL (
           """
@@ -146,13 +167,13 @@ private object Submittable {
           "comment"   -> workComment.comment
         )
 
-        sql.executeInsert().get
+        sql.executeInsert().get.successNel[String]
 
     }
   }
 
   implicit def workSupplement2Submittable(workSupplement: UserWorkSupplement) = new Submittable {
-    override def submit : Long = DB.withConnection { implicit connection =>
+    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
 
         val sql = SQL (
           """
@@ -167,13 +188,13 @@ private object Submittable {
           "metadata" -> workSupplement.metadata
         )
 
-        sql.executeInsert().get
+        sql.executeInsert().get.successNel[String]
 
     }
   }
 
   implicit def typeBundle2Submittable(bundle: TypeBundle) = new Submittable {
-    override def submit : Long = DB.withConnection { implicit connection =>
+    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
 
       val sql = SQL (
         """
@@ -188,7 +209,8 @@ private object Submittable {
         "file_extension"  -> bundle.fileExtension
       )
 
-      sql.executeInsert(); 0L // It makes no sense to get an ID back here, since the unique key for these is their already-known names
+      sql.executeInsert(); 0L.successNel[String]
+      // It makes no sense to get an ID back here, since the unique key for these is their already-known names
 
     }
   }
@@ -276,4 +298,5 @@ private object Updatable {
 object AnormExtras {
   import java.math.{ BigInteger => JBigInt }
   def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
+  def raiseDBAccessException = throw new java.sql.SQLException("Retrieved data from database in unexpected format.")
 }
