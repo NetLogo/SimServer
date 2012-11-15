@@ -54,15 +54,19 @@ object Param {
  * and you want something else down the line to do the validation of all the parameters,
  * and be able to report specifically _which_ parameters failed to validate)
  */
+
+// THIS IS A FUNCTOR, BUT IT IS NOT A MONAD, AND BECOMING ONE WOULD BREAK ITS USABILITY
+// Get over it.  --JAB (11/14/12)
 sealed abstract class ParamBox[+T] {
 
   def key: String
 
   def get     : T
   def isEmpty : Boolean
+  def nonefy  : NoneParam
 
   def exists           (p: T => Boolean)      : Boolean     =    !isEmpty && p(this.get)
-  def flatMap  [U]     (f: T => ParamBox[U])  : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else f(this.get)
+  def flatMap  [U]     (f: T => ParamBox[U])  : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else f(this.get) // NOT A MONADIC `flatMap`!!!!!
   def getOrElse[U >: T](default: => U)        : U           = if (isEmpty) default                   else this.get
   def map      [U]     (f: T => U)            : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else SomeParam(this.key, f(this.get))
   def replaceKey       (newKey: String)       : ParamBox[T] = if (isEmpty) NoneParam(newKey)         else SomeParam(newKey, this.get)
@@ -76,16 +80,18 @@ sealed abstract class ParamBox[+T] {
 
 object ParamBox {
   def apply[T](key: String, opt: Option[T]) : ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam(key)
+
 }
 
-//@ Oh, god, I think I broke the monad laws!  If so, I need to fix this....
 // I wanted to use an `OptionProxy`, but, apparently, one doesn't exist... :(
 case class SomeParam[T](override val key: String, value: T) extends ParamBox[T] {
   override def get     = value
   override def isEmpty = false
+  override def nonefy  = NoneParam(key)
 }
 
 case class NoneParam(override val key: String) extends ParamBox[Nothing] {
   override def get     = throw new NoSuchElementException("NoneParam.get")
   override def isEmpty = true
+  override def nonefy  = this
 }
