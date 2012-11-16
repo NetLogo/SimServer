@@ -5,7 +5,7 @@ import play.api.Logger
 
 import java.net.URI
 
-import scalaz.{ Failure, Success, Validation } //@ Stop misuse of 'Validation'
+import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
 import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar, NetLogoJNLP }
@@ -60,24 +60,24 @@ object HubNet extends Controller {
           val keys  = Seq(ModelNameKey, UserNameKey, TeacherNameKey, PortNumKey, IsHeadlessKey, IsLoggingKey)
           val pairs = keys zip vals
           val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
-          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(NetUtil.encode(str)))))
+          encryptedMaybe fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (str => Redirect(routes.HubNet.hubSnoop(NetUtil.encode(str)))))
           // Fail or redirect to snoop the IP
       }
     )
   }
 
-  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : Validation[String, String] = {
+  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : ValidationNEL[String, String] = {
     try {
       val kvMap = requiredInfo ++ optionalPairs.flatten
       val delimed = kvMap.toSeq map { case (k, v) => "%s=%s".format(k, v) } mkString ResourceManager(ResourceManager.HubnetDelim)
       val encrypted = (new EncryptionUtil(ResourceManager(ResourceManager.HubNetKeyPass)) with PBEWithMF5AndDES) encrypt(delimed)
-      Success(encrypted)
+      encrypted.successNel[String]
     }
     catch {
       case ex: Exception =>
         val errorStr = "Failed to encrypt HubNet info"
         Logger.warn(errorStr, ex)
-        Failure("%s; %s".format(errorStr, ex.getMessage))
+        "%s; %s".format(errorStr, ex.getMessage).failNel
     }
   }
 
@@ -86,10 +86,10 @@ object HubNet extends Controller {
   }
 
   def handleTeacherProxy(encryptedStr: String, teacherIP: String) = Action {
-    request => handleHubNet(Success(encryptedStr), true, Option(teacherIP))(request)
+    request => handleHubNet(encryptedStr.successNel[String], true, Option(teacherIP))(request)
   }
 
-  def handleHubNet(encryptedStrMaybe: Validation[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
+  def handleHubNet(encryptedStrMaybe: ValidationNEL[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
                   (implicit request: Request[AnyContent]) : Result = {
 
     val inputAndSettingsMaybe =
@@ -122,7 +122,7 @@ object HubNet extends Controller {
                 modelName => generateModelURLArgs(Models.getHubNetModelURL(modelName)) ++
                              ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => generatePortArgs(port)} ) ++
                              generateLoggingArgs(isLogging)
-              } map (Success(_)) getOrElse Failure("No model name supplied")
+              } map (_.successNel[String]) getOrElse "No model name supplied".failNel
             (ServerMainClass, ServerVMArgs, args)
           }
           else {
@@ -152,7 +152,7 @@ object HubNet extends Controller {
 
         propsMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
 
-    } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
+    } fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Redirect("/" + url)))
 
   }
 

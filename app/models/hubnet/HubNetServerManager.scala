@@ -1,6 +1,6 @@
 package models.hubnet
 
-import scalaz.{Failure, Success, Validation}
+import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,13 +16,13 @@ object HubNetServerManager {
 
   private val teacherToIPPortMap = collection.mutable.Map[String, (String, Int)]()
 
-  def registerTeacherIPAndPort(teacherName: String, ip: String, portOpt: Option[Int] = None) : Success[String, (String, Int)] = {
-    val port = portOpt getOrElse StartingPort
-    teacherToIPPortMap += teacherName -> (ip, port)
-    Success(ip, port)
+  def registerTeacherIPAndPort(teacherName: String, ip: String, portOpt: Option[Int] = None) : ValidationNEL[String, (String, Int)] = {
+    val entry = (ip, portOpt getOrElse StartingPort)
+    teacherToIPPortMap += teacherName -> entry
+    entry.successNel[String]
   }
 
-  def getPortByTeacherName(teacherName: String) : Validation[String, (String, Int)] =
-    teacherToIPPortMap.get(teacherName) map { case (ip, port) => Success((ip, port)) } getOrElse Failure(NotStartedFormat(teacherName))
+  def getPortByTeacherName(teacherName: String) : ValidationNEL[String, (String, Int)] =
+    teacherToIPPortMap.get(teacherName) map (_.successNel[String]) getOrElse NotStartedFormat(teacherName).failNel
 
 }

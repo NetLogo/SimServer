@@ -2,7 +2,7 @@ package models.jnlp
 
 import java.net.URI
 
-import scalaz.Validation
+import scalaz.ValidationNEL
 
 import models.util.Util
 import models.web.ParamBox
@@ -46,7 +46,7 @@ object NetLogoJNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
             otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
-            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
+            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : ValidationNEL[String, JNLP] = {
 
     val mainJar          = mainJarBox          orElseApply MainJar.jarName
     val mainClass        = mainClassBox        orElseApply MainClass

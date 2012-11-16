@@ -2,7 +2,7 @@ package models.jnlp
 
 import java.net.URI
 
-import scalaz.{ Failure, Success, Validation }
+import scalaz._, Scalaz._
 
 import JNLPDefaults._
 import models.web.ParamBox
@@ -79,25 +79,13 @@ object JNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
             otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
-            argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
-
-    type VSList = Validation[String, List[String]]
-    def append(v1: VSList, v2: VSList) : VSList = (v1, v2) match {
-      case (Success(s1), Success(s2)) => Success(s1 ++ s2)
-      case (Success(s),  Failure(f))  => Failure(f)
-      case (Failure(f),  Success(s))  => Failure(f)
-      case (Failure(f1), Failure(f2)) => Failure(f1 + "\n" + f2)
-    }
-
-    val requireds = List(codebaseURIBox, jnlpLocBox, mainJarBox, mainClassBox)
+            argumentsBox: ParamBox[Seq[String]]) : ValidationNEL[String, JNLP] = {
 
     val errorStrFormat  = "Bad data supplied for: " + (_: String)
-    val rootValidations = requireds map (box => box map (x => Success(List(x))) getOrElse Failure(errorStrFormat(box.key)))
-    val validation      = rootValidations reduce append
+    val f               =  (box: ParamBox[String]) => box map (_.successNel[String]) getOrElse errorStrFormat(box.key).failNel[String]
 
-    validation flatMap {
-
-      case codebaseURIStr :: jnlpLocStr :: mainJarStr :: mainClassStr :: Nil =>
+    (f(codebaseURIBox) |@| f(jnlpLocBox) |@| f(mainJarBox) |@| f(mainClassBox)) {
+      (codebaseURIStr, jnlpLocStr, mainJarStr, mainClassStr) =>
 
         def jar(pathAndIsLazy: (String, Boolean)) = pathAndIsLazy match { case (path, isLazy) => new Jar(path, isLazy) }
 
@@ -118,18 +106,10 @@ object JNLP {
         val properties       = propertiesBox                getOrElse Properties
         val arguments        = argumentsBox                 getOrElse Arguments
 
-        Success(
-          new JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                   isOfflineAllowed, appNameInMenu, vendor, depsPath, vmArgs, otherJars, properties, arguments)
-        )
-
-      case _ =>
-        Failure("Somehow, an invalid set of required JNLP parameters was passed in/matched on.")
-
+        new JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
+                 isOfflineAllowed, appNameInMenu, vendor, depsPath, vmArgs, otherJars, properties, arguments)
     }
-
   }
-
 }
 
 private[jnlp] object JNLPDefaults {
