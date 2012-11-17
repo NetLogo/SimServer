@@ -46,29 +46,26 @@ object UserWork extends FromMapParser {
   override protected type Target    = UserWork
   override protected type ConsTuple = (Option[Long], Long, String, String, String, String, String, String, String, Seq[Supplement], Seq[Comment])
 
-  override def fromMap(params: MapInput) : Output = {
+  override def fromMap(implicit params: MapInput) : Output = {
 
     val PeriodIDKey    = "period_id"
     val RunIDKey       = "run_id"
     val UserIDKey      = "user_id"
     val DataKey        = "data"
-    val Keys           = List(PeriodIDKey, RunIDKey, UserIDKey, DataKey)
 
+    // Not required
     val TypeKey        = "type"
     val MetadataKey    = "metadata"
     val DescriptionKey = "description"
 
-    val valueMaybes = Keys map {
-      key => params.get(key) map (_.succeed) getOrElse ("No item with key '%s' passed in".format(key).failNel) map (List(_))
-    } // We `map` the `Success`es into lists so that `append` (called below) will give me something pattern-matchable --JAB
-
-    val valueTupleMaybe = valueMaybes reduce (_ append _) map {
-      case periodID :: runID :: userID :: data :: Nil =>
+    // Builds an applicative, and constructs a tuple out of the applied input
+    // The function passed to the applicative is not run is one or more `Failure`s is in the created applicative
+    // All `Failure`s coalesce in a `NonEmptyList`, and the code will essentially short-circuit to avoid the "success" path
+    val valueTupleMaybe = (fetch(PeriodIDKey) |@| fetch(RunIDKey) |@| fetch(UserIDKey) |@| fetch(DataKey)) {
+      (periodID, runID, userID, data) =>
         val metadata = params.getOrElse(MetadataKey, "")
         val typ      = params.getOrElse(TypeKey, SupplementMetadata.fromString(metadata).fold((_ => ""), (_.getType)))
         (System.currentTimeMillis(), periodID, runID, userID, typ, data, metadata, params.getOrElse(DescriptionKey, ""))
-      case _ =>
-        throw new IllegalArgumentException("Broken Work validation format!")
     }
 
     valueTupleMaybe flatMap (validate _).tupled map (UserWork.apply _).tupled
@@ -76,25 +73,19 @@ object UserWork extends FromMapParser {
   }
 
   protected def validate(timestamp: Long, periodID: String, runID: String, userID: String,
-                         typ: String, data: String, metadata: String, description: String) : ValidationNEL[F, ConsTuple] = {
+                         typ: String, data: String, metadata: String, description: String) : ValidationNEL[FailType, ConsTuple] = {
 
     val timestampMaybe   = Validator.validateTimestamp(timestamp)
     val periodIDMaybe    = Validator.validatePeriodID(periodID)
     val runIDMaybe       = Validator.validateRunID(runID)
     val userIDMaybe      = Validator.validateUserID(userID)
-    val typeMaybe        = typ.succeed
-    val dataMaybe        = data.succeed
-    val metadataMaybe    = metadata.succeed
-    val descriptionMaybe = description.succeed
-    val maybes           = List(timestampMaybe, periodIDMaybe, runIDMaybe, userIDMaybe,
-                                typeMaybe, dataMaybe, metadataMaybe, descriptionMaybe) map (_ map (List(_)))
+    val typeMaybe        = typ.successNel[String]
+    val dataMaybe        = data.successNel[String]
+    val metadataMaybe    = metadata.successNel[String]
+    val descriptionMaybe = description.successNel[String]
 
-    maybes reduce (_ append _) map {
-      case (timestamp: Long) :: (periodID: String) :: (runID: String) :: (userID: String) ::
-           (typ: String) :: (data: String) :: (metadata: String) :: (description: String) :: Nil =>
-        (None, timestamp, periodID, runID, userID, typ, data, metadata, description, Seq(), Seq())
-      case _ =>
-        throw new IllegalArgumentException("Broken Work constructor validation format!")
+    (timestampMaybe |@| periodIDMaybe |@| runIDMaybe |@| userIDMaybe |@| typeMaybe |@| dataMaybe |@| metadataMaybe |@| descriptionMaybe) {
+      (None, _, _, _, _, _, _, _, _, Seq(), Seq())
     }
 
   }

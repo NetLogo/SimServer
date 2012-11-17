@@ -20,43 +20,32 @@ object UserWorkComment extends FromMapParser {
   override protected type Target    = UserWorkComment
   override protected type ConsTuple = (Option[Long], Option[Long], Long, String, String)
 
-  override def fromMap(params: MapInput) : Output = {
+  override def fromMap(implicit params: MapInput) : Output = {
 
+    // Required
     val RefIDKey   = "ref_id"
     val UserIDKey  = "user_id"
     val CommentKey = "comment"
-    val Keys       = List(RefIDKey, UserIDKey, CommentKey)
 
-    val valueMaybes = Keys map {
-      key => params.get(key) map (_.succeed) getOrElse ("No item with key '%s' passed in".format(key).failNel) map (List(_))
-    } // We `map` the `Success`es into lists so that `append` (called below) will give me something pattern-matchable --JAB
-
-    val valueTupleMaybe = valueMaybes reduce (_ append _) map {
-      case refID :: userID :: comment :: Nil => (refID, System.currentTimeMillis(), userID, comment)
-      case _                                 => throw new IllegalArgumentException("Broken Comment validation format!")
-    }
-
-    valueTupleMaybe flatMap (validate _).tupled map (UserWorkComment.apply _).tupled
+    (fetch(RefIDKey) |@| fetch(UserIDKey) |@| fetch(CommentKey)) {
+      (_, System.currentTimeMillis(), _, _)
+    } flatMap (validate _).tupled map (UserWorkComment.apply _).tupled
 
   }
 
-  protected def validate(refID: String, timestamp: Long, userID: String, comment: String) : ValidationNEL[F, ConsTuple] = {
+  protected def validate(refID: String, timestamp: Long, userID: String, comment: String) : ValidationNEL[FailType, ConsTuple] = {
 
     val refIDMaybe     = Validator.validateRefID(refID)
     val timestampMaybe = Validator.validateTimestamp(timestamp)
     val userIDMaybe    = Validator.validateUserID(userID)
-    val commentMaybe   = comment.succeed flatMap {
+    val commentMaybe   = comment.successNel[String] flatMap {
       case x if (x.isEmpty) => "Invalid comment; comment cannot be empty".failNel
-      case x                => x.succeed
+      case x                => x.successNel[String]
     }
 
-    val maybes = List(refIDMaybe, timestampMaybe, userIDMaybe, commentMaybe) map (_ map (List(_)))
-
-    maybes reduce (_ append _) map {
-      case (refID: Long) :: (timestamp: Long) :: (userID: String) :: (comment: String) :: Nil =>
+    (refIDMaybe |@| timestampMaybe |@| userIDMaybe |@| commentMaybe) {
+      (refID, timestamp, userID: String, comment: String) =>
         (None, Option(refID), timestamp, userID, comment)
-      case _ =>
-        throw new IllegalArgumentException("Broken Comment constructor validation format!")
     }
 
   }

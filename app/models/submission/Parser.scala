@@ -1,7 +1,6 @@
 package models.submission
 
-import scalaz.Scalaz.ToValidationV
-import scalaz.ValidationNEL
+import scalaz.{ Scalaz, ValidationNEL}, Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,20 +11,17 @@ import scalaz.ValidationNEL
 
 // Unless I wanna go all `shapeless` on this thing's ass, there's not really a good way to enforce having a `validate` method... --JAB
 private[submission] trait Parser {
-
-  protected type F = String
-  implicit def any2ValidationP[T](that: T) = new ValidationP(that)
-  protected class ValidationP[T](that: T) { def succeed = that.successNel[F] }
-
   protected type Target
   protected type ConsTuple <: Product
-  protected type Output = ValidationNEL[F, Target]
-
+  protected type FailType = String
+  protected type Output   = ValidationNEL[FailType, Target]
 }
 
 private[submission] trait FromMapParser extends Parser {
   protected type MapInput = Map[String, String]
-  def fromMap(params: MapInput) : Output
+  def fromMap(implicit params: MapInput) : Output
+  def fetch(key: String)(implicit params: MapInput) = // Converts keys to `Validation`s
+    params.get(key) map (_.successNel[String]) getOrElse ("No item with key '%s' passed in".format(key).failNel)
 }
 
 private[submission] trait FromStringParser extends Parser {
