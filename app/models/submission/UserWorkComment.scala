@@ -38,10 +38,7 @@ object UserWorkComment extends FromMapParser {
     val refIDMaybe     = Validator.validateRefID(refID)
     val timestampMaybe = Validator.validateTimestamp(timestamp)
     val userIDMaybe    = Validator.validateUserID(userID)
-    val commentMaybe   = comment.successNel[String] flatMap {
-      case x if (x.isEmpty) => "Invalid comment; comment cannot be empty".failNel
-      case x                => x.successNel[String]
-    }
+    val commentMaybe   = if (comment.isEmpty) "Invalid comment; comment cannot be empty".failNel else comment.successNel[String]
 
     (refIDMaybe |@| timestampMaybe |@| userIDMaybe |@| commentMaybe) {
       (refID, timestamp, userID: String, comment: String) =>
