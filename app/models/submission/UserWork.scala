@@ -79,10 +79,10 @@ object UserWork extends FromMapParser {
     val periodIDMaybe    = Validator.validatePeriodID(periodID)
     val runIDMaybe       = Validator.validateRunID(runID)
     val userIDMaybe      = Validator.validateUserID(userID)
-    val typeMaybe        = typ.successNel[String]
-    val dataMaybe        = data.successNel[String]
-    val metadataMaybe    = metadata.successNel[String]
-    val descriptionMaybe = description.successNel[String]
+    val typeMaybe        = Validator.accept(typ)
+    val dataMaybe        = Validator.accept(data)
+    val metadataMaybe    = Validator.accept(metadata)
+    val descriptionMaybe = Validator.accept(description)
 
     (timestampMaybe |@| periodIDMaybe |@| runIDMaybe |@| userIDMaybe |@| typeMaybe |@| dataMaybe |@| metadataMaybe |@| descriptionMaybe) {
       (None, _, _, _, _, _, _, _, _, Seq(), Seq())

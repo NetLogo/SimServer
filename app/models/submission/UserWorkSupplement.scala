@@ -52,9 +52,9 @@ object UserWorkSupplement extends FromMapParser {
   protected def validate(refID: String, typ: String, data: String, metadata: String) : ValidationNEL[FailType, ConsTuple] = {
 
     val refIDMaybe = Validator.validateRefID(refID)
-    val typeMaybe  = typ.successNel[String]
-    val dataMaybe  = data.successNel[String]
-    val metaMaybe  = metadata.successNel[String]
+    val typeMaybe  = Validator.accept(typ)
+    val dataMaybe  = Validator.accept(data)
+    val metaMaybe  = Validator.accept(metadata)
 
     (refIDMaybe |@| typeMaybe |@| dataMaybe |@| metaMaybe) {
       (refID, typ: String, data: String, metadata: String) =>
