@@ -11,14 +11,18 @@ import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 private[submission] object Validator {
 
-  protected type V[T] = ValidationNEL[String, T]
+  protected type Fail = String
+  protected type V[T] = ValidationNEL[Fail, T]
+
+  def accept[T](x: T) = x.successNel[Fail]
+  def deny  [T](x: T) = x.failNel
 
   def validateRefID(refID: String) : V[Long] =
     ensureNotEmpty(refID, "ref ID") flatMap {
       x =>
-        try x.toLong.successNel
+        try x.toLong match { case y => accept(y) }
         catch {
-          case ex: NumberFormatException => "Cannot convert '%s' to Long; either not numerical or too many digits.".format(x).failNel
+          case ex: NumberFormatException => deny("Cannot convert '%s' to Long; either not numerical or too many digits.".format(x))
         }
     }
 
@@ -41,8 +45,8 @@ private[submission] object Validator {
     ensure(data, dataName)("value is too small")(_ <= 0)
 
   protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: => String) : V[T] = param match {
-    case x if cond(x) => errorStr.failNel
-    case x            => x.successNel
+    case x if cond(x) => deny(errorStr)
+    case x            => accept(x)
   }
 
 }
