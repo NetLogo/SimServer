@@ -23,9 +23,9 @@ private[submission] object Validator {
     }
 
   def validateTimestamp(timestamp: Long) = ensureNonNegative(timestamp, "timestamp")
-  def validateUserID    (userID: String) = ensureNotEmpty(userID,   "user_id")
-  def validatePeriodID(periodID: String) = ensureNotEmpty(periodID, "period id")
-  def validateRunID      (runID: String) = ensureNotEmpty(runID,    "run id")
+  def validateUserID    (userID: String) = ensureNotEmpty(userID,   "user ID")
+  def validatePeriodID(periodID: String) = ensureNotEmpty(periodID, "period ID")
+  def validateRunID      (runID: String) = ensureNotEmpty(runID,    "run ID")
 
   protected val ErrorMessageTemplate = "Invalid value given for %s; %s".format(_: String, _: String)
 
