@@ -91,7 +91,6 @@ object Submission extends Controller {
   private def generateDefaultJS(name: String, funcType: String) : String =
     """alert("No '%s' action defined for content type '%s'");""".format(funcType, name)
 
-  //@ Detect the error here on `getTypeBundle... == None`
   def submitWork = APIAction {
     implicit request =>
       val fileRegistrationFunc = registerFile[UserWork](_.typ)(_.data) {
