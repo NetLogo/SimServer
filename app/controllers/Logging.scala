@@ -16,10 +16,6 @@ object Logging extends Controller {
 
   val LoggingDataKey = "logging_data"
 
-  def ws = Action {
-    Ok(views.html.ws())
-  }
-
   def startLogging = APIAction {
     Ok("/" + LoggingHandler.createNewLog())
   }
