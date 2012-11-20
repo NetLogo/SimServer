@@ -80,10 +80,10 @@ object Submission extends Controller {
 
   private def finalizeJS(funcBody: String, name: String, funcType: String) : String =
     """
-      function %s_custom_%s(data) {
-        %s
-      }
-    """.format(funcType, name, funcBody)
+      |function %s_custom_%s(data) {
+      |  %s
+      |}
+    """.stripMargin.format(funcType, name, funcBody)
 
   private def generateDefaultJS(name: String, funcType: String) : String =
     """alert("No '%s' action defined for content type '%s'");""".format(funcType, name)
