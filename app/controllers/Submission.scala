@@ -20,8 +20,6 @@ object Submission extends Controller {
 
   private def nel2Str(nel: NonEmptyList[String]) = nel.list.mkString("\n")
 
-  //@ Ensure that the 'uploads' folder exists on init
-
   // This seems to be a bit of a misfit, but... it actually kind of makes sense to do it here, when you think about it
   def listStudentsIn(runID: String, periodID: String) = APIAction {
     Ok(SubmissionDBManager.getStudentsByRunAndPeriod(runID, periodID).mkString("\n"))
