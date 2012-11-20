@@ -20,23 +20,8 @@ case class UserWork(override val id:          Option[Long] = None,
                                  description: String,
                                  supplements: Seq[Supplement],
                                  comments:    Seq[Comment]) extends Entry {
-
-  def addComments   (newComments:    Comment*)    = this.cloneWith(comments = this.comments ++ newComments)
-  def addSupplements(newSupplements: Supplement*) = this.cloneWith(supplements = this.supplements ++ newSupplements)
-
-  def cloneWith(id:          Option[Long]    = this.id,
-                timestamp:   Long            = this.timestamp,
-                periodID:    String          = this.periodID,
-                runID:       String          = this.runID,
-                userID:      String          = this.userID,
-                typ:         String          = this.typ,
-                data:        String          = this.data,
-                metadata:    String          = this.metadata,
-                description: String          = this.description,
-                supplements: Seq[Supplement] = this.supplements,
-                comments:    Seq[Comment]    = this.comments) =
-    UserWork(id, timestamp, periodID, runID, userID, typ, data, metadata, description, supplements, comments)
-
+  def addComments   (newComments:    Comment*)    = this.copy(comments = this.comments ++ newComments)
+  def addSupplements(newSupplements: Supplement*) = this.copy(supplements = this.supplements ++ newSupplements)
 }
 
 object UserWork extends FromMapParser {

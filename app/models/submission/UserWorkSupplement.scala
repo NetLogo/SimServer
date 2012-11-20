@@ -11,16 +11,7 @@ case class UserWorkSupplement(override val id:       Option[Long],
                               override val refID:    Option[Long],
                                            typ:      String,
                                            data:     String,
-                                           metadata: String) extends Association {
-
-  def cloneWith(id:       Option[Long]    = this.id,
-                refID:    Option[Long]    = this.refID,
-                typ:      String          = this.typ,
-                data:     String          = this.data,
-                metadata: String          = this.metadata) =
-    UserWorkSupplement(id, refID, typ, data, metadata)
-
-}
+                                           metadata: String) extends Association
 
 object UserWorkSupplement extends FromMapParser {
 

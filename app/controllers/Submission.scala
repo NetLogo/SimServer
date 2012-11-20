@@ -95,7 +95,7 @@ object Submission extends Controller {
   def submitWork = APIAction {
     implicit request =>
       val fileRegistrationFunc = registerFile[UserWork](_.typ)(_.data) {
-        (id, newData) => _.cloneWith(id = Option(id), data = newData)
+        (id, newData) => _.copy(id = Option(id), data = newData)
       } _
       submit(request, UserWork.fromMap(_), fileRegistrationFunc)
   }
@@ -108,7 +108,7 @@ object Submission extends Controller {
   def submitSupplement = APIAction {
     implicit request =>
       val fileRegistrationFunc = registerFile[UserWorkSupplement](_.typ)(_.data) {
-        (id, newData) => _.cloneWith(id = Option(id), data = newData)
+        (id, newData) => _.copy(id = Option(id), data = newData)
       } _
       submit(request, UserWorkSupplement.fromMap(_), fileRegistrationFunc)
   }
