@@ -53,7 +53,6 @@ object Submission extends Controller {
   }
 
   //@ I think that I have periods and runs backwards in order...
-  //@ I should display a notification when the work list is empty
   def viewWork(period: String, run: String, user: String) = Action {
 
     val ActionFuncType       = "do"
