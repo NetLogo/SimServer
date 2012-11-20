@@ -11,8 +11,8 @@ import models.submission, submission.{ UserWorkComment => Comment }, submission.
 
 case class UserWork(override val id:          Option[Long] = None,
                                  timestamp:   Long = System.currentTimeMillis(),
-                                 periodID:    String,
                                  runID:       String,
+                                 periodID:    String,
                                  userID:      String,
                                  typ:         String,
                                  data:        String,
@@ -33,8 +33,8 @@ object UserWork extends FromMapParser {
 
   override def fromMap(implicit params: MapInput) : Output = {
 
-    val PeriodIDKey    = "period_id"
     val RunIDKey       = "run_id"
+    val PeriodIDKey    = "period_id"
     val UserIDKey      = "user_id"
     val DataKey        = "data"
 
@@ -46,30 +46,30 @@ object UserWork extends FromMapParser {
     // Builds an applicative, and constructs a tuple out of the applied input
     // The function passed to the applicative is not run is one or more `Failure`s is in the created applicative
     // All `Failure`s coalesce in a `NonEmptyList`, and the code will essentially short-circuit to avoid the "success" path
-    val valueTupleMaybe = (fetch(PeriodIDKey) |@| fetch(RunIDKey) |@| fetch(UserIDKey) |@| fetch(DataKey)) {
-      (periodID, runID, userID, data) =>
+    val valueTupleMaybe = (fetch(RunIDKey) |@| fetch(PeriodIDKey) |@| fetch(UserIDKey) |@| fetch(DataKey)) {
+      (runID, periodID, userID, data) =>
         val metadata = params.getOrElse(MetadataKey, "")
         val typ      = params.getOrElse(TypeKey, SupplementMetadata.fromString(metadata).fold((_ => ""), (_.getType)))
-        (System.currentTimeMillis(), periodID, runID, userID, typ, data, metadata, params.getOrElse(DescriptionKey, ""))
+        (System.currentTimeMillis(), runID, periodID, userID, typ, data, metadata, params.getOrElse(DescriptionKey, ""))
     }
 
     valueTupleMaybe flatMap (validate _).tupled map (UserWork.apply _).tupled
 
   }
 
-  protected def validate(timestamp: Long, periodID: String, runID: String, userID: String,
+  protected def validate(timestamp: Long, runID: String, periodID: String, userID: String,
                          typ: String, data: String, metadata: String, description: String) : ValidationNEL[FailType, ConsTuple] = {
 
     val timestampMaybe   = Validator.validateTimestamp(timestamp)
-    val periodIDMaybe    = Validator.validatePeriodID(periodID)
     val runIDMaybe       = Validator.validateRunID(runID)
+    val periodIDMaybe    = Validator.validatePeriodID(periodID)
     val userIDMaybe      = Validator.validateUserID(userID)
     val typeMaybe        = Validator.accept(typ)
     val dataMaybe        = Validator.accept(data)
     val metadataMaybe    = Validator.accept(metadata)
     val descriptionMaybe = Validator.accept(description)
 
-    (timestampMaybe |@| periodIDMaybe |@| runIDMaybe |@| userIDMaybe |@| typeMaybe |@| dataMaybe |@| metadataMaybe |@| descriptionMaybe) {
+    (timestampMaybe |@| runIDMaybe |@| periodIDMaybe |@| userIDMaybe |@| typeMaybe |@| dataMaybe |@| metadataMaybe |@| descriptionMaybe) {
       (None, _, _, _, _, _, _, _, _, Seq(), Seq())
     }
 

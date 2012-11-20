@@ -52,13 +52,12 @@ object Submission extends Controller {
       Redirect(routes.Submission.viewTypeEditForm(name))
   }
 
-  //@ I think that I have periods and runs backwards in order...
-  def viewWork(period: String, run: String, user: String) = Action {
+  def viewWork(run: String, period: String, user: String) = Action {
 
     val ActionFuncType       = "do"
     val PresentationFuncType = "present"
 
-    val userWorks = SubmissionDBManager.getUserWork(period, run, user)
+    val userWorks = SubmissionDBManager.getUserWork(run, period, user)
     val (actionJsSeq, presentationJsSeq) = userWorks.map(_.typ).distinct.map {
       name =>
         val bundle               = SubmissionDBManager.getTypeBundleByName(name)
@@ -71,9 +70,9 @@ object Submission extends Controller {
 
   }
 
-  def updateAndViewWork(period: String, run: String, user: String) = Action {
+  def updateAndViewWork(run: String, period: String, user: String) = Action {
     (submit(_: Request[AnyContent], UserWorkComment.fromMap(_), noCleanup)) andThen {
-      case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork(period, run, user))
+      case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork(run, period, user))
       case x                            => x
     }
   }

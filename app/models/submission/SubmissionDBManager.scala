@@ -36,23 +36,23 @@ object SubmissionDBManager {
     }
   }
 
-  def getUserWork(period: String, run: String, user: String) : Seq[UserWork] = {
+  def getUserWork(run: String, period: String, user: String) : Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
       SQL (
         """
           |SELECT * FROM %s
-          |WHERE %s = {period} AND %s = {run} AND %s = {user};
-        """.stripMargin.format(TableName, PeriodIDKey, RunIDKey, UserIDKey)
+          |WHERE %s = {run} AND %s = {period} AND %s = {user};
+        """.stripMargin.format(TableName, RunIDKey, PeriodIDKey, UserIDKey)
       ) on (
-        "period"    -> period,
         "run"       -> run,
+        "period"    -> period,
         "user"      -> user
       ) as {
-        long(IDKey) ~ timestamp(TimestampKey) ~ str(PeriodIDKey) ~ str(RunIDKey) ~ str(UserIDKey) ~
+        long(IDKey) ~ timestamp(TimestampKey) ~ str(RunIDKey) ~ str(PeriodIDKey) ~ str(UserIDKey) ~
           str(TypeKey) ~ str(DataKey) ~ str(MetadataKey) ~ str(DescriptionKey) map {
-          case id ~ timestamp ~ session ~ run ~ user ~ typ ~ data ~ metadata ~ description =>
-            UserWork(Option(id), timestamp, session, run, user, typ, data, metadata, description,
+          case id ~ timestamp ~ run ~ period ~ user ~ typ ~ data ~ metadata ~ description =>
+            UserWork(Option(id), timestamp, run, period, user, typ, data, metadata, description,
                      getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
           case _ => raiseDBAccessException
         } *
@@ -137,12 +137,12 @@ private object Submittable {
         """
           |INSERT INTO %s
           |(%s, %s, %s, %s, %s, %s, %s, %s) VALUES
-          |({timestamp}, {periodID}, {runID}, {userID}, {type}, {data}, {metadata}, {description});
-        """.stripMargin.format(TableName, TimestampKey, PeriodIDKey, RunIDKey, UserIDKey, TypeKey, DataKey, MetadataKey, DescriptionKey)
+          |({timestamp}, {runID}, {periodID}, {userID}, {type}, {data}, {metadata}, {description});
+        """.stripMargin.format(TableName, TimestampKey, RunIDKey, PeriodIDKey, UserIDKey, TypeKey, DataKey, MetadataKey, DescriptionKey)
       ) on (
         "timestamp"   -> userWork.timestamp,
-        "periodID"    -> userWork.periodID,
         "runID"       -> userWork.runID,
+        "periodID"    -> userWork.periodID,
         "userID"      -> userWork.userID,
         "type"        -> userWork.typ,
         "data"        -> userWork.data,
@@ -238,15 +238,15 @@ private object Updatable {
       val sql = SQL (
         """
           |UPDATE %s
-          |SET %s={timestamp}, %s={period_id}, %s={run_id}, %s={user_id},
+          |SET %s={timestamp}, %s={run_id}, %s={period_id}, %s={user_id},
           |    %s={type}, %s={data}, %s={metadata}, %s={description}
           |WHERE %s={id};
-        """.stripMargin.format(TableName, TimestampKey, PeriodIDKey, RunIDKey, UserIDKey, TypeKey, DataKey, MetadataKey, DescriptionKey, IDKey)
+        """.stripMargin.format(TableName, TimestampKey, RunIDKey, PeriodIDKey, UserIDKey, TypeKey, DataKey, MetadataKey, DescriptionKey, IDKey)
       ) on (
         "id"          -> userWork.id,
         "timestamp"   -> userWork.timestamp,
-        "period_id"   -> userWork.periodID,
         "run_id"      -> userWork.runID,
+        "period_id"   -> userWork.periodID,
         "user_id"     -> userWork.userID,
         "type"        -> userWork.typ,
         "data"        -> userWork.data,
