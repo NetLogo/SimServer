@@ -15,9 +15,9 @@ trait SupplementMetadata {
 }
 
 object SupplementMetadata extends FromStringParser {
-  protected type Target    = SupplementMetadata
-  protected type ConsTuple = Nothing //@ No validation done here yet
-  def fromString(str: String) : Output = {
+  override protected type Target    = SupplementMetadata
+  override protected type ConsTuple = Nothing
+  override def fromString(str: String) : Output = {
     Success(new SupplementMetadata { override def getType = (Json.parse(str) \ "type").as[String] })
   }
 }

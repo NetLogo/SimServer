@@ -5,10 +5,10 @@ import play.api.Logger
 
 import java.net.URI
 
-import scalaz.{ Failure, Success, Validation }
+import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
-import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar }
+import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar, NetLogoJNLP }
 import models.filemanager.TempFileManager
 import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
@@ -24,8 +24,6 @@ object HubNet extends Controller {
   val HubNetKy     = "hubnet_data"
   val ModelsSubDir = "assets/misc/models"
   val DepsSubDir   = "assets/misc/deps"
-
-  private lazy val thisIP = java.net.InetAddress.getLocalHost.getHostAddress
 
   TempFileManager.removeAll()  // Clear all temp gen files on startup
 
@@ -62,24 +60,24 @@ object HubNet extends Controller {
           val keys  = Seq(ModelNameKey, UserNameKey, TeacherNameKey, PortNumKey, IsHeadlessKey, IsLoggingKey)
           val pairs = keys zip vals
           val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
-          encryptedMaybe fold ((ExpectationFailed(_)), (str => Redirect(routes.HubNet.hubSnoop(NetUtil.encode(str)))))
+          encryptedMaybe fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (str => Redirect(routes.HubNet.hubSnoop(NetUtil.encode(str)))))
           // Fail or redirect to snoop the IP
       }
     )
   }
 
-  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : Validation[String, String] = {
+  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : ValidationNEL[String, String] = {
     try {
       val kvMap = requiredInfo ++ optionalPairs.flatten
       val delimed = kvMap.toSeq map { case (k, v) => "%s=%s".format(k, v) } mkString ResourceManager(ResourceManager.HubnetDelim)
       val encrypted = (new EncryptionUtil(ResourceManager(ResourceManager.HubNetKeyPass)) with PBEWithMF5AndDES) encrypt(delimed)
-      Success(encrypted)
+      encrypted.successNel[String]
     }
     catch {
       case ex: Exception =>
         val errorStr = "Failed to encrypt HubNet info"
         Logger.warn(errorStr, ex)
-        Failure("%s; %s".format(errorStr, ex.getMessage))
+        "%s; %s".format(errorStr, ex.getMessage).failNel
     }
   }
 
@@ -88,10 +86,10 @@ object HubNet extends Controller {
   }
 
   def handleTeacherProxy(encryptedStr: String, teacherIP: String) = Action {
-    request => handleHubNet(Success(encryptedStr), true, Option(teacherIP))(request)
+    request => handleHubNet(encryptedStr.successNel[String], true, Option(teacherIP))(request)
   }
 
-  def handleHubNet(encryptedStrMaybe: Validation[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
+  def handleHubNet(encryptedStrMaybe: ValidationNEL[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
                   (implicit request: Request[AnyContent]) : Result = {
 
     val inputAndSettingsMaybe =
@@ -105,39 +103,32 @@ object HubNet extends Controller {
 
         val ipPortMaybe = {
           import HubNetServerManager._
-          if (isTeacher) {
-            if (isHeadless)
-              startUpServer(modelNameOpt, teacherName, thisIP)
-            else
-              registerTeacherIPAndPort(teacherName, teacherIP.get, preferredPortOpt)
-          }
-          else
-            getPortByTeacherName(teacherName)
+          if (isTeacher) registerTeacherIPAndPort(teacherName, teacherIP.get, preferredPortOpt)
+          else           getPortByTeacherName(teacherName)
         }
 
-        val JNLPConnectPath = "http://abmplus.tech.northwestern.edu:9001/logging"
+        val JNLPConnectPath = "http://%s/logging".format(request.host)
 
         val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
         val programName = modelNameOpt getOrElse "NetLogo"
         val fileName = TempFileManager.formatFilePath(input, "jnlp")
-        val clientOrServerStr = if (!isHeadless && isTeacher) "Server" else "Client" //@ This logic should go to a JNLP class
+        val clientOrServerStr = if (isTeacher) "Server" else "Client"
 
         val (mainClass, jvmArgs, argsMaybe) = {
-          import HubNetJNLP.{ generateIPArgs, generatePortArgs, generateUserIDArgs }, models.jnlp.NetLogoJNLP.generateModelURLArgs
-          import HubNetJarManager._
-          if (isTeacher && !isHeadless) {
+          import HubNetJNLP._, NetLogoJNLP._, HubNetJarManager._
+          if (isTeacher) {
             val args =
               modelNameOpt map {
                 modelName => generateModelURLArgs(Models.getHubNetModelURL(modelName)) ++
                              ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => generatePortArgs(port)} ) ++
-                             (Util.ifFirstWrapSecond(isLogging, "--logging").toSeq) //@ This "--logging" should get moved out to a JNLP class
-              } map (Success(_)) getOrElse Failure("No model name supplied")
+                             generateLoggingArgs(isLogging)
+              } map (_.successNel[String]) getOrElse "No model name supplied".failNel
             (ServerMainClass, ServerVMArgs, args)
           }
-          else
-            (ClientMainClass, ClientVMArgs, ipPortMaybe map {
-              case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
-            })
+          else {
+            val args = ipPortMaybe map { case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port) }
+            (ClientMainClass, ClientVMArgs, args)
+          }
         }
 
         val properties = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", JNLPConnectPath)).toSeq
@@ -161,7 +152,7 @@ object HubNet extends Controller {
 
         propsMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
 
-    } fold ((ExpectationFailed(_)), (url => Redirect("/" + url)))
+    } fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Redirect("/" + url)))
 
   }
 

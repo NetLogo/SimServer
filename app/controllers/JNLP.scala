@@ -23,7 +23,7 @@ object JNLP extends Controller {
           val jnlpParamSet = JNLPParamSetManager.determineSet(json)
           val jnlpMaybe    = jnlpParamSet.bindFromJson(json, filename)
           val strMaybe     = jnlpMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, filename).toString replaceAllLiterally("\\", "/"))
-          strMaybe fold((ExpectationFailed(_)), (url => Ok("http://%s/%s".format(request.host, url))))
+          strMaybe fold((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Ok("http://%s/%s".format(request.host, url))))
       } getOrElse BadRequest("Invalid POST body; expected a JSON object")
   }
 
