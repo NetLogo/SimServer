@@ -1,6 +1,6 @@
 package models.submission
 
-import scalaz.{ Failure, Success, Validation }
+import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,28 +11,42 @@ import scalaz.{ Failure, Success, Validation }
 
 private[submission] object Validator {
 
-  def validateRefID(refID: String) : Validation[String, Long] =
-    failUnderCond(refID, StringEmptyCond, "Invalid value given for ref ID; ref ID cannot be empty") flatMap {
+  protected type Fail = String
+  protected type V[T] = ValidationNEL[Fail, T]
+
+  def accept[T](x: T) = x.successNel[Fail]
+  def deny  [T](x: T) = x.failNel
+
+  def validateRefID(refID: String) : V[Long] =
+    ensureNotEmpty(refID, "ref ID") flatMap {
       x =>
-        try {
-          Success(x.toLong)
-        }
+        try x.toLong match { case y => accept(y) }
         catch {
-          case ex: NumberFormatException => Failure("Cannot convert '%s' to Long; either not numerical or too many digits.\n".format(x))
+          case ex: NumberFormatException => deny("Cannot convert '%s' to Long; either not numerical or too many digits.".format(x))
         }
     }
 
-  def validateTimestamp(timestamp: Long) = failUnderCond(timestamp, LongLTEZeroCond, "Invalid timestamp; value is too small")
-  def validatePeriodID(periodID: String) = failUnderCond(periodID,  StringEmptyCond, "Invalid period ID; period ID cannot be empty")
-  def validateRunID      (runID: String) = failUnderCond(runID,     StringEmptyCond, "Invalid run ID; run ID cannot be empty")
-  def validateUserID    (userID: String) = failUnderCond(userID,    StringEmptyCond, "Invalid username; username cannot be empty")
+  def validateTimestamp(timestamp: Long) = ensureNonNegative(timestamp, "timestamp")
+  def validateUserID    (userID: String) = ensureNotEmpty(userID,   "user ID")
+  def validatePeriodID(periodID: String) = ensureNotEmpty(periodID, "period ID")
+  def validateRunID      (runID: String) = ensureNotEmpty(runID,    "run ID")
 
-  protected val StringEmptyCond = (_: String).isEmpty
-  protected val LongLTEZeroCond = (_: Long) <= 0
+  protected val ErrorMessageTemplate = "Invalid value given for %s; %s".format(_: String, _: String)
 
-  protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: String) : Validation[String, T] = Success(param) flatMap {
-    case x if cond(x) => Failure(errorStr + "\n")
-    case x            => Success(x)
+  def ensure[T](data: T, dataName: String)(errorDesc: String)(errorCond: (T) => Boolean) : V[T] = {
+    lazy val errorMessage = ErrorMessageTemplate(dataName, errorDesc)
+    failUnderCond(data, errorCond, errorMessage)
+  }
+
+  def ensureNotEmpty[T <% { def isEmpty : Boolean }](data: T, dataName: String) : V[T] =
+    ensure(data, dataName)("cannot be empty")(_.isEmpty)
+
+  def ensureNonNegative[T <% AnyVal { def <=(x: Int) : Boolean }](data: T, dataName: String) : V[T] =
+    ensure(data, dataName)("value is too small")(_ <= 0)
+
+  protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: => String) : V[T] = param match {
+    case x if cond(x) => deny(errorStr)
+    case x            => accept(x)
   }
 
 }

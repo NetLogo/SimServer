@@ -34,8 +34,12 @@
 
 @insertSubmissions(submissions: Seq[UserWork]) = {
   <div align=center>
-    @submissions.sortBy(_.timestamp).zipWithIndex.map {
-      case (submission, index) => { @insertWorkEntry(submission, index) }
+    @if(submissions.isEmpty) {
+      <div class="entry"><div class="submission" style="width: 90%">No work available for this user</div></div>
+    } else {
+      @submissions.sortBy(_.timestamp).zipWithIndex.map {
+        case (submission, index) => { @insertWorkEntry(submission, index) }
+      }
     }
   </div>
 }

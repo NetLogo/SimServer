@@ -35,33 +35,5 @@ object Application extends Controller {
       Ok(text)
   }
 
-  def handleNetLogoExportWorld = APIAction {
-
-    request =>
-
-      val ExportKey      = "netlogo_export"
-      val PeriodIDKey    = "period_id"
-      val RunIDKey       = "run_id"
-      val WorkgroupIDKey = "workgroup_id"
-
-      val paramMap = PlayUtil.commonExtractMap(request)
-      val status = (for {
-        input    <- paramMap.get(ExportKey)
-        periodID <- paramMap.get(PeriodIDKey)
-        runID    <- paramMap.get(RunIDKey)
-        userID   <- paramMap.get(WorkgroupIDKey)
-      } yield {
-        try Success(PermFileManager.registerFile(input, "%s_%s_%s_%s".format(System.currentTimeMillis(), periodID, runID, userID), "csv"))
-        catch {
-          case ex: Exception =>
-            val errorStr = "Failed to write data"
-            Logger.warn(errorStr, ex)
-            Failure("%s: %s".format(errorStr, ex.getMessage))
-        }
-      }) getOrElse (Failure("Invalid POST data"))
-      status.fold((ExpectationFailed(_)), (_ => Ok))
-
-  }
-
 }
 

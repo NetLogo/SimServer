@@ -56,12 +56,11 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
 
   private def appendToFile(data: String, file: File) {
     import java.io.{BufferedWriter, FileWriter}
-    Exception.ignoring(classOf[Exception]) {
-      //@ Better error handling might be appropriate
+    Exception.ignoring(classOf[java.io.IOException]) {
       val writer = new FileWriter(file, true)
       val out = new BufferedWriter(writer)
       out.write(data.replaceAllLiterally("\r\n", "\n") + "\n")
-      out.close();
+      out.close()
       writer.close()
     }
   }

@@ -2,8 +2,9 @@ package models.jnlp
 
 import java.net.URI
 
-import scalaz.Validation
+import scalaz.ValidationNEL
 
+import models.util.Util
 import models.web.ParamBox
 import NetLogoJNLPDefaults._
 
@@ -37,6 +38,7 @@ object NetLogoJNLP {
 
   private def generateArgs(key: String, value: String) = Seq(key, value)
   def generateModelURLArgs(url: String)                = generateArgs("--url", url.replaceAll(" ", "+"))
+  def generateLoggingArgs (isLogging: Boolean)         = Util.ifFirstWrapSecond(isLogging, "--logging").toSeq
 
   // Basically, applies the default values into the boxes if they are are currently `NoneParam`s
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
@@ -44,7 +46,7 @@ object NetLogoJNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
             otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
-            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : Validation[String, JNLP] = {
+            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : ValidationNEL[String, JNLP] = {
 
     val mainJar          = mainJarBox          orElseApply MainJar.jarName
     val mainClass        = mainClassBox        orElseApply MainClass
