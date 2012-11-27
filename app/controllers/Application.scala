@@ -1,11 +1,7 @@
 package controllers
 
-import play.api.Logger
 import play.api.mvc.{ Action, Controller }
 
-import scalaz.{ Success, Failure }
-
-import models.filemanager.PermFileManager
 import models.util.{ PlayUtil, Util }
 
 object Application extends Controller {
