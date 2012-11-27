@@ -31,8 +31,6 @@ trait FileManager extends Delayer {
   protected lazy val system      = ActorSystem(SystemName)
   protected lazy val fileFolder  = new File(PublicPath + File.separator + MyFolderName)
 
-  if (!fileFolder.exists()) fileFolder.mkdir()
-
   def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
     "%s/%s.%s".format(MyFolderName, fileNameBasis, fileExt)
   }
