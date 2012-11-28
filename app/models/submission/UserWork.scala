@@ -1,6 +1,6 @@
 package models.submission
 
-import models.submission, submission.{ UserWorkComment => Comment }, submission.{ UserWorkSupplement => Supplement }
+import models.submission.{ UserWorkComment => Comment, UserWorkSupplement => Supplement }
 
 /**
  * Created with IntelliJ IDEA.

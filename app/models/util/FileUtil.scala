@@ -1,6 +1,6 @@
 package models.util
 
-import java.io.{FileOutputStream, PrintWriter, File, FileWriter}
+import java.io.{ File, FileOutputStream, FileWriter, PrintWriter }
 
 import org.apache.commons.codec.binary.Base64
 

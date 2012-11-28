@@ -1,7 +1,8 @@
 package models.log
 
-import actors.{Actor, TIMEOUT}
+import actors.{ Actor, TIMEOUT }
 import scala.util.control.Exception
+
 import java.io.File
 
 class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
@@ -41,8 +42,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   }
 
   private def generateFile(id: Long): File = {
-    import java.text.SimpleDateFormat;
-    import java.util.Calendar
+    import java.text.SimpleDateFormat, java.util.Calendar
     val timeFormat = new SimpleDateFormat("MM-dd-yy__HH'h'mm'm'ss's'")
     val filename = "%s__sid%d%s".format(timeFormat.format(Calendar.getInstance().getTime), id, LogActor.LogFileExtension)
     createFile(filename)

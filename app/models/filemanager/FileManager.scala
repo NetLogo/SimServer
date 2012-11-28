@@ -7,7 +7,7 @@ import akka.dispatch.Await
 import akka.pattern.ask
 import akka.util.{ duration, Duration, Timeout }, duration._
 
-import models.{ Get, Delete, Initialize, Write }
+import models.{ Get, Delete, Initialize }
 import models.util.FileUtil
 import models.Write
 

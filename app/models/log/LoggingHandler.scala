@@ -1,11 +1,11 @@
 package models.log
 
-import java.util.zip.GZIPInputStream
-import collection.mutable.{ ArrayBuffer, HashMap }
-import io.Source
-import scala.util.Random
 import actors.Actor.State._
-import java.io.{ FilenameFilter, ByteArrayInputStream, File }
+import collection.mutable.{ ArrayBuffer, HashMap }
+import scala.util.Random
+
+import java.io.{ ByteArrayInputStream, File }
+import java.util.zip.GZIPInputStream
 
 object LoggingHandler {
 
@@ -64,7 +64,7 @@ object LoggingHandler {
     unGzip(java.net.URLDecoder.decode(data, encoding).getBytes(encoding))
   }
 
-  private def unGzip(data: Array[Byte]) : Option[String] = {
+  private def unGzip(data: Array[Byte]) : Option[String] =
     try {
 
       val in = new GZIPInputStream(new ByteArrayInputStream(data))
@@ -82,7 +82,6 @@ object LoggingHandler {
         play.api.Logger.warn("Failed to un-GZIP log data",  ex)
         None
     }
-  }
 
   // I used to sass this validation, but, honestly... it's not the worst
   private def isValid(data: String) : Boolean = data.toLowerCase.matches("""(?s)^[a-z]{%d}.*""".format(3))
