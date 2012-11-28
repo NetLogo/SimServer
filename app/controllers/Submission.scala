@@ -116,11 +116,6 @@ object Submission extends Controller {
       submit(request, UserWork.fromMap(_), fileRegistrationFunc)
   }
 
-  def submitComment = APIAction {
-    implicit request =>
-      submit(request, UserWorkComment.fromMap(_), noCleanup)
-  }
-
   def submitSupplement = APIAction {
     implicit request =>
       val fileRegistrationFunc = registerFile[UserWorkSupplement](_.typ)(_.data) {
