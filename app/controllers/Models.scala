@@ -28,7 +28,7 @@ object Models extends Controller {
 
   protected[controllers] def getHubNetModelURL(modelName: String)(implicit request: RequestHeader) : String = {
     val name = urlify(ModelMapper.unalias(modelName))
-    val ModelAssetURLFormat = "misc/models/hubnet/%s.nlogo".format((_: String))
+    val ModelAssetURLFormat = "models/hubnet/%s.nlogo".format((_: String))
     routes.Assets.at(ModelAssetURLFormat(name)).absoluteURL(false)
   }
 

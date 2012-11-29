@@ -13,7 +13,7 @@ import FileUtil.{ dropExt, ModelFileFilter }
 
 object ModelMapper {
 
-  private val fsPathToHubNet     = "./public/misc/models/hubnet/"
+  private val fsPathToHubNet     = "./public/models/hubnet/"
   private val aliasToFilenameMap = Map( //@ This would benefit from being a `BiHashMap`...
            "Dice Stalagmite" -> "Dice Stalagmite HubNet",
                     "Memory" -> "Memory HubNet",

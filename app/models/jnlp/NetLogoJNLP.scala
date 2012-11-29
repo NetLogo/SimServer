@@ -95,7 +95,7 @@ private[jnlp] object NetLogoJNLPDefaults {
   val IsOfflineAllowed                  = Defs.IsOfflineAllowed
   val AppNameInMenu                     = "NetLogo (WebStart)"
   val Vendor                            = "CCL"
-  val DepsPath                          = "misc/deps"
+  val DepsPath                          = "deps"
   val VMArgs                            = (noneIfEmpty(Defs.VMArgs) map (_ + " ") getOrElse "") + "-XX:MaxPermSize=128m -Xmx1024m"
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
   val NeededJars: Seq[Jar]              = NetLogoJarManager.getDefaultJars

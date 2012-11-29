@@ -120,7 +120,7 @@ private[jnlp] object JNLPDefaults {
   val IsOfflineAllowed                  = true
   val AppNameInMenu                     = "Java WebStart"
   val Vendor                            = "[Unknown Vendor]"
-  val DepsPath                          = "misc/deps"
+  val DepsPath                          = "deps"
   val VMArgs                            = ""
   val OtherJars:  Seq[Jar]              = Seq()
   val Properties: Seq[(String, String)] = Seq()

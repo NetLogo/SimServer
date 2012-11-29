@@ -21,8 +21,8 @@ import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PB
 object HubNet extends Controller {
 
   val HubNetKy     = "hubnet_data"
-  val ModelsSubDir = "assets/misc/models"
-  val DepsSubDir   = "assets/misc/deps"
+  val ModelsSubDir = "assets/models"
+  val DepsSubDir   = "assets/deps"
 
   TempFileManager.removeAll()  // Clear all temp gen files on startup
 
