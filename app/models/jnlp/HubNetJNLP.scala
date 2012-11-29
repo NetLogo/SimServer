@@ -76,7 +76,8 @@ object HubNetJNLP {
             otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]], programNameBox: ParamBox[String])
            (roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean], modelURLBox: ParamBox[String],
-            serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],  userIDBox: ParamBox[String]) : ValidationNEL[String, JNLP] = {
+            serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],  userIDBox: ParamBox[String])
+           (implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] = {
 
     // Through proper use of applicatives, I would be able to abstract this over arity.
     // But I won't, because that'd be a lot of work. --JAB (11/20/12)
