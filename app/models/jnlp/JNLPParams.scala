@@ -40,7 +40,7 @@ trait JNLPParams {
 
   private[jnlp] def doesAffiliate(js: JsValue) : Boolean
 
-  def bindFromJson(js: JsValue, jnlpLoc: String) : ValidationNEL[String, JNLP]
+  def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP]
 
 }
 
@@ -151,7 +151,7 @@ object BaseJNLPParams extends JNLPParams {
 
   override private[jnlp] def doesAffiliate(js: JsValue) = false
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String) : ValidationNEL[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] =
     JNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -187,7 +187,7 @@ object NetLogoParams extends JNLPParams {
 
   override private[jnlp] def doesAffiliate(js: JsValue) = IsNetLogoParam(js) is true
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String) : ValidationNEL[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] =
     NetLogoJNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -243,7 +243,7 @@ object HubNetParams extends JNLPParams {
                                         RoleParam, ServerIPParam, ServerPortParam, UserIDParam)
   override val paramCategoryLabel = "HubNet"
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String) : ValidationNEL[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] =
     HubNetJNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!

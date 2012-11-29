@@ -63,8 +63,7 @@ object StudentInfo extends InfoCompanion[StudentInfo] {
 
 case class TeacherInfo(private val mname: String, private val uname: String, private val headless: String,
                        private val tname: String, private val port: String,  private val logging: String)
-     extends HubNetRoleInfo(mname, uname, headless, tname, port, logging) {
-
+                       extends HubNetRoleInfo(mname, uname, headless, tname, port, logging) {
   def generateWithIP(ipAddr: String) : TeacherInfo = new TeacherInfo(mname, uname, headless, tname, port, logging)
 }
 

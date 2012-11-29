@@ -1,8 +1,6 @@
 package models.util
 
-import play.api.{ Logger, mvc }
-import play.api.libs.json._
-import mvc.{ AnyContent, Request }
+import play.api.{ libs, Logger, mvc }, libs.json._, mvc.{ AnyContent, Request }
 
 /**
  * Created with IntelliJ IDEA.

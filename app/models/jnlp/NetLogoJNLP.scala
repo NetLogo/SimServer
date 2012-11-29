@@ -46,8 +46,10 @@ object NetLogoJNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
             otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
-            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]]) : ValidationNEL[String, JNLP] = {
+            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]])
+           (implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] = {
 
+    val codebaseURI      = codebaseURIBox      orElseApply thisServerCodebaseURL
     val mainJar          = mainJarBox          orElseApply MainJar.jarName
     val mainClass        = mainClassBox        orElseApply MainClass
     val applicationName  = applicationNameBox  orElseApply ApplicationName
@@ -63,7 +65,7 @@ object NetLogoJNLP {
     val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (modelURLBox map generateModelURLArgs getOrElse Seq()))
 
     JNLP(
-      codebaseURIBox,
+      codebaseURI,
       jnlpLocBox,
       mainJar,
       mainClass,
@@ -95,7 +97,7 @@ private[jnlp] object NetLogoJNLPDefaults {
   val IsOfflineAllowed                  = Defs.IsOfflineAllowed
   val AppNameInMenu                     = "NetLogo (WebStart)"
   val Vendor                            = "CCL"
-  val DepsPath                          = "misc/deps"
+  val DepsPath                          = "deps"
   val VMArgs                            = (noneIfEmpty(Defs.VMArgs) map (_ + " ") getOrElse "") + "-XX:MaxPermSize=128m -Xmx1024m"
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
   val NeededJars: Seq[Jar]              = NetLogoJarManager.getDefaultJars

@@ -2,8 +2,8 @@ package controllers
 
 import play.api.mvc.Controller
 
-import models.jnlp.JNLPParamSetManager
 import models.filemanager.TempFileManager
+import models.jnlp.JNLPParamSetManager
 import models.util.PlayUtil
 
 /**
@@ -21,7 +21,7 @@ object JNLP extends Controller {
         json =>
           val filename     = TempFileManager.formatFilePath(json.toString, "jnlp")
           val jnlpParamSet = JNLPParamSetManager.determineSet(json)
-          val jnlpMaybe    = jnlpParamSet.bindFromJson(json, filename)
+          val jnlpMaybe    = jnlpParamSet.bindFromJson(json, filename)("http://%s/assets".format(request.host))
           val strMaybe     = jnlpMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, filename).toString replaceAllLiterally("\\", "/"))
           strMaybe fold((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Ok("http://%s/%s".format(request.host, url))))
       } getOrElse BadRequest("Invalid POST body; expected a JSON object")

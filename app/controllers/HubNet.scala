@@ -1,15 +1,14 @@
 package controllers
 
-import play.api.mvc._
-import play.api.Logger
+import play.api.{ Logger, mvc}, mvc._
 
 import java.net.URI
 
 import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
+import models.filemanager.TempFileManager
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
 import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar, NetLogoJNLP }
-import models.filemanager.TempFileManager
 import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
 /**
@@ -22,8 +21,8 @@ import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PB
 object HubNet extends Controller {
 
   val HubNetKy     = "hubnet_data"
-  val ModelsSubDir = "assets/misc/models"
-  val DepsSubDir   = "assets/misc/deps"
+  val ModelsSubDir = "assets/models"
+  val DepsSubDir   = "assets/deps"
 
   TempFileManager.removeAll()  // Clear all temp gen files on startup
 

@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
-import scalaz.{ NonEmptyList, Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import scalaz.{ NonEmptyList, Scalaz, ValidationNEL }, Scalaz._
 
 import models.submission._
 import models.util.PlayUtil
@@ -15,6 +15,13 @@ import models.util.PlayUtil
  */
 
 object Submission extends Controller {
+
+  protected class EnhancedParamMap(paramMap: Map[String, String]) {
+    def extract(key: String) : ValidationNEL[String, String] =
+      paramMap.get(key) map (_.successNel[String]) getOrElse "No such parameter found: %s".format(key).failNel
+  }
+
+  implicit def paramMap2Enhanced(paramMap: Map[String, String]) = new EnhancedParamMap(paramMap)
 
   private val noCleanup = ((_: (_, Long))._2.successNel[String])
 
@@ -31,10 +38,16 @@ object Submission extends Controller {
 
   def createType = Action {
     implicit request =>
-      val params = PlayUtil.commonExtractMap(request)
-      val bundle = TypeBundle(params("name"), "", "", "") //@ Validate better
-      SubmissionDBManager.submit(bundle)
-      Redirect(routes.Submission.viewTypeEditForm(bundle.name))
+      val params    = PlayUtil.commonExtractMap(request)
+      val nameMaybe = params extract "name"
+      nameMaybe flatMap {
+        name =>
+          val bundle = TypeBundle(name, "", "", "")
+          SubmissionDBManager.submit(bundle) map { _ => bundle }
+      } fold (
+        (nel    => ExpectationFailed(nel2Str(nel))),
+        (bundle => Redirect(routes.Submission.viewTypeEditForm(bundle.name)))
+      )
   }
 
   def viewTypeEditForm(name: String) = Action {
@@ -46,10 +59,18 @@ object Submission extends Controller {
 
   def editType(name: String) = Action {
     implicit request =>
-      val params = PlayUtil.commonExtractMap(request)
-      val bundle = TypeBundle(name, params("action_js"), params("presentation_js"), params("file_extension")) //@ Validate better
-      SubmissionDBManager.update(bundle)
-      Redirect(routes.Submission.viewTypeEditForm(name))
+      val params            = PlayUtil.commonExtractMap(request)
+      val actionMaybe       = params extract "action_js"
+      val presentationMaybe = params extract "presentation_js"
+      val fileExtMaybe      = params extract "file_extension"
+      (actionMaybe |@| presentationMaybe |@| fileExtMaybe) {
+        (action, presentation, fileExt) =>
+          val bundle = TypeBundle(name, action, presentation, fileExt)
+          SubmissionDBManager.update(bundle)
+      } fold (
+        (nel => ExpectationFailed(nel2Str(nel))),
+        (_   => Redirect(routes.Submission.viewTypeEditForm(name)))
+      )
   }
 
   def viewWork(run: String, period: String, user: String) = Action {
@@ -93,11 +114,6 @@ object Submission extends Controller {
         (id, newData) => _.copy(id = Option(id), data = newData)
       } _
       submit(request, UserWork.fromMap(_), fileRegistrationFunc)
-  }
-
-  def submitComment = APIAction {
-    implicit request =>
-      submit(request, UserWorkComment.fromMap(_), noCleanup)
   }
 
   def submitSupplement = APIAction {

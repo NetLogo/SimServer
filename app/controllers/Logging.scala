@@ -1,7 +1,7 @@
 package controllers
 
-import play.api._
 import play.api.mvc._
+
 import models.log.LoggingHandler
 import models.util.PlayUtil
 

@@ -4,7 +4,7 @@ import PlayProject._
 
 object ApplicationBuild extends Build {
 
-    val appName         = "WebStart Sandbox"
+    val appName         = "SimServer"
     val appVersion      = "1.0-SNAPSHOT"
 
     resolvers += (

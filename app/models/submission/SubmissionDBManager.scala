@@ -4,6 +4,8 @@ import anorm._
 import anorm.SqlParser._
 import play.api.db.DB
 
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
+
 import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 /**
@@ -129,6 +131,8 @@ sealed trait Submittable {
 
 private object Submittable {
 
+  import AnormExtras.tryInsert
+
   implicit def userWork2Submittable(userWork: UserWork) = new Submittable {
     override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
 
@@ -172,14 +176,13 @@ private object Submittable {
         "comment"   -> workComment.comment
       )
 
-      sql.executeInsert().get.successNel[String]
+      tryInsert(sql)(_.get.successNel[String])
 
     }
   }
 
   implicit def workSupplement2Submittable(workSupplement: UserWorkSupplement) = new Submittable {
     override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
-
 
       import DBConstants.UserWorkSupplements._
       val sql = SQL (
@@ -195,7 +198,7 @@ private object Submittable {
         "metadata" -> workSupplement.metadata
       )
 
-      sql.executeInsert().get.successNel[String]
+      tryInsert(sql)(_.get.successNel[String])
 
     }
   }
@@ -217,8 +220,8 @@ private object Submittable {
         "file_extension"  -> bundle.fileExtension
       )
 
-      sql.executeInsert(); 0L.successNel[String]
       // It makes no sense to get an ID back here, since the unique key for these is their already-known names
+      tryInsert(sql)(_ => 0L.successNel[String])
 
     }
   }
@@ -310,6 +313,13 @@ object AnormExtras {
   import java.math.{ BigInteger => JBigInt }
   def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
   def raiseDBAccessException = throw new java.sql.SQLException("Retrieved data from database in unexpected format.")
+  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNEL[String, Long])
+               (implicit connection: java.sql.Connection) : ValidationNEL[String, Long] = {
+    try sql.executeInsert() match { case x => f(x) }
+    catch {
+      case ex: MySQLIntegrityConstraintViolationException => "SQL constraint violated: %s".format(ex.getMessage).failNel
+    }
+  }
 }
 
 private object DBConstants {
