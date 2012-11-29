@@ -18,7 +18,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
           msgType match {
             case "pulse"    => replyOk()
             case "write"    => appendToFile(data, logFile); replyOk()
-            case "finalize" => replyCloseConnection(); finalizeLog(); exit("Mission Accomplished")
+            case "finalize" => replyCloseConnection(); finalizeLog();    exit("Mission Accomplished")
             case "abandon"  => replyCloseConnection(); logFile.delete(); exit("Process abandoned; file deleted")
             case msg        => replyConfused(msg)
           }
@@ -55,7 +55,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   }
 
   private def appendToFile(data: String, file: File) {
-    import java.io.{BufferedWriter, FileWriter}
+    import java.io.{ BufferedWriter, FileWriter }
     Exception.ignoring(classOf[java.io.IOException]) {
       val writer = new FileWriter(file, true)
       val out = new BufferedWriter(writer)
@@ -97,5 +97,5 @@ object LogActor {
   val ExpectedLogDir = "nl_logs"
   val LogFileExtension = ".txt"
   // val LogTerminator = "</eventSet>"
-  private val MessageSplitter = """(?s)([\w]+)\|?(.*)""".r // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
+  private val MessageSplitter = """(?s)([\w]+)(\|(.*))?""".r // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
 }
