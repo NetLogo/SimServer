@@ -179,8 +179,8 @@ object NetLogoParams extends JNLPParams {
   private val IsNetLogoKey   = "is_netlogo"
   private val IsNetLogoParam = Param[Boolean](IsNetLogoKey)
 
-  private val ModelURLKey   = "model_url"
-  private val ModelURLParam = Param[String](ModelURLKey)
+  val ModelURLKey   = "model_url"
+  val ModelURLParam = Param[String](ModelURLKey)
 
   override val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam, ModelURLParam)
   override val paramCategoryLabel              = "NetLogo"
@@ -219,9 +219,6 @@ object HubNetParams extends JNLPParams {
   private val IsHubNetClientKey   = "is_hubnet_client"
   private val IsHubNetClientParam = Param[Boolean](IsHubNetClientKey)
 
-  private val ModelURLKey   = "model_url"
-  private val ModelURLParam = Param[String](ModelURLKey)
-
   private val ProgramNameKey   = "program_name"
   private val ProgramNameParam = Param[String](ProgramNameKey)
 
@@ -239,7 +236,7 @@ object HubNetParams extends JNLPParams {
 
   override private[jnlp] def doesAffiliate(js: JsValue) = (IsHubNetServerParam(js) is true) || (IsHubNetClientParam(js) is true)
 
-  override val additionalParams   = Seq(IsHubNetClientParam, IsHubNetServerParam, ModelURLParam, ProgramNameParam,
+  override val additionalParams   = Seq(IsHubNetClientParam, IsHubNetServerParam, ProgramNameParam,
                                         RoleParam, ServerIPParam, ServerPortParam, UserIDParam)
   override val paramCategoryLabel = "HubNet"
 
@@ -263,7 +260,7 @@ object HubNetParams extends JNLPParams {
       ProgramNameParam(js))(
       RoleParam(js),
       IsHubNetServerParam(js) orElse (IsHubNetClientParam(js) map (!_)),
-      ModelURLParam(js),
+      NetLogoParams.ModelURLParam(js),
       ServerIPParam(js),
       ServerPortParam(js),
       UserIDParam(js)
