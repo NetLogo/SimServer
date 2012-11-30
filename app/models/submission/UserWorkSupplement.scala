@@ -32,7 +32,7 @@ object UserWorkSupplement extends FromMapParser {
     val valueTupleMaybe = (fetch(RefIDKey) |@| fetch(DataKey)) {
       (refID, data) =>
         val metadata = params.getOrElse(MetadataKey, "")
-        val typ      = params.getOrElse(TypeKey, SupplementMetadata.fromString(metadata).fold((_ => ""), (_.getType)))
+        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => ""), (_.getType)))
         (refID, typ, data, metadata)
     }
 

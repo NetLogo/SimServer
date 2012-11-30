@@ -49,7 +49,7 @@ object UserWork extends FromMapParser {
     val valueTupleMaybe = (fetch(RunIDKey) |@| fetch(PeriodIDKey) |@| fetch(UserIDKey) |@| fetch(DataKey)) {
       (runID, periodID, userID, data) =>
         val metadata = params.getOrElse(MetadataKey, "")
-        val typ      = params.getOrElse(TypeKey, SupplementMetadata.fromString(metadata).fold((_ => ""), (_.getType)))
+        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => ""), (_.getType)))
         (System.currentTimeMillis(), runID, periodID, userID, typ, data, metadata, params.getOrElse(DescriptionKey, ""))
     }
 
