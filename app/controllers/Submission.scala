@@ -73,6 +73,10 @@ object Submission extends Controller {
       )
   }
 
+  def viewWork1(run: String) = Action {
+    presentWork(SubmissionDBManager.getUserWork(run))
+  }
+
   def viewWork2(run: String, period: String) = Action {
     presentWork(SubmissionDBManager.getUserWork(run, period))
   }

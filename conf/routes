@@ -35,6 +35,7 @@ GET     /work-type/edit/:name       controllers.Submission.viewTypeEditForm(name
 POST    /work-type/edit/:name       controllers.Submission.editType(name)
 
 GET     /students-in/:run/:period   controllers.Submission.listStudentsIn(run, period)
+GET     /work/:run                  controllers.Submission.viewWork1(run)
 GET     /work/:run/:period          controllers.Submission.viewWork2(run, period)
 GET     /work/:run/:period/:id      controllers.Submission.viewWork3(run, period, id)
 POST    /work/:run/:period/:id      controllers.Submission.updateAndViewWork(run, period, id)

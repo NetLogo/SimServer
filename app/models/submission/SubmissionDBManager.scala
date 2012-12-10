@@ -38,6 +38,20 @@ object SubmissionDBManager {
     }
   }
 
+  def getUserWork(run: String) : Seq[UserWork] = {
+    DB.withConnection { implicit connection =>
+      import DBConstants.UserWork._
+      parseUserWork(SQL (
+        """
+          |SELECT * FROM %s
+          |WHERE %s = {run};
+        """.stripMargin.format(TableName, RunIDKey)
+      ) on (
+        "run" -> run
+      ))
+    }
+  }
+
   def getUserWork(run: String, period: String) : Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
