@@ -11,15 +11,15 @@ import scalaz.Success
  * Time: 1:30 PM
  */
 
-trait SupplementMetadata {
+trait Metadata {
   def getType: String
 }
 
-object SupplementMetadata extends FromStringParser {
-  override protected type Target    = SupplementMetadata
+object Metadata extends FromStringParser {
+  override protected type Target    = Metadata
   override protected type ConsTuple = Nothing
   override def fromString(str: String) : Output = {
-    Success(new SupplementMetadata { override def getType = (Json.parse(str) \ "type").as[String] })
+    Success(new Metadata { override def getType = (Json.parse(str) \ "type").as[String] })
   }
 }
 

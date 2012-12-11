@@ -28,8 +28,8 @@ object ToJsonConverters {
       val descriptionTuple = ("description", JsString(description))
       val supplementsTuple = ("supplements", Json.toJson(supplements map (_.toJsonObj)))
       val commentsTuple    = ("comments",    Json.toJson(comments map (_.toJsonObj)))
-      val tuples         = Seq(periodIDTuple, runIDTuple, userIDTuple, typeTuple, dataTuple,
-        metadataTuple, descriptionTuple, supplementsTuple, commentsTuple)
+      val tuples           = Seq(periodIDTuple, runIDTuple, userIDTuple, typeTuple, dataTuple,
+                                 metadataTuple, descriptionTuple, supplementsTuple, commentsTuple)
       JsObject(tuples)
     }
   }

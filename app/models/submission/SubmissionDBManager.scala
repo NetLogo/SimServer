@@ -38,10 +38,39 @@ object SubmissionDBManager {
     }
   }
 
+  def getUserWork(run: String) : Seq[UserWork] = {
+    DB.withConnection { implicit connection =>
+      import DBConstants.UserWork._
+      parseUserWork(SQL (
+        """
+          |SELECT * FROM %s
+          |WHERE %s = {run};
+        """.stripMargin.format(TableName, RunIDKey)
+      ) on (
+        "run" -> run
+      ))
+    }
+  }
+
+  def getUserWork(run: String, period: String) : Seq[UserWork] = {
+    DB.withConnection { implicit connection =>
+      import DBConstants.UserWork._
+      parseUserWork(SQL (
+        """
+          |SELECT * FROM %s
+          |WHERE %s = {run} AND %s = {period};
+        """.stripMargin.format(TableName, RunIDKey, PeriodIDKey)
+      ) on (
+        "run"       -> run,
+        "period"    -> period
+      ))
+    }
+  }
+
   def getUserWork(run: String, period: String, user: String) : Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
-      SQL (
+      parseUserWork(SQL (
         """
           |SELECT * FROM %s
           |WHERE %s = {run} AND %s = {period} AND %s = {user};
@@ -50,15 +79,20 @@ object SubmissionDBManager {
         "run"       -> run,
         "period"    -> period,
         "user"      -> user
-      ) as {
-        long(IDKey) ~ timestamp(TimestampKey) ~ str(RunIDKey) ~ str(PeriodIDKey) ~ str(UserIDKey) ~
-          str(TypeKey) ~ str(DataKey) ~ str(MetadataKey) ~ str(DescriptionKey) map {
-          case id ~ timestamp ~ run ~ period ~ user ~ typ ~ data ~ metadata ~ description =>
-            UserWork(Option(id), timestamp, run, period, user, typ, data, metadata, description,
-                     getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
-          case _ => raiseDBAccessException
-        } *
-      }
+      ))
+    }
+  }
+
+  private def parseUserWork(sql: SimpleSql[Row])(implicit connection: java.sql.Connection) : Seq[UserWork] = {
+    import DBConstants.UserWork._
+    sql as {
+      long(IDKey) ~ timestamp(TimestampKey) ~ str(RunIDKey) ~ str(PeriodIDKey) ~ str(UserIDKey) ~
+        str(TypeKey) ~ str(DataKey) ~ str(MetadataKey) ~ str(DescriptionKey) map {
+        case id ~ timestamp ~ run ~ period ~ user ~ typ ~ data ~ metadata ~ description =>
+          UserWork(Option(id), timestamp, run, period, user, typ, data, metadata, description,
+                   getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
+        case _ => raiseDBAccessException
+      } *
     }
   }
 

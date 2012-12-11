@@ -73,12 +73,23 @@ object Submission extends Controller {
       )
   }
 
-  def viewWork(run: String, period: String, user: String) = Action {
+  def viewWork1(run: String) = Action {
+    presentWork(SubmissionDBManager.getUserWork(run))
+  }
+
+  def viewWork2(run: String, period: String) = Action {
+    presentWork(SubmissionDBManager.getUserWork(run, period))
+  }
+
+  def viewWork3(run: String, period: String, user: String) = Action {
+    presentWork(SubmissionDBManager.getUserWork(run, period, user))
+  }
+
+  private def presentWork(userWorks: Seq[UserWork]) : SimpleResult[_] = {
 
     val ActionFuncType       = "do"
     val PresentationFuncType = "present"
 
-    val userWorks = SubmissionDBManager.getUserWork(run, period, user)
     val (actionJsSeq, presentationJsSeq) = userWorks.map(_.typ).distinct.map {
       name =>
         val bundle               = SubmissionDBManager.getTypeBundleByName(name)
@@ -93,7 +104,7 @@ object Submission extends Controller {
 
   def updateAndViewWork(run: String, period: String, user: String) = Action {
     (submit(_: Request[AnyContent], UserWorkComment.fromMap(_), noCleanup)) andThen {
-      case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork(run, period, user))
+      case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork3(run, period, user))
       case x                            => x
     }
   }
