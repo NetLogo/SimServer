@@ -2,13 +2,11 @@ package controllers
 
 import play.api.{ Logger, mvc}, mvc._
 
-import java.net.URI
-
 import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 import models.filemanager.TempFileManager
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
-import models.jnlp.{ HubNetJarManager, HubNetJNLP, Jar, NetLogoJNLP }
+import models.jnlp._
 import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
 
 /**
@@ -106,50 +104,73 @@ object HubNet extends Controller {
           else           getPortByTeacherName(teacherName)
         }
 
-        val JNLPConnectPath = "http://%s/logging".format(request.host)
-
-        val codebaseURL = routes.Assets.at("").absoluteURL(false) dropRight 1  // URL of 'assets'/'public' folder (drop the '/' from the end)
+        val connectPath = "http://%s/logging".format(request.host)
         val programName = modelNameOpt getOrElse "NetLogo"
-        val fileName = TempFileManager.formatFilePath(input, "jnlp")
-        val clientOrServerStr = if (isTeacher) "Server" else "Client"
+        val roleStr     = if (isTeacher) "Server" else "Client"
 
-        val (mainClass, jvmArgs, argsMaybe) = {
-          import HubNetJNLP._, NetLogoJNLP._, HubNetJarManager._
-          if (isTeacher) {
-            val args =
-              modelNameOpt map {
-                modelName => generateModelURLArgs(Models.getHubNetModelURL(modelName)) ++
-                             ipPortMaybe.fold( {_ => Seq()}, { case (_, port) => generatePortArgs(port)} ) ++
-                             generateLoggingArgs(isLogging)
-              } map (_.successNel[String]) getOrElse "No model name supplied".failNel
-            (ServerMainClass, ServerVMArgs, args)
-          }
-          else {
-            val args = ipPortMaybe map { case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port) }
-            (ClientMainClass, ClientVMArgs, args)
-          }
+        // Start setting values to go into JSON
+        import HubNetJNLP.{ generateAppName, generateDesc, generateShortDesc }
+
+        val appName          = generateAppName(programName, roleStr)
+        val desc             = generateDesc(programName, roleStr.toLowerCase)
+        val shortDesc        = generateShortDesc(programName)
+        val isOfflineAllowed = false
+        val args = {
+          import HubNetJNLP.{ generateIPArgs, generatePortArgs, generateUserIDArgs }, NetLogoJNLP.generateLoggingArgs
+          if (isTeacher)
+            ipPortMaybe.fold({_ => Seq()}, { case (_, port) => generatePortArgs(port) }) ++ generateLoggingArgs(isLogging)
+          else
+            ipPortMaybe map {
+              case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
+            } getOrElse Seq()
         }
 
-        val properties = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", JNLPConnectPath)).toSeq
-        val otherJars  = Util.ifFirstWrapSecond(isLogging, new Jar("logging.jar", true)).toSeq
+        // Building role-specific JSON
+        import play.api.libs.json.Json.{ toJson => js }
 
-        val propsMaybe = argsMaybe map {
-          args =>
-            new HubNetJNLP(
-              codebaseURI       = new URI(codebaseURL),
-              jnlpLoc           = fileName,
-              mainClass         = mainClass,
-              programName       = programName,
-              roleStr           = clientOrServerStr,
-              isOfflineAllowed  = false,
-              vmArgs            = jvmArgs,
-              otherJars         = otherJars,
-              properties        = properties,
-              args              = args
+        def propertyToJSON(property: (String, String)) = js(
+          Map(
+            JNLPKeys.PropertiesArrElemNameKey  -> js(property._1),
+            JNLPKeys.PropertiesArrElemValueKey -> js(property._2)
+          )
+        )
+
+        def jarToJSON(jar: Jar) = js(
+          Map(
+            JNLPKeys.OtherJarsArrElemNameKey   -> js(jar.jarName),
+            JNLPKeys.OtherJarsArrElemIsLazyKey -> js(jar.isLazy)
+          )
+        )
+
+        val properties        = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", connectPath)).toSeq
+        val otherJars         = Util.ifFirstWrapSecond(isLogging, new Jar("logging.jar", true)).toSeq
+        val roleExtrasMaybe   = {
+          if (!isTeacher) Map(HubNetKeys.IsHubNetClientKey -> js(true)).successNel[String]
+          else            modelNameOpt map (Models.getHubNetModelURL(_)) map {
+            modelURL =>
+              Map(
+                HubNetKeys.IsHubNetServerKey -> js(true),
+                NetLogoKeys.ModelURLKey      -> js(modelURL),
+                JNLPKeys.PropertiesKey       -> js(properties map propertyToJSON),
+                JNLPKeys.OtherJarsKey        -> js(otherJars  map jarToJSON)
+              ).successNel[String]
+          } getOrElse "No model name supplied".failNel
+        }
+
+        // Building general JSON; generating JNLP
+        roleExtrasMaybe flatMap {
+          extras =>
+            val json = js(
+              Map(
+                JNLPKeys.ApplicationNameKey  -> js(appName),
+                JNLPKeys.DescKey             -> js(desc),
+                JNLPKeys.ShortDescKey        -> js(shortDesc),
+                JNLPKeys.IsOfflineAllowedKey -> js(isOfflineAllowed),
+                JNLPKeys.ArgumentsKey        -> js(args)
+              ) ++ extras
             )
+            JNLPFromJSONGenerator(json, request.host)
         }
-
-        propsMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, fileName).toString replaceAllLiterally("\\", "/"))
 
     } fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Redirect("/" + url)))
 
