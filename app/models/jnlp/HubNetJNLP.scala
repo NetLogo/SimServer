@@ -1,12 +1,8 @@
 package models.jnlp
 
-import java.net.URI
-
 import scalaz.ValidationNEL
 
 import models.web.ParamBox
-import HubNetJNLPDefaults._
-import HubNetJNLP.{ generateAppName, generateDesc, generateShortDesc }
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,34 +11,15 @@ import HubNetJNLP.{ generateAppName, generateDesc, generateShortDesc }
  * Time: 2:59 PM
  */
 
-//@ I'm inclined to believe that this class/constructor should just die
-class HubNetJNLP(
- /* Required */ codebaseURI: URI,
- /* Required */ jnlpLoc: String,
-                mainJar: MainJar                      = MainJar,
-                mainClass: String                     = MainClass,
-                applicationName: String               = ApplicationName,
-                desc: String                          = Desc,
-                shortDesc: String                     = ShortDesc,
-                isOfflineAllowed: Boolean             = IsOfflineAllowed,
-                appNameInMenu: String                 = AppNameInMenu,
-                vendor: String                        = Vendor,
-                depsPath: String                      = DepsPath,
-                vmArgs: String                        = VMArgs,
-                otherJars: Seq[Jar]                   = OtherJars,
-                properties: Seq[Pair[String, String]] = Properties,
-                arguments: Seq[String]                = Arguments
- ) extends NetLogoJNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                       isOfflineAllowed, appNameInMenu, vendor, depsPath, vmArgs, otherJars ++ NeededJars, properties, arguments)
-
 object HubNetJNLP {
+
+  import HubNetJarManager._, HubNetJNLPDefaults._
 
   private def generateArgs(key: String, value: String) = Seq(key, value)
 
   def generateAppName(programName: String, roleStr: String) = "%s HubNet %s".format(programName, roleStr)
   def generateDesc(programName: String, roleStr: String)    = "A HubNet %s for %s".format(roleStr, programName)
   def generateIPArgs(ip: String)                            = generateArgs("--ip", ip)
-  def generateMainClass(isServer: Boolean)                  = if (isServer) HubNetJarManager.ServerMainClass else HubNetJarManager.ClientMainClass
   def generatePortArgs(port: Int)                           = generateArgs("--port", port.toString)
   def generateShortDesc(programName: String)                = "HubNet (%s)".format(programName)
   def generateUserIDArgs(userID: String)                    = generateArgs("--id", userID)
@@ -67,20 +44,18 @@ object HubNetJNLP {
       } yield (f(a)(b))
     }
 
-    import HubNetJarManager.{ ServerVMArgs, ClientVMArgs }
-
     val generateAppNameBox   = contextify2IntoBox((generateAppName _).curried)
     val generateDescBox      = contextify2IntoBox((generateDesc _).curried)
 
     // Wow, `flatMap` sucks on this thing...
     val isServerPlus = isServerBox flatMap (x => ParamBox(isServerBox.key, if (x) Option(x) else None))
 
-    val (needed, others) = isServerPlus map (
-      _ => (NeededJars, OtherJars)
-    ) getOrElse (ClientNeededJars, ClientOtherJars)
+    val (mainClassStr, vmArgsStr, neededsSeq, othersSeq) = isServerPlus map (
+      _ => (ServerMainClass, ServerVMArgs, NeededJars, OtherJars)
+    ) getOrElse (ClientMainClass, ClientVMArgs, ClientNeededJars, ClientOtherJars)
 
     val mainJar          = mainJarBox          orElseApply MainJar.jarName
-    val mainClass        = mainClassBox        orElse      (isServerPlus map generateMainClass)           orElseApply HubNetJarManager.ClientMainClass
+    val mainClass        = mainClassBox        orElseApply mainClassStr
     val applicationName  = applicationNameBox  orElse      generateAppNameBox(programNameBox)(roleStrBox) orElseApply ApplicationName
     val desc             = descBox             orElse      generateDescBox(programNameBox)(roleStrBox)    orElseApply Desc
     val shortDesc        = shortDescBox        orElse      (programNameBox map generateShortDesc)         orElseApply ShortDesc
@@ -88,8 +63,8 @@ object HubNetJNLP {
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
     val depsPath         = depsPathBox         orElseApply DepsPath
-    val vmArgs           = vmArgsBox           orElse      (isServerPlus map (_ => ServerVMArgs))         orElseApply ClientVMArgs
-    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((needed ++ others) map (jar => (jar.jarName, jar.isLazy))))
+    val vmArgs           = vmArgsBox           orElseApply vmArgsStr
+    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((neededsSeq ++ othersSeq) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
     val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (serverIPBox   map generateIPArgs       getOrElse Seq()) ++
                                                                               (serverPortBox map generatePortArgs     getOrElse Seq()) ++
