@@ -32,7 +32,7 @@ object SubmissionDBManager {
       ) on (
         "run_id"    -> runID,
         "period_id" -> periodID
-        ) as {
+      ) as {
         str(UserIDKey) map { identity } *
       }
     }
