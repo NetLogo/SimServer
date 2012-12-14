@@ -80,7 +80,6 @@ sealed abstract class ParamBox[+T] {
 
 object ParamBox {
   def apply[T](key: String, opt: Option[T]) : ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam(key)
-
 }
 
 // I wanted to use an `OptionProxy`, but, apparently, one doesn't exist... :(
