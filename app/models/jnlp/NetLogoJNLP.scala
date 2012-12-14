@@ -1,7 +1,5 @@
 package models.jnlp
 
-import java.net.URI
-
 import scalaz.ValidationNEL
 
 import models.util.Util
