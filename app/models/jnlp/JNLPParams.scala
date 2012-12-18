@@ -44,7 +44,7 @@ trait JNLPParams {
 
 }
 
-private[jnlp] object JNLPParams {
+object JNLPKeys {
 
   val CodebaseURLKey      = "codebase_url"
   val MainJarKey          = "main_jar"
@@ -61,14 +61,25 @@ private[jnlp] object JNLPParams {
   val PropertiesKey       = "properties"
   val ArgumentsKey        = "arguments"
 
+  val OtherJarsArrElemNameKey   = "jar_name"
+  val OtherJarsArrElemIsLazyKey = "is_lazy"
+
+  val PropertiesArrElemNameKey  = "name"
+  val PropertiesArrElemValueKey = "value"
+
+  val ArgumentsArrKey = "arguments"
+
+}
+
+private[jnlp] object JNLPParams {
+
+  import JNLPKeys._
+
   def parseJsArray[T, U](key: String)(js: JsValue)(parseFunc: JsValue => T)(validationFunc: PartialFunction[T, U]) : Option[Seq[U]] =
     (js \ key).asOpt[Seq[JsValue]] map { _ map parseFunc collect validationFunc }
 
 
   // -------------------> OTHER JARS SPECIFICS START <------------------- //
-
-  val OtherJarsArrElemNameKey   = "jar_name"
-  val OtherJarsArrElemIsLazyKey = "is_lazy"
 
   def otherJarsParse(key: String)(js: JsValue) : Option[Seq[(String, Boolean)]] = {
     val parseFunc = (jar: JsValue) => ((jar \ OtherJarsArrElemNameKey).asOpt[String], (jar \ OtherJarsArrElemIsLazyKey).asOpt[Boolean])
@@ -88,9 +99,6 @@ private[jnlp] object JNLPParams {
 
   // -------------------> PROPERTIES SPECIFICS START <------------------- //
 
-  val PropertiesArrElemNameKey  = "name"
-  val PropertiesArrElemValueKey = "value"
-
   def propertiesParse(key: String)(js: JsValue) : Option[Seq[(String, String)]] = {
     val parseFunc = (prop: JsValue) => ((prop \ PropertiesArrElemNameKey).asOpt[String], (prop \ PropertiesArrElemValueKey).asOpt[String])
     parseJsArray(key)(js)(parseFunc){ case (Some(name), Some(value)) => (name, value) }
@@ -108,8 +116,6 @@ private[jnlp] object JNLPParams {
 
 
   // -------------------> ARGUMENTS SPECIFICS START <------------------- //
-
-  val ArgumentsArrKey = "arguments"
 
   def argumentsParse(key: String)(js: JsValue) : Option[Seq[String]] = (js \ key).asOpt[Seq[String]]
 
@@ -172,15 +178,17 @@ object BaseJNLPParams extends JNLPParams {
 
 }
 
+object NetLogoKeys {
+  val IsNetLogoKey = "is_netlogo"
+  val ModelURLKey  = "model_url"
+}
+
 object NetLogoParams extends JNLPParams {
 
-  import JNLPParams._
+  import JNLPParams._, NetLogoKeys._
 
-  private val IsNetLogoKey   = "is_netlogo"
-  private val IsNetLogoParam = Param[Boolean](IsNetLogoKey)
-
-  val ModelURLKey   = "model_url"
-  val ModelURLParam = Param[String](ModelURLKey)
+  private       val IsNetLogoParam = Param[Boolean](IsNetLogoKey)
+  private[jnlp] val ModelURLParam  = Param[String](ModelURLKey)
 
   override val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam, ModelURLParam)
   override val paramCategoryLabel              = "NetLogo"
@@ -209,30 +217,27 @@ object NetLogoParams extends JNLPParams {
 
 }
 
+object HubNetKeys {
+  val IsHubNetServerKey = "is_hubnet_server"
+  val IsHubNetClientKey = "is_hubnet_client"
+  val ProgramNameKey    = "program_name"
+  val RoleKey           = "role"
+  val ServerIPKey       = "server_ip"
+  val ServerPortKey     = "server_port"
+  val UserIDKey         = "user_id"
+}
+
 object HubNetParams extends JNLPParams {
 
-  import JNLPParams._
+  import JNLPParams._, HubNetKeys._
 
-  private val IsHubNetServerKey   = "is_hubnet_server"
   private val IsHubNetServerParam = Param[Boolean](IsHubNetServerKey)
-
-  private val IsHubNetClientKey   = "is_hubnet_client"
   private val IsHubNetClientParam = Param[Boolean](IsHubNetClientKey)
-
-  private val ProgramNameKey   = "program_name"
-  private val ProgramNameParam = Param[String](ProgramNameKey)
-
-  private val RoleKey   = "role"
-  private val RoleParam = Param[String](RoleKey)
-
-  private val ServerIPKey   = "server_ip"
-  private val ServerIPParam = Param[String](ServerIPKey)
-
-  private val ServerPortKey   = "server_port"
-  private val ServerPortParam = Param[Int](ServerPortKey)
-
-  private val UserIDKey   = "user_id"
-  private val UserIDParam = Param[String](UserIDKey)
+  private val ProgramNameParam    = Param[String](ProgramNameKey)
+  private val RoleParam           = Param[String](RoleKey)
+  private val ServerIPParam       = Param[String](ServerIPKey)
+  private val ServerPortParam     = Param[Int](ServerPortKey)
+  private val UserIDParam         = Param[String](UserIDKey)
 
   override private[jnlp] def doesAffiliate(js: JsValue) = (IsHubNetServerParam(js) is true) || (IsHubNetClientParam(js) is true)
 

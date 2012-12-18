@@ -1,12 +1,9 @@
 package models.jnlp
 
-import java.net.URI
-
 import scalaz.ValidationNEL
 
 import models.util.Util
 import models.web.ParamBox
-import NetLogoJNLPDefaults._
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,26 +12,9 @@ import NetLogoJNLPDefaults._
  * Time: 2:34 PM
  */
 
-class NetLogoJNLP(
- /* Required */ codebaseURI: URI,
- /* Required */ jnlpLoc: String,
-                mainJar: MainJar                      = MainJar,
-                mainClass: String                     = MainClass,
-                applicationName: String               = ApplicationName,
-                desc: String                          = Desc,
-                shortDesc: String                     = ShortDesc,
-                isOfflineAllowed: Boolean             = IsOfflineAllowed,
-                appNameInMenu: String                 = AppNameInMenu,
-                vendor: String                        = Vendor,
-                depsPath: String                      = DepsPath,
-                vmArgs: String                        = VMArgs,
-                otherJars: Seq[Jar]                   = OtherJars,
-                properties: Seq[Pair[String, String]] = Properties,
-                arguments: Seq[String]                = Arguments
- ) extends JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                isOfflineAllowed, appNameInMenu, vendor, depsPath, vmArgs, otherJars ++ NeededJars, properties, arguments)
-
 object NetLogoJNLP {
+
+  import NetLogoJNLPDefaults._
 
   private def generateArgs(key: String, value: String) = Seq(key, value)
   def generateModelURLArgs(url: String)                = generateArgs("--url", url.replaceAll(" ", "+"))
