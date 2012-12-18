@@ -131,7 +131,7 @@ private[jnlp] object HubNetJNLPDefaults {
   val Properties: Seq[(String, String)] = Defs.Properties
   val Arguments:  Seq[String]           = Defs.Arguments
 
-  val ClientNeededJars = Seq(new Jar("scala-library.jar", false), new Jar("mjradapter-1.2.jar", false))
+  val ClientNeededJars = Seq(new Jar("scala-library.jar", false), new Jar("mrjadapter-1.2.jar", false))
   val ClientOtherJars  = Seq()
 
 }
