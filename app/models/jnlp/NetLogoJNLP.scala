@@ -78,7 +78,7 @@ private[jnlp] object NetLogoJNLPDefaults {
   val AppNameInMenu                     = "NetLogo (WebStart)"
   val Vendor                            = "CCL"
   val DepsPath                          = "deps"
-  val VMArgs                            = (noneIfEmpty(Defs.VMArgs) map (_ + " ") getOrElse "") + "-XX:MaxPermSize=128m -Xmx1024m"
+  val VMArgs                            = noneIfEmpty(Defs.VMArgs) map (_ + " ") getOrElse "" // Can't set default memory args; causes Mountain Lion failure
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
   val NeededJars: Seq[Jar]              = NetLogoJarManager.getDefaultJars
   val Properties: Seq[(String, String)] = Defs.Properties
