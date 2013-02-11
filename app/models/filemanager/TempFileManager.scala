@@ -1,6 +1,7 @@
 package models.filemanager
 
-import akka.util.duration._
+import
+  scala.concurrent.duration._
 
 /**
  * Created by IntelliJ IDEA.
