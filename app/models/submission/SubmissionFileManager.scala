@@ -1,8 +1,10 @@
 package models.submission
 
-import akka.util.duration._
+import
+  scala.concurrent.duration._
 
-import models.filemanager.FileManager
+import
+  models.filemanager.FileManager
 
 /**
  * Created with IntelliJ IDEA.

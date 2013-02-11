@@ -1,6 +1,10 @@
-import sbt._
-import Keys._
-import PlayProject._
+import
+  sbt._,
+    Keys._
+
+import
+  play.Project,
+    Project._
 
 object ApplicationBuild extends Build {
 
@@ -12,12 +16,14 @@ object ApplicationBuild extends Build {
     )
 
     val appDependencies = Seq(
+      anorm, jdbc,
       "org.scalaz" %% "scalaz-core" % "7.0-SNAPSHOT",
       "mysql" % "mysql-connector-java" % "5.1.18"
     )
 
-    val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-      // Add your own project settings here      
+    val main = Project(appName, appVersion, appDependencies).settings(
+      resolvers += "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
+      scalacOptions += "-language:_"
     )
 
 }

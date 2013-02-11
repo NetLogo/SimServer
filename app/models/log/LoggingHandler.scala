@@ -1,28 +1,47 @@
 package models.log
 
-import actors.Actor.State._
-import collection.mutable.{ ArrayBuffer, HashMap }
-import scala.util.Random
+import
+  scala.{ collection, concurrent, util => util_scala },
+    collection.mutable.{ ArrayBuffer, HashMap },
+    concurrent.{ Await, duration },
+      duration._,
+    util_scala.Random
 
-import java.io.{ ByteArrayInputStream, File }
-import java.util.zip.GZIPInputStream
+import
+  java.{ io, util => util_java },
+    io.{ ByteArrayInputStream, File },
+    util_java.zip.GZIPInputStream
+
+import
+  akka.{ actor, pattern, util => util_akka },
+    actor.{ ActorRef, Props },
+    pattern.ask,
+    util_akka.Timeout
+
+import
+  play.api.libs.concurrent.Akka
+
+import play.api.Play.current
 
 object LoggingHandler {
 
   val DefaultEncoding = "ISO-8859-1"
-  private val idActorMap = new HashMap[Long, LogActor]()
+  private val idActorMap = new HashMap[Long, ActorRef]()
 
   def createNewLog() : Long = {
     ensureLogDirExists()
     val id = Random.nextInt().abs
-    val actor = new LogActor(id, closeLog(_))
+    val actor = Akka.system.actorOf(Props(new LogActor(id, closeLog(_))))
     idActorMap.put(id, actor)
-    actor.start()
     id
   }
 
   def log(key: Long, data: String) : String = {
-    idActorMap.get(key) map { case x if (x.getState != Terminated) => (x !? prepareData(data)).asInstanceOf[String] + '\n' } getOrElse ("File already closed")
+    implicit val timeout = Timeout(5 seconds)
+    idActorMap.get(key) flatMap {
+      case x if (!x.isTerminated) => Option(Await.result(x ? prepareData(data), timeout.duration).toString + '\n')
+      case _                      => None
+    } getOrElse ("File already closed")
   }
 
   // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably should exist.
