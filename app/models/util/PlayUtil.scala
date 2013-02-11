@@ -1,6 +1,9 @@
 package models.util
 
-import play.api.{ libs, Logger, mvc }, libs.json._, mvc.{ AnyContent, Request }
+import
+  play.api.{ libs, Logger, mvc },
+    libs.json._,
+    mvc.{ AnyContent, Request }
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,7 +45,7 @@ object PlayUtil {
     def generousParse(str: String) : JsValue = {
       try Json.parse(str)
       catch {
-        case ex: com.codahale.jerkson.ParsingException => JsString(str)
+        case ex: Exception => JsString(str) // Ehh...
       }
     }
 

@@ -1,44 +1,65 @@
 package models.log
 
-import actors.{ Actor, TIMEOUT }
-import scala.util.control.Exception
+import
+  scala.{ concurrent, util },
+    concurrent.duration._,
+    util.control.Exception
 
-import java.io.File
+import
+  java.io.File
+
+import
+  akka.actor.{ Actor, ActorRef, PoisonPill, ReceiveTimeout }
+
+import
+  play.api.Logger
 
 class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
 
+  import LogActorMessages._
+
+  context.setReceiveTimeout(15 seconds)
+
   private val logFile = generateFile(id)
 
-  def act() {
-    loop {
-      reactWithin(15000) {
-        case TIMEOUT   => replyCloseConnection(); markLogTimedOut(); exit("Timed out")
-        case s: String =>
-          val (msgType, data) = LogActor.MessageSplitter.findFirstMatchIn(s) map (x => (x.group(1), x.group(2))) getOrElse ("unrecognized_type", "error_data")
-          msgType match {
-            case "pulse"    => replyOk()
-            case "write"    => appendToFile(data, logFile); replyOk()
-            case "finalize" => replyCloseConnection(); finalizeLog();    exit("Mission Accomplished")
-            case "abandon"  => replyCloseConnection(); logFile.delete(); exit("Process abandoned; file deleted")
-            case msg        => replyConfused(msg)
-          }
-        case msg => replyConfused(msg.toString)
-      }
+  override def receive = {
+    case ReceiveTimeout =>
+      replyCloseConnection(sender)
+      markLogTimedOut()
+      Logger.info(s"Actor for log with ID $id closed due to timeout")
+      self ! PoisonPill
+    case s: String =>
+      handleMessage(s, sender)
+    case msg =>
+      sender ! Confused(msg.toString)
+  }
+
+  private def handleMessage(message: String, sender: ActorRef) {
+    val (msgType, data) = LogActor.MessageSplitter.findFirstMatchIn(message) map (x => (x.group(1), x.group(2))) getOrElse ("unrecognized_type", "error_data")
+    msgType match {
+      case "pulse" =>
+        sender ! KeepAlive
+      case "write" =>
+        appendToFile(data, logFile)
+        sender ! KeepAlive
+      case "finalize" =>
+        replyCloseConnection(sender)
+        finalizeLog()
+        Logger.info(s"Actor for log with ID $id reports mission accomplished")
+        self ! PoisonPill
+      case "abandon" =>
+        replyCloseConnection(sender)
+        logFile.delete()
+        Logger.info(s"Actor for log with ID $id is aborting and deleting log")
+        self ! PoisonPill
+      case msg =>
+        sender ! Confused(msg)
     }
   }
 
-  // Replies are currently not used, but... if I decide to use them in some way, it's not to have them already in place.
-  private def replyOk() {
-    reply("Ok")
-  }
-
-  private def replyCloseConnection() {
+  private def replyCloseConnection(sender: ActorRef) {
     closeFunc(id)
-    reply("Close connection")
-  }
-
-  private def replyConfused(msg: String) {
-    reply("Unable to process message: " + msg)
+    sender ! CloseConnection
   }
 
   private def generateFile(id: Long): File = {
@@ -50,6 +71,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
 
   private def createFile(name: String): File = {
     val file = new File(LogActor.ExpectedLogDir + File.separator + name)
+    file.getParentFile.mkdirs()
     file.createNewFile()
     file
   }
@@ -98,4 +120,10 @@ object LogActor {
   val LogFileExtension = ".txt"
   // val LogTerminator = "</eventSet>"
   private val MessageSplitter = """(?s)([\w]+)(\|(.*))?""".r // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
+}
+
+object LogActorMessages {
+  case object CloseConnection
+  case class  Confused(msg: String)
+  case object KeepAlive
 }

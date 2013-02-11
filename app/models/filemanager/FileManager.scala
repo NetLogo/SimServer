@@ -1,15 +1,26 @@
 package models.filemanager
 
-import java.io.File
+import
+  scala.concurrent.{ Await, duration },
+    duration._
 
-import akka.actor._
-import akka.dispatch.Await
-import akka.pattern.ask
-import akka.util.{ duration, Duration, Timeout }, duration._
+import
+  java.io.File
 
-import models.{ Get, Delete, Initialize }
-import models.util.FileUtil
-import models.Write
+import
+  akka.{ actor, pattern, util => util_akka },
+    actor._,
+    pattern.ask,
+    util_akka.Timeout
+
+import
+  play.libs.Akka
+
+import
+  models.{ Get, Delete, Initialize, util, Write },
+    util.FileUtil
+
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,7 +36,7 @@ trait FileManager extends Delayer {
   def MyFolderName: String
 
   protected val CharEncoding = "UTF-8"
-  protected def LifeSpan  : Duration
+  protected def LifeSpan  : FiniteDuration
   protected def SystemName: String
 
   protected lazy val system      = ActorSystem(SystemName)
@@ -55,7 +66,7 @@ trait FileManager extends Delayer {
     fileActor ! Write(contents)
 
     // The temp gen file is accessible for <LifeSpan> before being deleted
-    system.scheduler.scheduleOnce(LifeSpan) { fileActor ! Delete }
+    Akka.system.scheduler.scheduleOnce(LifeSpan) { fileActor ! Delete }
     file.toString.replace(PublicPath, AssetPath)
 
   }
@@ -77,8 +88,8 @@ trait FileManager extends Delayer {
 // v--  DEFINITIONS BELOW ARE OPEN TO EXTRACTION/REFACTORING  --v
 
 class FileActor(file: File) extends Actor {
-  override protected def receive = {
-    case Get             => file
+  override def receive = {
+    case Get             => sender ! file
     case Delete          => file.delete(); self ! PoisonPill // Terminate self after file is gone
     case Initialize      => file.getParentFile.mkdirs(); file.delete(); file.createNewFile()
     case Write(contents) => FileUtil.printBytesToFile(file.getAbsolutePath)(contents)
