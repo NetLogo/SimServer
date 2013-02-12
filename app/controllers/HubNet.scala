@@ -143,7 +143,7 @@ object HubNet extends Controller {
         )
 
         val properties        = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", connectPath)).toSeq
-        val otherJars         = Util.ifFirstWrapSecond(isLogging, new Jar("logging.jar", true)).toSeq
+        val otherJars         = Seq()
         val roleExtrasMaybe   = {
           if (!isTeacher) Map(HubNetKeys.IsHubNetClientKey -> js(true)).successNel[String]
           else            modelNameOpt map (Models.getHubNetModelURL(_)) map {
