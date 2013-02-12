@@ -101,6 +101,7 @@ private object NetLogoJarManager {
     "jhotdraw-6.0b1.jar",
     "jmf-2.1.1e.jar",
     "jogl-1.1.1.jar",
+    "logging.jar",
     "log4j-1.2.16.jar",
     "mrjadapter-1.2.jar",
     "knockoff_2.9.2-0.8.1.jar",
