@@ -104,8 +104,12 @@ object Submission extends Controller {
 
   def updateAndViewWork(run: String, period: String, user: String) = Action {
     (submit(_: Request[AnyContent], UserWorkComment.fromMap(_), noCleanup)) andThen {
-      case x if (x.header.status == OK) => Redirect(routes.Submission.viewWork3(run, period, user))
-      case x                            => x
+      case x if (x.header.status == OK) => Redirect((period, user) match {
+        case ("", "") => routes.Submission.viewWork1(run)
+        case (p, "")  => routes.Submission.viewWork2(run, p)
+        case (p, u)   => routes.Submission.viewWork3(run, p, u)
+      })
+      case x => x
     }
   }
 
