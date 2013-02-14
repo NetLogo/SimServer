@@ -66,6 +66,7 @@ trait FileManager extends Delayer {
     fileActor ! Write(contents)
 
     // The temp gen file is accessible for <LifeSpan> before being deleted
+    Akka.system.registerOnTermination { fileActor ! PoisonPill }
     Akka.system.scheduler.scheduleOnce(LifeSpan) { fileActor ! Delete }
     file.toString.replace(PublicPath, AssetPath)
 
