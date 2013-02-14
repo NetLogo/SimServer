@@ -145,7 +145,7 @@ object Submission extends Controller {
                                           (cloneFunc:           (Long, String) => T => T)
                                           (subjectAndID:        (T, Long)) : ValidationNEL[String, Long] = {
     val (subject, id) = subjectAndID
-    SubmissionDBManager.getTypeBundleByName(getTypeNameFunc(subject)) map {
+    SubmissionDBManager.getOrCreateTypeBundleByName(getTypeNameFunc(subject)) map {
       typeBundle =>
         val newData = SubmissionFileManager.registerFile(getFileContentsFunc(subject), id.toString, typeBundle)
         SubmissionDBManager.update(cloneFunc(id, newData)(subject))

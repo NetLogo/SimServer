@@ -154,6 +154,12 @@ object SubmissionDBManager {
     }
   }
 
+  def getOrCreateTypeBundleByName(name: String) : ValidationNEL[String, TypeBundle] = {
+    getTypeBundleByName(name) orElse {
+      submit(TypeBundle(name, "", "", "")) flatMap (_ => getTypeBundleByName(name))
+    }
+  }
+
   def submit[T <% Submittable](submission: T) : ValidationNEL[String, Long] = submission.submit
   def update[T <% Updatable]  (update: T)                                   { update.update() }
 
