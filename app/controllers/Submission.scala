@@ -27,7 +27,15 @@ object Submission extends Controller {
 
   private def nel2Str(nel: NonEmptyList[String]) = nel.list.mkString("\n")
 
-  // This seems to be a bit of a misfit, but... it actually kind of makes sense to do it here, when you think about it
+  // These three seem to be a bit of a misfit, but... it actually kind of makes sense to do them here, when you think about it
+  def listRuns = APIAction {
+    Ok(SubmissionDBManager.getRuns.mkString("\n"))
+  }
+
+  def listPeriodsIn(runID: String) = APIAction {
+    Ok(SubmissionDBManager.getPeriodsByRun(runID).mkString("\n"))
+  }
+
   def listStudentsIn(runID: String, periodID: String) = APIAction {
     Ok(SubmissionDBManager.getStudentsByRunAndPeriod(runID, periodID).mkString("\n"))
   }

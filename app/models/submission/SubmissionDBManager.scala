@@ -21,6 +21,35 @@ object SubmissionDBManager {
 
   import AnormExtras._
 
+  def getRuns : Seq[String] = {
+    DB.withConnection { implicit connect =>
+      import DBConstants.UserWork._
+      SQL (
+        """
+          |SELECT DISTINCT %s FROM %s;
+        """.stripMargin.format(RunIDKey, TableName)
+      ) as {
+        str(RunIDKey) map { identity } *
+      }
+    }
+  }
+
+  def getPeriodsByRun(runID: String) : Seq[String] = {
+    DB.withConnection { implicit connect =>
+      import DBConstants.UserWork._
+      SQL (
+        """
+          |SELECT DISTINCT %s FROM %s
+          |WHERE %s = {run_id};
+        """.stripMargin.format(PeriodIDKey, TableName, RunIDKey)
+      ) on (
+        "run_id" -> runID
+      ) as {
+        str(PeriodIDKey) map { identity } *
+      }
+    }
+  }
+
   def getStudentsByRunAndPeriod(runID: String, periodID: String) : Seq[String] = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserWork._
