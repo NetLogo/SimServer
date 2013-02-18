@@ -1,9 +1,16 @@
 .comment {
+  margin-bottom: 4px;
+  width: 90%;
+}
+
+.submission-contrast {
   border-radius: 10px;
   background-color: #77BBFF;
   padding: 7px;
-  margin-bottom: 4px;
-  width: 90%;
+}
+
+.submission-id {
+  font-size: 19pt;
 }
 
 .submission {
@@ -36,3 +43,4 @@
   width: 100%;
   height: auto;
 }
+

@@ -55,14 +55,22 @@
 @insertUserWorkRow(submission: UserWork, index: Int) = {
   <table class="submission">
     <tr>
+      <td></td>
+      <td align=center>
+        <div class="submission-contrast submission-id"><b>@submission.typ/@submission.id.get</b></div>
+        <div style="height: 10px;"></div>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
       <td align=center style="width: 20%;">
         <div>User: <b>@submission.userID</b></div>
       </td>
-      <td align=center style="width: 40%;">
+      <td align=center style="width: 50%;">
         <div id="temp_@index"></div>
       </td>
-      <td align=center style="width: 40%;">
-        <div>Description: @submission.description</div>
+      <td align=center style="width: 30%;">
+        <div>Description: <b>@submission.description</b></div>
       </td>
     </tr>
   </table>
@@ -73,7 +81,7 @@
     <tr>
       <td style="width: 10%;">
       </td>
-      <td class="comment">
+      <td class="comment submission-contrast">
         <table style="width: 100%;">
           <tr>
             <td style="width: 25%;">
@@ -94,7 +102,7 @@
     <tr>
       <td style="width: 10%;">
       </td>
-      <td class="comment">
+      <td class="comment submission-contrast">
         <form class="comment_input_form" method="post" action="" onkeypress="formOnEnter(event, this)">
           <fieldset class="field_set">
             <div style="float: right; width: 50%;" align=right>
