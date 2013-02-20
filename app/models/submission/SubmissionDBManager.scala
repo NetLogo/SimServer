@@ -25,9 +25,9 @@ object SubmissionDBManager {
     DB.withConnection { implicit connect =>
       import DBConstants.UserWork._
       SQL (
-        """
-          |SELECT DISTINCT %s FROM %s;
-        """.stripMargin.format(RunIDKey, TableName)
+       s"""
+          |SELECT DISTINCT $RunIDKey FROM $TableName;
+        """.stripMargin
       ) as {
         str(RunIDKey) map { identity } *
       }
@@ -38,10 +38,10 @@ object SubmissionDBManager {
     DB.withConnection { implicit connect =>
       import DBConstants.UserWork._
       SQL (
-        """
-          |SELECT DISTINCT %s FROM %s
-          |WHERE %s = {run_id};
-        """.stripMargin.format(PeriodIDKey, TableName, RunIDKey)
+       s"""
+          |SELECT DISTINCT $PeriodIDKey FROM $TableName
+          |WHERE $RunIDKey = {run_id};
+        """.stripMargin
       ) on (
         "run_id" -> runID
       ) as {
@@ -54,10 +54,10 @@ object SubmissionDBManager {
     DB.withConnection { implicit connect =>
       import DBConstants.UserWork._
       SQL (
-        """
-          |SELECT DISTINCT %s FROM %s
-          |WHERE %s = {run_id} AND %s = {period_id};
-        """.stripMargin.format(UserIDKey, TableName, RunIDKey, PeriodIDKey) //@ Do want string interpolation!
+       s"""
+          |SELECT DISTINCT $UserIDKey FROM $TableName
+          |WHERE $RunIDKey = {run_id} AND $PeriodIDKey = {period_id};
+        """.stripMargin
       ) on (
         "run_id"    -> runID,
         "period_id" -> periodID
@@ -71,10 +71,10 @@ object SubmissionDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
       parseUserWork(SQL (
-        """
-          |SELECT * FROM %s
-          |WHERE %s = {run};
-        """.stripMargin.format(TableName, RunIDKey)
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $RunIDKey = {run};
+        """.stripMargin
       ) on (
         "run" -> run
       ))
@@ -85,10 +85,10 @@ object SubmissionDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
       parseUserWork(SQL (
-        """
-          |SELECT * FROM %s
-          |WHERE %s = {run} AND %s = {period};
-        """.stripMargin.format(TableName, RunIDKey, PeriodIDKey)
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $RunIDKey = {run} AND $PeriodIDKey = {period};
+        """.stripMargin
       ) on (
         "run"       -> run,
         "period"    -> period
@@ -100,10 +100,10 @@ object SubmissionDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
       parseUserWork(SQL (
-        """
-          |SELECT * FROM %s
-          |WHERE %s = {run} AND %s = {period} AND %s = {user};
-        """.stripMargin.format(TableName, RunIDKey, PeriodIDKey, UserIDKey)
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $RunIDKey = {run} AND $PeriodIDKey = {period} AND $UserIDKey = {user};
+        """.stripMargin
       ) on (
         "run"       -> run,
         "period"    -> period,
@@ -129,10 +129,10 @@ object SubmissionDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWorkComments._
       SQL (
-        """
-          |SELECT * FROM %s
-          |WHERE %s = {refID};
-        """.stripMargin.format(TableName, RefIDKey)
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $RefIDKey = {refID};
+        """.stripMargin
       ) on (
         "refID" -> workRefID
       ) as {
@@ -167,10 +167,10 @@ object SubmissionDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.TypeBundles._
       val opt = SQL (
-        """
-          |SELECT * FROM %s
-          |WHERE %s = {name};
-        """.stripMargin.format(TableName, NameKey)
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $NameKey = {name};
+        """.stripMargin
       ) on (
         "name" -> name
       ) as {
@@ -179,7 +179,7 @@ object SubmissionDBManager {
           case _                                  => raiseDBAccessException
         } *
       } headOption;
-      opt map (_.successNel[String]) getOrElse ("No type bundle found with name %s".format(name).failNel)
+      opt map (_.successNel[String]) getOrElse (s"No type bundle found with name $name".failNel)
     }
   }
 
@@ -207,11 +207,11 @@ private object Submittable {
 
       import DBConstants.UserWork._
       val sql = SQL (
-        """
-          |INSERT INTO %s
-          |(%s, %s, %s, %s, %s, %s, %s, %s) VALUES
+       s"""
+          |INSERT INTO $TableName
+          |($TimestampKey, $RunIDKey, $PeriodIDKey, $UserIDKey, $TypeKey, $DataKey, $MetadataKey, $DescriptionKey) VALUES
           |({timestamp}, {runID}, {periodID}, {userID}, {type}, {data}, {metadata}, {description});
-        """.stripMargin.format(TableName, TimestampKey, RunIDKey, PeriodIDKey, UserIDKey, TypeKey, DataKey, MetadataKey, DescriptionKey)
+        """.stripMargin
       ) on (
         "timestamp"   -> userWork.timestamp,
         "runID"       -> userWork.runID,
@@ -221,7 +221,7 @@ private object Submittable {
         "data"        -> userWork.data,
         "metadata"    -> userWork.metadata,
         "description" -> userWork.description
-        )
+      )
 
       sql.executeInsert().get.successNel[String]
 
@@ -233,11 +233,11 @@ private object Submittable {
 
       import DBConstants.UserWorkComments._
       val sql = SQL (
-        """
-          |INSERT INTO %s
-          |(%s, %s, %s, %s) VALUES
+       s"""
+          |INSERT INTO $TableName
+          |($RefIDKey, $TimestampKey, $UserIDKey, $CommentKey) VALUES
           |({refID}, {timestamp}, {userID}, {comment});
-        """.stripMargin.format(TableName, RefIDKey, TimestampKey, UserIDKey, CommentKey)
+        """.stripMargin
       ) on (
         "refID"     -> workComment.refID,
         "timestamp" -> workComment.timestamp,
@@ -255,11 +255,11 @@ private object Submittable {
 
       import DBConstants.UserWorkSupplements._
       val sql = SQL (
-        """
-          |INSERT INTO %s
-          |(%s, %s, %s, %s) VALUES
+       s"""
+          |INSERT INTO $TableName
+          |($RefIDKey, $TypeKey, $DataKey, $MetadataKey) VALUES
           |({refID}, {type}, {data}, {metadata});
-        """.stripMargin.format(TableName, RefIDKey, TypeKey, DataKey, MetadataKey)
+        """.stripMargin
       ) on (
         "refID"    -> workSupplement.refID,
         "type"     -> workSupplement.typ,
@@ -277,11 +277,11 @@ private object Submittable {
 
       import DBConstants.TypeBundles._
       val sql = SQL (
-        """
-          |INSERT INTO %s
-          |(%s, %s, %s, %s) VALUES
+       s"""
+          |INSERT INTO $TableName
+          |($NameKey, $ActionJSKey, $PresentationJSKey, $FileExtensionKey) VALUES
           |({name}, {action_js}, {presentation_js}, {file_extension});
-        """.stripMargin.format(TableName, NameKey, ActionJSKey, PresentationJSKey, FileExtensionKey)
+        """.stripMargin
       ) on (
         "name"            -> bundle.name,
         "action_js"       -> bundle.actionJS,
@@ -308,12 +308,12 @@ private object Updatable {
 
       import DBConstants.UserWork._
       val sql = SQL (
-        """
-          |UPDATE %s
-          |SET %s={timestamp}, %s={run_id}, %s={period_id}, %s={user_id},
-          |    %s={type}, %s={data}, %s={metadata}, %s={description}
-          |WHERE %s={id};
-        """.stripMargin.format(TableName, TimestampKey, RunIDKey, PeriodIDKey, UserIDKey, TypeKey, DataKey, MetadataKey, DescriptionKey, IDKey)
+       s"""
+          |UPDATE $TableName
+          |SET $TimestampKey={timestamp}, $RunIDKey={run_id}, $PeriodIDKey={period_id}, $UserIDKey={user_id},
+          |    $TypeKey={type}, $DataKey={data}, $MetadataKey={metadata}, $DescriptionKey={description}
+          |WHERE $IDKey={id};
+        """.stripMargin
       ) on (
         "id"          -> userWork.id,
         "timestamp"   -> userWork.timestamp,
@@ -336,11 +336,11 @@ private object Updatable {
 
       import DBConstants.UserWorkSupplements._
       val sql = SQL (
-        """
-          |UPDATE %s
-          |SET %s={ref_id}, %s={type}, %s={data}, %s={metadata}
-          |WHERE %s={id};
-        """.stripMargin.format(TableName, RefIDKey, TypeKey, DataKey, MetadataKey, IDKey)
+       s"""
+          |UPDATE $TableName
+          |SET $RefIDKey={ref_id}, $TypeKey={type}, $DataKey={data}, $MetadataKey={metadata}
+          |WHERE $IDKey={id};
+        """.stripMargin
       ) on (
         "id"       -> workSupplement.id,
         "ref_id"   -> workSupplement.refID,
@@ -359,11 +359,11 @@ private object Updatable {
 
       import DBConstants.TypeBundles._
       val sql = SQL (
-        """
-          |UPDATE %s
-          |SET %s={action_js}, %s={presentation_js}, %s={file_extension}
-          |WHERE %s={name};
-        """.stripMargin.format(TableName, ActionJSKey, PresentationJSKey, FileExtensionKey, NameKey)
+       s"""
+          |UPDATE $TableName
+          |SET $ActionJSKey={action_js}, $PresentationJSKey={presentation_js}, $FileExtensionKey={file_extension}
+          |WHERE $NameKey={name};
+        """.stripMargin
       ) on (
         "name"            -> bundle.name,
         "action_js"       -> bundle.actionJS,
@@ -386,7 +386,7 @@ object AnormExtras {
                (implicit connection: java.sql.Connection) : ValidationNEL[String, Long] = {
     try sql.executeInsert() match { case x => f(x) }
     catch {
-      case ex: MySQLIntegrityConstraintViolationException => "SQL constraint violated: %s".format(ex.getMessage).failNel
+      case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failNel
     }
   }
 }

@@ -20,7 +20,7 @@ object SubmissionFileManager extends FileManager {
   override protected def SystemName   = "SubmissionFiles"
 
   def formatFilePath(fileNameBasis: String, bundle: TypeBundle) : String =
-    "%s/%s/%s.%s".format(MyFolderName, bundle.name, fileNameBasis, bundle.fileExtension)
+    s"$MyFolderName/${bundle.name}/$fileNameBasis.${bundle.fileExtension}"
 
   def registerFile(contents: String, fileNameBasis: String, bundle: TypeBundle) : String = {
     val filename = formatFilePath(fileNameBasis, bundle)

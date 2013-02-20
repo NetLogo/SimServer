@@ -43,7 +43,7 @@ trait FileManager extends Delayer {
   protected lazy val fileFolder  = new File(PublicPath + File.separator + MyFolderName)
 
   def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
-    "%s/%s.%s".format(MyFolderName, fileNameBasis, fileExt)
+    s"$MyFolderName/$fileNameBasis/$fileExt"
   }
 
   def registerFile(contents: String, fileNameBasis: String, fileExt: String = "") : String = {
@@ -53,7 +53,7 @@ trait FileManager extends Delayer {
 
   protected def saveFile(contents: String, filename: String, actorID: String) : String = {
 
-    val file      = new File("%s%s%s".format(PublicPath, File.separator, filename))
+    val file      = new File(s"${PublicPath}${File.separator}$filename")
     val fileActor = {
       val actorName = idToActorName(actorID)
       try system.actorOf(Props(new FileActor(file)), name = actorName)

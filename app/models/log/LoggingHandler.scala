@@ -49,7 +49,7 @@ object LoggingHandler {
 //    val logDir = new File(LogActor.ExpectedLogDir)
 //    val arr = logDir.listFiles(new FilenameFilter() {
 //      def accept(file: File, name: String): Boolean = {
-//        name.toLowerCase.endsWith("sid%d%s".format(key, LogActor.LogFileExtension))
+//        name.toLowerCase.endsWith(s"sid$key${LogActor.LogFileExtension}")
 //      }
 //    })
 //    arr.lastOption map {  x => val src = Source.fromFile(x); val lines = src.getLines().mkString("\n"); src.close(); lines } getOrElse
@@ -103,6 +103,6 @@ object LoggingHandler {
     }
 
   // I used to sass this validation, but, honestly... it's not the worst
-  private def isValid(data: String) : Boolean = data.toLowerCase.matches("""(?s)^[a-z]{%d}.*""".format(3))
+  private def isValid(data: String) : Boolean = data.toLowerCase.matches("""(?s)^[a-z]{3}.*""")
 
 }

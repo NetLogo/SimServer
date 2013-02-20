@@ -21,7 +21,7 @@ object Application extends Controller {
     request =>
       val bundle = PlayUtil.extractBundle(request)
       val text = "\nRequest Type: \n" + request.method +
-                 "\n\nHeaders: \n" + (request.headers.toSimpleMap map { case (k, v) => "%s: %s".format(k, v) } mkString("\n")) +
+                 "\n\nHeaders: \n" + (request.headers.toSimpleMap map { case (k, v) => s"$k: $v" } mkString("\n")) +
                  "\n\nBody: \n" + (
                    Util.noneIfEmpty(bundle.stringParams, ((_: Map[String, String]) map { case (k, v) => s"$k=$v" } mkString ("\n"))) getOrElse "[empty]"
                  ) + "\n\n" + (

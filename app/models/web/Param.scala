@@ -28,7 +28,7 @@ object Param {
   private val ClassNameMatcher = "(?:.*\\.)?(.*)".r // Capture the part after the last '.' (if there even are any dots)
 
   private def extractClassName(c: Class[_])                    = c.getName match { case ClassNameMatcher(name) => name }
-  private def standardJsonPathFormat(className: String)        = "<root> -> <%s>".format(className.toLowerCase)
+  private def standardJsonPathFormat(className: String)        = s"<root> -> <${className.toLowerCase}>"
   private def standardJsonExtractor(key: String)(js: JsValue)  = js \ key
 
   // Oh, boy... the trouble that I went through to make this what-turned-out-to-be-trashy factory API...

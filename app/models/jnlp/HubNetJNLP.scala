@@ -17,11 +17,11 @@ object HubNetJNLP {
 
   private def generateArgs(key: String, value: String) = Seq(key, value)
 
-  def generateAppName(programName: String, roleStr: String) = "%s HubNet %s".format(programName, roleStr)
-  def generateDesc(programName: String, roleStr: String)    = "A HubNet %s for %s".format(roleStr, programName)
+  def generateAppName(programName: String, roleStr: String) = s"$programName HubNet $roleStr"
+  def generateDesc(programName: String, roleStr: String)    = s"A HubNet $roleStr for $programName"
   def generateIPArgs(ip: String)                            = generateArgs("--ip", ip)
   def generatePortArgs(port: Int)                           = generateArgs("--port", port.toString)
-  def generateShortDesc(programName: String)                = "HubNet (%s)".format(programName)
+  def generateShortDesc(programName: String)                = s"HubNet ($programName)"
   def generateUserIDArgs(userID: String)                    = generateArgs("--id", userID)
 
   // Basically, applies the default values into the boxes if they are are currently `NoneParam`s

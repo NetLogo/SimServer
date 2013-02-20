@@ -65,7 +65,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   private def generateFile(id: Long): File = {
     import java.text.SimpleDateFormat, java.util.Calendar
     val timeFormat = new SimpleDateFormat("MM-dd-yy__HH'h'mm'm'ss's'")
-    val filename = "%s__sid%d%s".format(timeFormat.format(Calendar.getInstance().getTime), id, LogActor.LogFileExtension)
+    val filename = s"${timeFormat.format(Calendar.getInstance.getTime)}__sid${id}${LogActor.LogFileExtension}"
     createFile(filename)
   }
 

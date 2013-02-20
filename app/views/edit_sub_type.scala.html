@@ -1,6 +1,6 @@
 @(bundle: models.submission.TypeBundle)
 
-@main("%s - Edit".format(bundle.name)) {
+@main(s"${bundle.name} - Edit") {
   <form method="post" action="">
     @generateTextArea(bundle.presentationJS, "presentation_js")
     @generateTextArea(bundle.actionJS, "action_js")
@@ -10,7 +10,7 @@
 }
 
 @generateTextArea(js: String, name: String) = {
-  @defining("<textarea name='%s' id='%s' placeholder='Input your desired JavaScript routine here'>%s</textarea>".format(name, name, js)) { elem =>
+  @defining(s"<textarea name='$name' id='$name' placeholder='Input your desired JavaScript routine here'>$js</textarea>") { elem =>
     @Html(elem)
   }
 }

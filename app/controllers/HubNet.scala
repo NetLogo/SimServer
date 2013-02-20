@@ -66,7 +66,7 @@ object HubNet extends Controller {
   private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : ValidationNEL[String, String] = {
     try {
       val kvMap = requiredInfo ++ optionalPairs.flatten
-      val delimed = kvMap.toSeq map { case (k, v) => "%s=%s".format(k, v) } mkString ResourceManager(ResourceManager.HubnetDelim)
+      val delimed = kvMap.toSeq map { case (k, v) => s"$k=$v" } mkString ResourceManager(ResourceManager.HubnetDelim)
       val encrypted = (new EncryptionUtil(ResourceManager(ResourceManager.HubNetKeyPass)) with PBEWithMF5AndDES) encrypt(delimed)
       encrypted.successNel[String]
     }
@@ -74,7 +74,7 @@ object HubNet extends Controller {
       case ex: Exception =>
         val errorStr = "Failed to encrypt HubNet info"
         Logger.warn(errorStr, ex)
-        "%s; %s".format(errorStr, ex.getMessage).failNel
+        s"$errorStr; ${ex.getMessage}".failNel
     }
   }
 
@@ -104,7 +104,7 @@ object HubNet extends Controller {
           else           getPortByTeacherName(teacherName)
         }
 
-        val connectPath = "http://%s/logging".format(request.host)
+        val connectPath = s"http://${request.host}/logging"
         val programName = modelNameOpt getOrElse "NetLogo"
         val roleStr     = if (isTeacher) "Server" else "Client"
 

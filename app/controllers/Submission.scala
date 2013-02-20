@@ -18,7 +18,7 @@ object Submission extends Controller {
 
   protected class EnhancedParamMap(paramMap: Map[String, String]) {
     def extract(key: String) : ValidationNEL[String, String] =
-      paramMap.get(key) map (_.successNel[String]) getOrElse "No such parameter found: %s".format(key).failNel
+      paramMap.get(key) map (_.successNel[String]) getOrElse s"No such parameter found: $key".failNel
   }
 
   implicit def paramMap2Enhanced(paramMap: Map[String, String]) = new EnhancedParamMap(paramMap)
@@ -122,14 +122,14 @@ object Submission extends Controller {
   }
 
   private def finalizeJS(funcBody: String, name: String, funcType: String) : String =
-    """
-      |function %s_custom_%s(data) {
-      |  %s
+   s"""
+      |function ${funcType}_custom_$name(data) {
+      |  $funcBody
       |}
-    """.stripMargin.format(funcType, name, funcBody)
+    """.stripMargin
 
   private def generateDefaultJS(name: String, funcType: String) : String =
-    """alert("No '%s' action defined for content type '%s'");""".format(funcType, name)
+    s"""alert("No '$funcType' action defined for content type '$name'");"""
 
   def submitWork = APIAction {
     implicit request =>

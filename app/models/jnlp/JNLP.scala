@@ -44,7 +44,7 @@ class JNLP(
       jar =>
         import jar._
         val hrefProps =
-          Seq("href" -> "%s/%s".format(depsPath, jarName)) ++
+          Seq("href" -> s"$depsPath/$jarName") ++
             (if (isMain) Seq("main"     -> "true") else Seq()) ++
             (if (isLazy) Seq("download" -> "lazy") else Seq())
         formatXMLNode("jar", Map(hrefProps: _*), 2)
@@ -55,17 +55,15 @@ class JNLP(
 
   }
 
-  private def formatXMLNode(tagName: String, attrKVs: Map[String, String], indentationLevel: Int) : String = {
-    "%s<%s %s/>".format(formatIndentation(indentationLevel), tagName, formatAttrs(attrKVs))
-  }
+  private def formatXMLNode(tagName: String, attrKVs: Map[String, String], indentationLevel: Int) : String =
+    s"${formatIndentation(indentationLevel)}<${tagName}${formatAttrs(attrKVs)} />"
 
-  private def formatXMLPair(tagName: String, attrKVs: Map[String, String], data: String, indentationLevel: Int) : String = {
-    "%s<%s%s>%s</%s>".format(formatIndentation(indentationLevel), tagName,
-                             { val attrs = formatAttrs(attrKVs); if (attrs.isEmpty) "" else " " + attrs }, data, tagName)
-  }
+  private def formatXMLPair(tagName: String, attrKVs: Map[String, String], data: String, indentationLevel: Int) : String =
+    s"${formatIndentation(indentationLevel)}<${tagName}${formatAttrs(attrKVs)}>$data</$tagName>"
 
   private def formatAttrs(attrKVs: Map[String, String]) : String = {
-    attrKVs.toList map { case (key, value) => "%s=\"%s\"".format(key, value) } mkString " "
+    val attrs = attrKVs.toList map { case (k, v) => s"""$k=\"$v\" """.trim } mkString " "
+    if (attrs.isEmpty) "" else " " + attrs
   }
 
   private def formatIndentation(level: Int) = (Stream continually " " take (level * 4)).mkString
@@ -126,35 +124,30 @@ private[jnlp] object JNLPDefaults {
   val Properties: Seq[(String, String)] = Seq()
   val Arguments:  Seq[String]           = Seq()
 
-  // It's tempting to use `String.format` here, but I fear that it would get far too confusing
-  // (Also, Guns N' Roses once wrote a song about the following code; it was called "Welcome to the Jungle")
+  // Also, Guns N' Roses once wrote a song about the following code; it was called "Welcome to the Jungle"
   def generateJNLPString(codebaseURI: String, jnlpLoc: String, applicationName: String,
                          vendor: String, desc: String, shortDesc: String, offlineAllowedStr: String,
-                         vmArgs: String, jarsStr: String, propsStr: String, appDesc: String) = (
-//@ String interpolation, plox!  (Scala 2.10, I'm waiting here for youuuuuuuuu!  And for Play for follow suuuuuuuuuit!)
-"""
-<?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase=""" + '"' + codebaseURI.toString + '"' + """ href=""" + '"' + jnlpLoc + '"' + """>
-    <information>
-        <title>""" + applicationName + """</title>
-        <vendor>""" + vendor + """</vendor>
-        <description>""" + desc + """</description>
-        <description kind="short">""" + shortDesc + """</description>""" + offlineAllowedStr + """
-    </information>
-    <security> <all-permissions/> </security>
-    <resources>
-
-        <!-- Application Resources -->
-        <j2se version="1.6+ 1.7+" java-vm-args=""" + '"' + vmArgs + '"' + """ href="http://java.sun.com/products/autodl/j2se"/>""" +
-        jarsStr + """
-
-        <!-- System Properties -->""" +
-        propsStr + """
-
-    </resources>""" +
-    appDesc + """
-    <update check="timeout" policy="always"/>
-</jnlp>
-""").trim
+                         vmArgs: String, jarsStr: String, propsStr: String, appDesc: String) =
+   s"""
+      |<?xml version="1.0" encoding="UTF-8"?>
+      |<jnlp spec="1.0+" codebase="${codebaseURI.toString}" href="$jnlpLoc">
+      |    <information>
+      |        <title>$applicationName</title>
+      |        <vendor>$vendor</vendor>
+      |        <description>$desc</description>
+      |        <description kind="short">$shortDesc</description>$offlineAllowedStr
+      |    </information>
+      |    <security> <all-permissions/> </security>
+      |    <resources>
+      |
+      |        <!-- Application Resources -->
+      |        <j2se version="1.6+ 1.7+" java-vm-args="$vmArgs" href="http://java.sun.com/products/autodl/j2se"/>$jarsStr
+      |
+      |        <!-- System Properties -->$propsStr
+      |
+      |    </resources>$appDesc
+      |    <update check="timeout" policy="always"/>
+      |</jnlp>
+    """.stripMargin
 
 }

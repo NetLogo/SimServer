@@ -19,7 +19,7 @@
       }
 
       @submissions.zipWithIndex.map{ case (submission, index) =>
-        @Html("makeReplacement(%s, present_custom_%s(%s));".format(index, submission.typ, submission.toJson))
+        @Html(s"makeReplacement($index, present_custom_${submission.typ}(${submission.toJson}));")
       }
 
     }

@@ -27,12 +27,13 @@ sealed trait InfoCompanion[T] {
   protected val RequiredText = text.verifying("Required Text", !(_: String).isEmpty)
 
    /*none*/ val YesNoChoices = Seq("No", "Yes")
-  protected val YesNo        = text.verifying("""Invalid value; choose %s""".format(YesNoChoices map ("\"%s\"".format(_)) mkString " or "),
-                                              YesNoChoices.contains((_: String)))
+  protected val YesNo        = text.verifying(s"Invalid value; choose ${quoteAndOrDelim(YesNoChoices)}", YesNoChoices.contains((_: String)))
+
+  private val quoteAndOrDelim = (choices: Seq[String]) => choices map (x => s"'$x'") mkString (" or ")
 
   protected def numerical(min: Int, max: Int) =
     text.verifying(
-      "Not a number within the range [%s, %s] (inclusive)".format(min, max),
+      s"Not a number within the range [$min, $max] (inclusive)",
       number =>
         try   { val x = number.toInt; x >= min && x <= max }
         catch {

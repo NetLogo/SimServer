@@ -22,7 +22,7 @@ private[submission] object Validator {
       x =>
         try x.toLong match { case y => accept(y) }
         catch {
-          case ex: NumberFormatException => deny("Cannot convert '%s' to Long; either not numerical or too many digits.".format(x))
+          case ex: NumberFormatException => deny(s"Cannot convert '$x' to Long; either not numerical or too many digits.")
         }
     }
 

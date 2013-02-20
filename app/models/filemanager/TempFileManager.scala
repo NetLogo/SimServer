@@ -16,8 +16,7 @@ object TempFileManager extends FileManager {
   protected override val LifeSpan     = 1 hour
   protected override val SystemName   = "TempGen"
 
-  override def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
-    "%s/%s.%s".format(MyFolderName, fileNameBasis.##.abs, fileExt)
-  }
+  override def formatFilePath(fileNameBasis: String, fileExt: String) : String =
+    s"$MyFolderName/${fileNameBasis.##.abs}.$fileExt"
 
 }
