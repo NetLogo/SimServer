@@ -15,13 +15,26 @@ import
 object PlayUtil {
 
   def commonExtractMap(request: Request[AnyContent]) : Map[String, String] =
-    extractParamMapOpt(request) getOrElse Map() map { case (k, v) => (k, v(0)) }
+    extractBundle(request).stringParams
 
   // If Play actually made a good-faith effort at parameter extraction, I wouldn't have to go through this rubbish...
-  def extractParamMapOpt(request: Request[AnyContent]) : Option[Map[String, Seq[String]]] =
-    request.body.asMultipartFormData.map(_.asFormUrlEncoded).
-            orElse(request.body.asFormUrlEncoded flatMap (Util.noneIfEmpty(_))).
-            orElse(Option(request.queryString))
+  def extractBundle(request: Request[AnyContent]) : ParamBundle =
+    request.body.asMultipartFormData map {
+      formData =>
+        val fileKVs = formData.files map {
+          file =>
+            import scala.io.{ Codec, Source }
+            val arr = Source.fromFile(file.ref.file)(Codec.ISO8859).map(_.toByte).toArray
+            (file.key, arr)
+        }
+        ParamBundle(formData.asFormUrlEncoded, fileKVs.toMap)
+    } orElse {
+      request.body.asFormUrlEncoded flatMap (Util.noneIfEmpty(_)) map (ParamBundle(_))
+    } orElse {
+      Option(request.queryString) map (ParamBundle(_))
+    } getOrElse {
+      ParamBundle(Map(), Map())
+    }
 
   // Try _really_ hard to parse the body into JSON (pretty much the only thing I don't try is XML conversion)
   def extractJSONOpt(request: Request[AnyContent]) : Option[JsValue] = {
@@ -37,7 +50,9 @@ object PlayUtil {
           Logger.info("Failed to parse text into JSON", ex)
           None
       }
-    } orElse { extractParamMapOpt(request) flatMap paramMap2JSON }
+    } orElse {
+      (extractBundle _ andThen (_.stringSeqParams) andThen paramMap2JSON _)(request)
+    }
   }
 
   private def stringSeq2JSONOpt(seq: Seq[String]) : Option[JsValue] = {
@@ -70,4 +85,9 @@ object PlayUtil {
     if (!validatedParams.isEmpty) Option(new JsObject(validatedParams.toSeq)) else None
   }
 
+}
+
+
+case class ParamBundle(stringSeqParams: Map[String, Seq[String]], byteParams: Map[String, Array[Byte]] = Map()) {
+  lazy val stringParams = stringSeqParams mapValues (_.head)
 }

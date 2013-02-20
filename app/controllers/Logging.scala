@@ -27,10 +27,9 @@ object Logging extends Controller {
 
   def logData(id: String) = APIAction {
     request =>
-      val paramMapOpt = PlayUtil.extractParamMapOpt(request)
+      val paramBundle = PlayUtil.extractBundle(request)
       val status = for {
-        paramMap   <- paramMapOpt
-        logDataSeq <- paramMap.get(LoggingDataKey)
+        logDataSeq <- paramBundle.stringSeqParams.get(LoggingDataKey)
         logData    <- logDataSeq.headOption
       } yield (LoggingHandler.log(id.toLong, logData))
       status map (Ok(_)) getOrElse BadRequest("ERROR_IN_PARSING")
