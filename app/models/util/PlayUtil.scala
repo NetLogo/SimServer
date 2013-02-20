@@ -22,10 +22,11 @@ object PlayUtil {
     request.body.asMultipartFormData map {
       formData =>
         val fileKVs = formData.files map {
-          file =>
+          formFile =>
             import scala.io.{ Codec, Source }
-            val arr = Source.fromFile(file.ref.file)(Codec.ISO8859).map(_.toByte).toArray
-            (file.key, arr)
+            val file = formFile.ref.file
+            val arr  = if (file.length < 20000000L) Source.fromFile(file)(Codec.ISO8859).map(_.toByte).toArray else "UPLOADED FILE TOO LARGE".getBytes
+            (formFile.key, arr)
         }
         ParamBundle(formData.asFormUrlEncoded, fileKVs.toMap)
     } orElse {
