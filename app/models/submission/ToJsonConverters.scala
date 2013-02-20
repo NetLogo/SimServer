@@ -1,6 +1,10 @@
 package models.submission
 
-import play.api.libs.json._
+import
+  scala.util.Try
+
+import
+  play.api.libs.json._
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,7 +28,7 @@ object ToJsonConverters {
       val userIDTuple      = ("user_id",     JsString(userID))
       val typeTuple        = ("type",        JsString(typ))
       val dataTuple        = ("data",        JsString(data))
-      val metadataTuple    = ("metadata",    Json.parse(metadata))
+      val metadataTuple    = ("metadata",    Try(Json.parse(metadata)) getOrElse JsObject(Seq()))
       val descriptionTuple = ("description", JsString(description))
       val supplementsTuple = ("supplements", Json.toJson(supplements map (_.toJsonObj)))
       val commentsTuple    = ("comments",    Json.toJson(comments map (_.toJsonObj)))
