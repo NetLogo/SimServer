@@ -69,7 +69,7 @@ object NetLogoJNLP {
 private[jnlp] object NetLogoJNLPDefaults {
   import models.util.Util.noneIfEmpty
   private val Defs                      = JNLPDefaults
-  val MainJar                           = new MainJar("NetLogo.jar")
+  val MainJar                           = new MainJar("NetLogoGUI.jar")
   val MainClass                         = "org.nlogo.app.App"
   val ApplicationName                   = "NetLogo"
   val Desc                              = "A NetLogo WebStart app"
@@ -96,7 +96,9 @@ private object NetLogoJarManager {
   )
 
   private val DefaultJarNames = Seq(
+    "akka-actor_2.10-2.1.0.jar",
     "asm-all-3.3.1.jar",
+    "config-1.0.0.jar",
     "gluegen-rt-1.1.1.jar",
     "jhotdraw-6.0b1.jar",
     "jmf-2.1.1e.jar",
@@ -104,7 +106,8 @@ private object NetLogoJarManager {
     "logging.jar",
     "log4j-1.2.16.jar",
     "mrjadapter-1.2.jar",
-    "knockoff_2.9.2-0.8.1.jar",
+    "NetLogoEngine.jar",
+    "knockoff_2.10-0.8.1.jar",
     "picocontainer-2.13.6.jar",
     "quaqua-7.3.4.jar",
     "scala-library.jar",
