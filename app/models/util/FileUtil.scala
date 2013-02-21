@@ -39,7 +39,7 @@ object FileUtil {
     using (new FileOutputStream(filename))(_.write(bytes))
   }
 
-  private def using[A <: { def close() }, B](param: A)(f: A => B) : B = {
+  def using[A <: { def close() }, B](param: A)(f: A => B) : B = {
     try { f(param) } finally { param.close() }
   }
 
