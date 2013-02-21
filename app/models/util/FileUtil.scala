@@ -1,6 +1,6 @@
 package models.util
 
-import java.io.{ File, FileOutputStream, FileWriter, PrintWriter }
+import java.io.{ File, FileOutputStream, PrintWriter }
 
 import org.apache.commons.codec.binary.Base64
 
@@ -14,7 +14,6 @@ import org.apache.commons.codec.binary.Base64
 object FileUtil {
 
   private val ImageExtensions     = List("jpeg", "jpg", "png", "bmp", "gif")
-  private val DefaultByteEncoding = "UTF-8"
 
   val NetLogoFileExt  = "nlogo"
   val ModelFileFilter = extFilter(NetLogoFileExt)
@@ -30,17 +29,20 @@ object FileUtil {
     using(new PrintWriter(f))(op)
   }
 
-  def printBytesToFile(filename: String)(data: String) {
-    if (ImageExtensions.exists(filename.endsWith(_)))
-      using (new FileOutputStream(filename))(_.write(decodeBase64(data)))
-    else
-      using (new FileWriter(filename))(fileWriter => fileWriter.write(data))
+  def printBytesToFile(filename: String)(data: Array[Byte]) {
+    val bytes = {
+      if (ImageExtensions.exists(filename.endsWith(_)))
+        decodeBase64(data)
+      else
+        data
+    }
+    using (new FileOutputStream(filename))(_.write(bytes))
   }
 
   private def using[A <: { def close() }, B](param: A)(f: A => B) : B = {
     try { f(param) } finally { param.close() }
   }
 
-  private def decodeBase64(str: String) = Base64.decodeBase64(str.getBytes(DefaultByteEncoding))
+  private def decodeBase64(bytes: Array[Byte]) = Base64.decodeBase64(bytes)
 
 }

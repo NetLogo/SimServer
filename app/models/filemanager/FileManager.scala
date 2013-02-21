@@ -46,12 +46,12 @@ trait FileManager extends Delayer {
     s"$MyFolderName/$fileNameBasis/$fileExt"
   }
 
-  def registerFile(contents: String, fileNameBasis: String, fileExt: String = "") : String = {
+  def registerFile(contents: Array[Byte], fileNameBasis: String, fileExt: String = "") : String = {
     val filename  = if (!fileExt.isEmpty) formatFilePath(fileNameBasis, fileExt) else fileNameBasis
     saveFile(contents, filename, fileNameBasis)
   }
 
-  protected def saveFile(contents: String, filename: String, actorID: String) : String = {
+  protected def saveFile(contents: Array[Byte], filename: String, actorID: String) : String = {
 
     val file      = new File(s"${PublicPath}${File.separator}$filename")
     val fileActor = {

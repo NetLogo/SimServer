@@ -17,7 +17,7 @@ object JNLPFromJSONGenerator {
   def apply(json: JsValue, host: String) : ValidationNEL[String, String] = {
     val filename     = TempFileManager.formatFilePath(json.toString, "jnlp")
     val jnlpParamSet = JNLPParamSetManager.determineSet(json)
-    val jnlpMaybe    = jnlpParamSet.bindFromJson(json, filename)("http://%s/assets".format(host))
-    jnlpMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr, filename).toString replaceAllLiterally("\\", "/"))
+    val jnlpMaybe    = jnlpParamSet.bindFromJson(json, filename)(s"http://$host/assets")
+    jnlpMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr.getBytes, filename).toString replaceAllLiterally("\\", "/"))
   }
 }

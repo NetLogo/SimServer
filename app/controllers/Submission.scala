@@ -1,11 +1,16 @@
 package controllers
 
-import play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
+import
+  scalaz.{ NonEmptyList, Scalaz, ValidationNEL },
+    Scalaz._
 
-import scalaz.{ NonEmptyList, Scalaz, ValidationNEL }, Scalaz._
+import
+  play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
-import models.submission._
-import models.util.PlayUtil
+import
+  models.{ submission, util },
+    submission._,
+    util.{ ParamBundle, PlayUtil }
 
 /**
  * Created with IntelliJ IDEA.
@@ -111,7 +116,7 @@ object Submission extends Controller {
   }
 
   def updateAndViewWork(run: String, period: String, user: String) = Action {
-    (submit(_: Request[AnyContent], UserWorkComment.fromMap(_), noCleanup)) andThen {
+    (submit(_: Request[AnyContent], UserWorkComment.fromBundle(_), noCleanup)) andThen {
       case x if (x.header.status == OK) => Redirect((period, user) match {
         case ("", "") => routes.Submission.viewWork1(run)
         case (p, "")  => routes.Submission.viewWork2(run, p)
@@ -133,23 +138,23 @@ object Submission extends Controller {
 
   def submitWork = APIAction {
     implicit request =>
-      val fileRegistrationFunc = registerFile[UserWork](_.typ)(_.data) {
+      val fileRegistrationFunc = registerFile[UserWork](_.typ)(_.rawData) {
         (id, newData) => _.copy(id = Option(id), data = newData)
       } _
-      submit(request, UserWork.fromMap(_), fileRegistrationFunc)
+      submit(request, UserWork.fromBundle(_), fileRegistrationFunc)
   }
 
   def submitSupplement = APIAction {
     implicit request =>
-      val fileRegistrationFunc = registerFile[UserWorkSupplement](_.typ)(_.data) {
+      val fileRegistrationFunc = registerFile[UserWorkSupplement](_.typ)(_.rawData) {
         (id, newData) => _.copy(id = Option(id), data = newData)
       } _
-      submit(request, UserWorkSupplement.fromMap(_), fileRegistrationFunc)
+      submit(request, UserWorkSupplement.fromBundle(_), fileRegistrationFunc)
   }
 
 
   private def registerFile[T <% Updatable](getTypeNameFunc:     T => String)
-                                          (getFileContentsFunc: T => String)
+                                          (getFileContentsFunc: T => Array[Byte])
                                           (cloneFunc:           (Long, String) => T => T)
                                           (subjectAndID:        (T, Long)) : ValidationNEL[String, Long] = {
     val (subject, id) = subjectAndID
@@ -162,10 +167,10 @@ object Submission extends Controller {
   }
 
   private def submit[T <% Submittable](request: Request[AnyContent],
-                                       constructorFunc: (Map[String, String]) => ValidationNEL[String, T],
+                                       constructorFunc: (ParamBundle) => ValidationNEL[String, T],
                                        cleanup: ((T, Long)) => ValidationNEL[String, Long]) : SimpleResult[_] = {
-    val params = PlayUtil.commonExtractMap(request)
-    constructorFunc(params) flatMap {
+    val paramBundle = PlayUtil.extractBundle(request)
+    constructorFunc(paramBundle) flatMap {
       submittable =>
         val submissionStatus = SubmissionDBManager.submit(submittable)
         submissionStatus flatMap (id => cleanup(submittable, id))

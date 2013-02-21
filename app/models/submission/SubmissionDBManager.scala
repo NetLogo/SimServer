@@ -118,7 +118,7 @@ object SubmissionDBManager {
       long(IDKey) ~ timestamp(TimestampKey) ~ str(RunIDKey) ~ str(PeriodIDKey) ~ str(UserIDKey) ~
         str(TypeKey) ~ str(DataKey) ~ str(MetadataKey) ~ str(DescriptionKey) map {
         case id ~ timestamp ~ run ~ period ~ user ~ typ ~ data ~ metadata ~ description =>
-          UserWork(Option(id), timestamp, run, period, user, typ, data, metadata, description,
+          UserWork(Option(id), timestamp, run, period, user, typ, data, Array(), metadata, description,
                    getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
         case _ => raiseDBAccessException
       } *
@@ -148,15 +148,15 @@ object SubmissionDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWorkSupplements._
       SQL (
-        """
-          |SELECT * FROM %s
-          |WHERE %s = {refID};
-        """.stripMargin.format(TableName, RefIDKey)
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $RefIDKey = {refID};
+        """.stripMargin
       ) on (
         "refID" -> workRefID
       ) as {
         long(IDKey) ~ long(RefIDKey) ~ str(TypeKey) ~ str(DataKey) ~ str(MetadataKey) map {
-          case id ~ refID ~ typ ~ data ~ metadata => UserWorkSupplement(Option(id), Option(refID), typ, data, metadata)
+          case id ~ refID ~ typ ~ data ~ metadata => UserWorkSupplement(Option(id), Option(refID), typ, data, Array(), metadata)
           case _ => raiseDBAccessException
         } *
       }

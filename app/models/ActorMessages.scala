@@ -8,7 +8,7 @@ package models
  */
 
 sealed trait FileActorMessage
-case object Get                     extends FileActorMessage
-case object Delete                  extends FileActorMessage
-case object Initialize              extends FileActorMessage
-case class  Write(contents: String) extends FileActorMessage
+case object Get                          extends FileActorMessage
+case object Delete                       extends FileActorMessage
+case object Initialize                   extends FileActorMessage
+case class  Write(contents: Array[Byte]) extends FileActorMessage

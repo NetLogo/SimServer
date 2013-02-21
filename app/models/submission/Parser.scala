@@ -16,10 +16,16 @@ import
 
 // Unless I wanna go all `shapeless` on this thing's ass, there's not really a good way to enforce having a `validate` method... --JAB
 private[submission] trait Parser {
+
   protected type Target
-  protected type ConsTuple <: Product
-  protected type FailType = String
-  protected type Output   = ValidationNEL[FailType, Target]
+  protected type ConsTuple   <: Product
+  protected type ParsedTuple <: Product
+  protected type FailType    =  String
+  protected type Parsed      =  ValidationNEL[FailType, ParsedTuple]
+  protected type Output      =  ValidationNEL[FailType, Target]
+
+  protected def constructFrom(parsed: Parsed) : Output
+
 }
 
 private[submission] trait FromBundleParser extends Parser {
@@ -47,8 +53,12 @@ private[submission] trait DataFromBundleParser extends FromBundleParser {
 }
 
 private[submission] trait FromMapParser extends Parser {
+
   protected type MapInput = Map[String, String]
-  def fromMap(implicit params: MapInput) : Output
+
+  protected def parseFromMap(implicit params: MapInput) : Parsed
+
+  def fromMap(implicit params: MapInput) : Output   = constructFrom(parseFromMap(params))
   def fetch(key: String)(implicit params: MapInput) = // Converts keys to `Validation`s
     params.get(key) map (_.successNel[String]) getOrElse (s"No item with key '$key' passed in".failNel)
 

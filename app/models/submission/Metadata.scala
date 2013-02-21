@@ -16,9 +16,11 @@ trait Metadata {
 }
 
 object Metadata extends FromStringParser {
-  override protected type Target    = Metadata
-  override protected type ConsTuple = Nothing
-  override def fromString(str: String) : Output = {
+  override protected type Target      = Metadata
+  override protected type ConsTuple   = Nothing
+  override protected type ParsedTuple = Nothing
+  override def constructFrom(parsed: Parsed)     = ??? // It just doesn't seem worth it in this trivial case to fully implement things
+  override def fromString(str: String) : Output  = {
     Success(new Metadata { override def getType = (Json.parse(str) \ "type").as[String] })
   }
 }
