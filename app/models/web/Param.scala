@@ -46,7 +46,7 @@ object Param {
 }
 
 
-/* Models a realized parameter--a parameter that has been had extraction attempted on it.
+/* Models a realized parameter--a parameter that has had extraction attempted on it.
  * If the extraction succeeded, it will be a `SomeParam`; if not, it will be a `NoneParam`.
  * `ParamBox` can be thought of as a gimped-in-functionality `Option` that always carries
  * with it a `key` value, which tells what parameter is being represented in the box (this
