@@ -1,9 +1,12 @@
 package models.jnlp
 
-import scalaz.ValidationNEL
+import
+  scalaz.ValidationNEL
 
-import models.util.Util
-import models.web.ParamBox
+import
+  models.{ util, web },
+    util.Util,
+    web.ParamBox
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,8 +29,11 @@ object NetLogoJNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
             otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
-            propertiesBox: ParamBox[Seq[(String, String)]], argumentsBox: ParamBox[Seq[String]])
+            usesExtensionsBox: ParamBox[Boolean], propertiesBox: ParamBox[Seq[(String, String)]],
+            argumentsBox: ParamBox[Seq[String]])
            (implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] = {
+
+    val extensionsJar    = usesExtensionsBox map (if (_) Option(ExtensionsJar) else None) getOrElse Option(ExtensionsJar)
 
     val codebaseURI      = codebaseURIBox      orElseApply thisServerCodebaseURL
     val mainJar          = mainJarBox          orElseApply MainJar.jarName
@@ -40,7 +46,7 @@ object NetLogoJNLP {
     val vendor           = vendorBox           orElseApply Vendor
     val depsPath         = depsPathBox         orElseApply DepsPath
     val vmArgs           = vmArgsBox           orElseApply VMArgs
-    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
+    val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((extensionsJar ++ NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
     val properties       = propertiesBox       orElseApply Properties
     val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (modelURLBox map generateModelURLArgs getOrElse Seq()))
 
@@ -81,6 +87,7 @@ private[jnlp] object NetLogoJNLPDefaults {
   val VMArgs                            = noneIfEmpty(Defs.VMArgs) map (_ + " ") getOrElse "" // Can't set default memory args; causes Mountain Lion failure
   val OtherJars:  Seq[Jar]              = Defs.OtherJars
   val NeededJars: Seq[Jar]              = NetLogoJarManager.getDefaultJars
+  val ExtensionsJar: Jar                = NetLogoJarManager.ExtensionsJar
   val Properties: Seq[(String, String)] = Defs.Properties
   val Arguments:  Seq[String]           = Defs.Arguments
 }
@@ -88,7 +95,6 @@ private[jnlp] object NetLogoJNLPDefaults {
 private object NetLogoJarManager {
 
   private val DefaultLazyJarNames = Seq(
-    "extensions.jar",
     "commons-codec-1.6.jar",
     "commons-logging-1.1.1.jar",
     "httpclient-4.2.jar",
@@ -113,6 +119,8 @@ private object NetLogoJarManager {
     "scala-library.jar",
     "swing-layout-7.3.4.jar"
   )
+
+  val ExtensionsJar = new Jar("extensions.jar", true)
 
   def getDefaultJars : Seq[Jar] = {
     def generateJar(name: String, isLazy: Boolean) = new Jar(name, isLazy)

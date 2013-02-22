@@ -32,7 +32,8 @@ object HubNetJNLP {
             otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]], programNameBox: ParamBox[String])
            (roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean], modelURLBox: ParamBox[String],
-            serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],  userIDBox: ParamBox[String])
+            usesExtensionsBox: ParamBox[Boolean], serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],
+            userIDBox: ParamBox[String])
            (implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] = {
 
     // Through proper use of applicatives, I would be able to abstract this over arity.
@@ -85,7 +86,8 @@ object HubNetJNLP {
         depsPath,
         vmArgs,
         otherJars,
-        modelURLBox, // For `NetLogoJNLP` only
+        modelURLBox,       // For `NetLogoJNLP` only
+        usesExtensionsBox, // For `NetLogoJNLP` only
         properties,
         arguments
       )
