@@ -12,7 +12,7 @@ import
 
 object TempFileManager extends FileManager {
 
-            override val MyFolderName = "gen"
+            override val MyFolderName = "temp"
   protected override val LifeSpan     = 1 hour
   protected override val SystemName   = "TempGen"
 

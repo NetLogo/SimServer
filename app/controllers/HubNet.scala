@@ -4,7 +4,6 @@ import play.api.{ Logger, mvc}, mvc._
 
 import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
-import models.filemanager.TempFileManager
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
 import models.jnlp._
 import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
@@ -21,8 +20,6 @@ object HubNet extends Controller {
   val HubNetKy     = "hubnet_data"
   val ModelsSubDir = "assets/models"
   val DepsSubDir   = "assets/deps"
-
-  TempFileManager.removeAll()  // Clear all temp gen files on startup
 
   def hubTest = Action {
     Ok(views.html.hubtest(StudentInfo.form))

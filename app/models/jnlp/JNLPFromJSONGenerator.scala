@@ -4,7 +4,7 @@ import play.api.libs.json.JsValue
 
 import scalaz.ValidationNEL
 
-import models.filemanager.TempFileManager
+import models.filemanager.JNLPFileManager
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,9 +15,9 @@ import models.filemanager.TempFileManager
 
 object JNLPFromJSONGenerator {
   def apply(json: JsValue, host: String) : ValidationNEL[String, String] = {
-    val filename     = TempFileManager.formatFilePath(json.toString, "jnlp")
+    val filename     = JNLPFileManager.MyFolderName + "/" + java.util.UUID.randomUUID().toString + ".jnlp"
     val jnlpParamSet = JNLPParamSetManager.determineSet(json)
     val jnlpMaybe    = jnlpParamSet.bindFromJson(json, filename)(s"http://$host/assets")
-    jnlpMaybe map (jnlp => TempFileManager.registerFile(jnlp.toXMLStr.getBytes, filename).toString replaceAllLiterally("\\", "/"))
+    jnlpMaybe map (jnlp => JNLPFileManager.registerFile(jnlp.toXMLStr.getBytes, filename).toString replaceAllLiterally("\\", "/"))
   }
 }
