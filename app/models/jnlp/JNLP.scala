@@ -140,6 +140,8 @@ private[jnlp] object JNLPDefaults {
       |    <security> <all-permissions/> </security>
       |    <resources>
       |
+      |        <property name="jnlp.packEnabled" value="true"/>
+      |
       |        <!-- Application Resources -->
       |        <j2se version="1.6+ 1.7+" java-vm-args="$vmArgs" href="http://java.sun.com/products/autodl/j2se"/>$jarsStr
       |
@@ -148,6 +150,6 @@ private[jnlp] object JNLPDefaults {
       |    </resources>$appDesc
       |    <update check="timeout" policy="always"/>
       |</jnlp>
-    """.stripMargin
+    """.stripMargin.trim
 
 }
