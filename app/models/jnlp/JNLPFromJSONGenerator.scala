@@ -1,10 +1,13 @@
 package models.jnlp
 
-import play.api.libs.json.JsValue
+import
+  scalaz.ValidationNEL
 
-import scalaz.ValidationNEL
+import
+  play.api.libs.json.JsValue
 
-import models.filemanager.JNLPFileManager
+import
+  models.filemanager.JNLPFileManager
 
 /**
  * Created with IntelliJ IDEA.
