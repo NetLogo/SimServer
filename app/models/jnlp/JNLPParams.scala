@@ -18,8 +18,8 @@ trait JNLPParams {
 
   final def stringify : String = {
     def headerAndParamsFormat(header: String, params: String) = s"""$header
-                                                                  |
-                                                                  |$params""".stripMargin
+                                                                   |
+                                                                   |$params""".stripMargin
     def headerFormat(header: String) = {
       val barrier = Stream.fill(header.length)("=").mkString
      s"""$barrier
