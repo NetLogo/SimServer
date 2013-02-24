@@ -14,7 +14,10 @@ import
     util_akka.Timeout
 
 import
-  play.libs.Akka
+  play.{ api, libs },
+    api.Logger,
+    libs.Akka
+
 
 import
   models.{ Get, Delete, Initialize, util, Write },
@@ -48,27 +51,36 @@ trait FileManager extends Delayer {
 
   def registerFile(contents: Array[Byte], fileNameBasis: String, fileExt: String = "") : String = {
     val filename  = if (!fileExt.isEmpty) formatFilePath(fileNameBasis, fileExt) else fileNameBasis
-    saveFile(contents, filename, fileNameBasis)
+    saveFile(contents, filename)
   }
 
-  protected def saveFile(contents: Array[Byte], filename: String, actorID: String) : String = {
+  protected def saveFile(contents: Array[Byte], filename: String) : String = {
 
-    val file      = new File(s"${PublicPath}${File.separator}$filename")
-    val fileActor = {
-      val actorName = idToActorName(actorID)
-      try system.actorOf(Props(new FileActor(file)), name = actorName)
+    val file         = new File(s"${PublicPath}${File.separator}$filename")
+    val fileActorOpt = {
+      val actorName = idToActorName(filename)
+      try Option(system.actorOf(Props(new FileActor(file)), name = actorName))
       catch {
-        case ex: InvalidActorNameException => system.actorFor(actorName)
+        case ex: InvalidActorNameException =>
+          Logger.warn("Actor name exception", ex)
+          None
       }
     }
 
-    fileActor ! Initialize
-    fileActor ! Write(contents)
+    fileActorOpt foreach {
 
-    // Kill the actor on termination for our scheduled "delete" task doesn't go off
-    // The temp gen file is accessible for <LifeSpan> before being deleted
-    Akka.system.registerOnTermination { fileActor ! PoisonPill }
-    Akka.system.scheduler.scheduleOnce(LifeSpan) { fileActor ! Delete }
+      case actor =>
+
+        actor ! Initialize
+        actor ! Write(contents)
+
+        // Kill the actor on termination for our scheduled "delete" task doesn't go off
+        // The temp gen file is accessible for <LifeSpan> before being deleted
+        Akka.system.registerOnTermination { actor ! PoisonPill }
+        Akka.system.scheduler.scheduleOnce(LifeSpan) { actor ! Delete }
+
+    }
+
     file.toString.replace(PublicPath, AssetPath)
 
   }
@@ -83,7 +95,7 @@ trait FileManager extends Delayer {
     fileFolder.listFiles foreach { file => system.actorOf(Props(new FileActor(file))) ! Delete }
   }
 
-  protected def idToActorName(id: String) = id.replaceAll("/", "&~&")
+  protected def idToActorName(id: String) = s"file-actor--${id.##.toString}"
 
 }
 

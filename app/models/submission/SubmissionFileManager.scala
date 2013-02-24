@@ -24,7 +24,7 @@ object SubmissionFileManager extends FileManager {
 
   def registerFile(contents: Array[Byte], fileNameBasis: String, bundle: TypeBundle) : String = {
     val filename = formatFilePath(fileNameBasis, bundle)
-    saveFile(contents, filename, fileNameBasis) dropWhile (_ != '/') drop 1 // Toss out the "assets/"
+    saveFile(contents, filename) dropWhile (_ != '/') drop 1 // Toss out the "assets/"
   }
 
 }
