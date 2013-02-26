@@ -55,6 +55,7 @@ object JNLPKeys {
   val IsOfflineAllowedKey = "is_offline_allowed"
   val AppNameInMenuKey    = "application_name_in_menu"
   val VendorKey           = "vendor"
+  val PackEnabledKey      = "pack_enabled"
   val DepsPathKey         = "dependencies_path"
   val VMArgsKey           = "vm_args"
   val OtherJarsKey        = "other_jars"
@@ -130,6 +131,7 @@ private[jnlp] object JNLPParams {
   val IsOfflineAllowedParam = Param[Boolean](IsOfflineAllowedKey)
   val AppNameInMenuParam    = Param[String](AppNameInMenuKey)
   val VendorParam           = Param[String](VendorKey)
+  val PackEnabledParam      = Param[Boolean](PackEnabledKey)
   val DepsPathParam         = Param[String](DepsPathKey)
   val VMArgsParam           = Param[String](VMArgsKey)
   val OtherJarsParam        = Param[Seq[(String, Boolean)]](OtherJarsKey,  otherJarsParse  _, OtherJarsParseDescriptor)
@@ -139,7 +141,7 @@ private[jnlp] object JNLPParams {
   // --------------> Adding a param above?  THEN ADD IT TO THIS LIST! <-------------- //
   val BaseParams = Seq(CodebaseURLParam, MainJarParam, MainClassParam, ApplicationNameParam, DescParam,
                        ShortDescParam, IsOfflineAllowedParam, AppNameInMenuParam, VendorParam,
-                       DepsPathParam, VMArgsParam, OtherJarsParam, PropertiesParam, ArgumentsParam)
+                       PackEnabledParam, DepsPathParam, VMArgsParam, OtherJarsParam, PropertiesParam, ArgumentsParam)
 
 }
 
@@ -165,6 +167,7 @@ object BaseJNLPParams extends JNLPParams {
       IsOfflineAllowedParam(js),
       AppNameInMenuParam(js),
       VendorParam(js),
+      PackEnabledParam(js),
       DepsPathParam(js),
       VMArgsParam(js),
       OtherJarsParam(js),
@@ -205,6 +208,7 @@ object NetLogoParams extends JNLPParams {
       IsOfflineAllowedParam(js),
       AppNameInMenuParam(js),
       VendorParam(js),
+      PackEnabledParam(js),
       DepsPathParam(js),
       VMArgsParam(js),
       OtherJarsParam(js),
@@ -256,6 +260,7 @@ object HubNetParams extends JNLPParams {
       IsOfflineAllowedParam(js),
       AppNameInMenuParam(js),
       VendorParam(js),
+      PackEnabledParam(js),
       DepsPathParam(js),
       VMArgsParam(js),
       OtherJarsParam(js),

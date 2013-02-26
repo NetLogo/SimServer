@@ -25,6 +25,7 @@ class JNLP(
                 isOfflineAllowed: Boolean             = IsOfflineAllowed,
                 appNameInMenu: String                 = AppNameInMenu, // Used if we ever want to save application shortcuts
                 vendor: String                        = Vendor,
+                packEnabled: Boolean                  = PackEnabled,
                 depsPath: String                      = DepsPath,
                 vmArgs: String                        = VMArgs,
                 otherJars: Seq[Jar]                   = OtherJars,
@@ -50,8 +51,8 @@ class JNLP(
         formatXMLNode("jar", Map(hrefProps: _*), 2)
     } mkString ("\n", "\n", "")
 
-    generateJNLPString(codebaseURI.toString, jnlpLoc, applicationName, vendor, desc,
-                       shortDesc, offlineAllowedStr, vmArgs, jarsStr, propsStr, appDesc)
+    generateJNLPString(codebaseURI.toString, jnlpLoc, applicationName, vendor, packEnabled.toString,
+                       desc, shortDesc, offlineAllowedStr, vmArgs, jarsStr, propsStr, appDesc)
 
   }
 
@@ -75,8 +76,8 @@ object JNLP {
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
             mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
-            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
-            otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
+            vendorBox: ParamBox[String], packEnabledBox: ParamBox[Boolean], depsPathBox: ParamBox[String],
+            vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]]) : ValidationNEL[String, JNLP] = {
 
     val errorStrFormat  = "Bad data supplied for: " + (_: String)
@@ -98,14 +99,15 @@ object JNLP {
         val isOfflineAllowed = isOfflineAllowedBox          getOrElse IsOfflineAllowed
         val appNameInMenu    = appNameInMenuBox             getOrElse AppNameInMenu
         val vendor           = vendorBox                    getOrElse Vendor
+        val packEnabled      = packEnabledBox               getOrElse PackEnabled
         val depsPath         = depsPathBox                  getOrElse DepsPath
         val vmArgs           = vmArgsBox                    getOrElse VMArgs
         val otherJars        = otherJarsBox map (_ map jar) getOrElse OtherJars
         val properties       = propertiesBox                getOrElse Properties
         val arguments        = argumentsBox                 getOrElse Arguments
 
-        new JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc,
-                 isOfflineAllowed, appNameInMenu, vendor, depsPath, vmArgs, otherJars, properties, arguments)
+        new JNLP(codebaseURI, jnlpLoc, mainJar, mainClass, applicationName, desc, shortDesc, isOfflineAllowed,
+                 appNameInMenu, vendor, packEnabled, depsPath, vmArgs, otherJars, properties, arguments)
     }
   }
 }
@@ -119,14 +121,15 @@ private[jnlp] object JNLPDefaults {
   val AppNameInMenu                     = "Java WebStart"
   val Vendor                            = "[Unknown Vendor]"
   val DepsPath                          = "deps"
+  val PackEnabled                       = true
   val VMArgs                            = ""
   val OtherJars:  Seq[Jar]              = Seq()
   val Properties: Seq[(String, String)] = Seq()
   val Arguments:  Seq[String]           = Seq()
 
   // Also, Guns N' Roses once wrote a song about the following code; it was called "Welcome to the Jungle"
-  def generateJNLPString(codebaseURI: String, jnlpLoc: String, applicationName: String,
-                         vendor: String, desc: String, shortDesc: String, offlineAllowedStr: String,
+  def generateJNLPString(codebaseURI: String, jnlpLoc: String, applicationName: String, vendor: String,
+                         packEnabledStr: String, desc: String, shortDesc: String, offlineAllowedStr: String,
                          vmArgs: String, jarsStr: String, propsStr: String, appDesc: String) =
    s"""
       |<?xml version="1.0" encoding="UTF-8"?>
@@ -140,7 +143,7 @@ private[jnlp] object JNLPDefaults {
       |    <security> <all-permissions/> </security>
       |    <resources>
       |
-      |        <property name="jnlp.packEnabled" value="true"/>
+      |        <property name="jnlp.packEnabled" value="$packEnabledStr"/>
       |
       |        <!-- Application Resources -->
       |        <j2se version="1.6+ 1.7+" java-vm-args="$vmArgs" href="http://java.sun.com/products/autodl/j2se"/>$jarsStr

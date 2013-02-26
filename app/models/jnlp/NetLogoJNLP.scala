@@ -27,8 +27,8 @@ object NetLogoJNLP {
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
             mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
-            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
-            otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
+            vendorBox: ParamBox[String], packEnabledBox: ParamBox[Boolean], depsPathBox: ParamBox[String],
+            vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
             usesExtensionsBox: ParamBox[Boolean], propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]])
            (implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] = {
@@ -44,6 +44,7 @@ object NetLogoJNLP {
     val isOfflineAllowed = isOfflineAllowedBox orElseApply IsOfflineAllowed
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
+    val packEnabled      = packEnabledBox      orElseApply PackEnabled
     val depsPath         = depsPathBox         orElseApply DepsPath
     val vmArgs           = vmArgsBox           orElseApply VMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((extensionsJar ++ NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
@@ -61,6 +62,7 @@ object NetLogoJNLP {
       isOfflineAllowed,
       appNameInMenu,
       vendor,
+      packEnabled,
       depsPath,
       vmArgs,
       otherJars,
@@ -83,6 +85,7 @@ private[jnlp] object NetLogoJNLPDefaults {
   val IsOfflineAllowed                  = Defs.IsOfflineAllowed
   val AppNameInMenu                     = "NetLogo (WebStart)"
   val Vendor                            = "CCL"
+  val PackEnabled                       = Defs.PackEnabled
   val DepsPath                          = "deps"
   val VMArgs                            = noneIfEmpty(Defs.VMArgs) map (_ + " ") getOrElse "" // Can't set default memory args; causes Mountain Lion failure
   val OtherJars:  Seq[Jar]              = Defs.OtherJars

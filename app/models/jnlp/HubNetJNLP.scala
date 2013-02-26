@@ -28,8 +28,8 @@ object HubNetJNLP {
   def apply(codebaseURIBox: ParamBox[String], jnlpLocBox: ParamBox[String], mainJarBox: ParamBox[String],
             mainClassBox: ParamBox[String], applicationNameBox: ParamBox[String], descBox: ParamBox[String],
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
-            vendorBox: ParamBox[String], depsPathBox: ParamBox[String], vmArgsBox: ParamBox[String],
-            otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
+            vendorBox: ParamBox[String], packEnabledBox: ParamBox[Boolean], depsPathBox: ParamBox[String],
+            vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]],propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]], programNameBox: ParamBox[String])
            (roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean], modelURLBox: ParamBox[String],
             usesExtensionsBox: ParamBox[Boolean], serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],
@@ -63,6 +63,7 @@ object HubNetJNLP {
     val isOfflineAllowed = isOfflineAllowedBox orElseApply IsOfflineAllowed
     val appNameInMenu    = appNameInMenuBox    orElseApply AppNameInMenu
     val vendor           = vendorBox           orElseApply Vendor
+    val packEnabled      = packEnabledBox      orElseApply PackEnabled
     val depsPath         = depsPathBox         orElseApply DepsPath
     val vmArgs           = vmArgsBox           orElseApply vmArgsStr
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((neededsSeq ++ othersSeq) map (jar => (jar.jarName, jar.isLazy))))
@@ -83,6 +84,7 @@ object HubNetJNLP {
         isOfflineAllowed,
         appNameInMenu,
         vendor,
+        packEnabled,
         depsPath,
         vmArgs,
         otherJars,
@@ -103,6 +105,7 @@ object HubNetJNLP {
         isOfflineAllowed,
         appNameInMenu,
         vendor,
+        packEnabled,
         depsPath,
         vmArgs,
         otherJars,
@@ -126,6 +129,7 @@ private[jnlp] object HubNetJNLPDefaults {
   val IsOfflineAllowed                  = Defs.IsOfflineAllowed
   val AppNameInMenu                     = "HubNet (WebStart)"
   val Vendor                            = Defs.Vendor
+  val PackEnabled                       = Defs.PackEnabled
   val DepsPath                          = Defs.DepsPath
   val VMArgs                            = ""
   val OtherJars:  Seq[Jar]              = Seq()
