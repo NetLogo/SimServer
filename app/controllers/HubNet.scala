@@ -2,7 +2,7 @@ package controllers
 
 import play.api.{ Logger, mvc}, mvc._
 
-import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
 
 import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
 import models.jnlp._
@@ -60,7 +60,7 @@ object HubNet extends Controller {
     )
   }
 
-  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : ValidationNEL[String, String] = {
+  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : ValidationNel[String, String] = {
     try {
       val kvMap = requiredInfo ++ optionalPairs.flatten
       val delimed = kvMap.toSeq map { case (k, v) => s"$k=$v" } mkString ResourceManager(ResourceManager.HubnetDelim)
@@ -83,7 +83,7 @@ object HubNet extends Controller {
     request => handleHubNet(encryptedStr.successNel[String], true, Option(teacherIP))(request)
   }
 
-  def handleHubNet(encryptedStrMaybe: ValidationNEL[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
+  def handleHubNet(encryptedStrMaybe: ValidationNel[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
                   (implicit request: Request[AnyContent]) : Result = {
 
     val inputAndSettingsMaybe =

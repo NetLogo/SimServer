@@ -1,7 +1,7 @@
 package models.jnlp
 
 import
-  scalaz.ValidationNEL
+  scalaz.ValidationNel
 
 import
   models.{ util, web },
@@ -31,7 +31,7 @@ object NetLogoJNLP {
             vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
             usesExtensionsBox: ParamBox[Boolean], propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]])
-           (implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] = {
+           (implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] = {
 
     val extensionsJar    = usesExtensionsBox map (if (_) Option(ExtensionsJar) else None) getOrElse Option(ExtensionsJar)
 

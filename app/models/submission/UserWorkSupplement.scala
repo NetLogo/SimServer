@@ -19,7 +19,7 @@ case class UserWorkSupplement(override val id:       Option[Long],
 
 object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
 
-  import scalaz.{ Scalaz, ValidationNEL }, Scalaz._
+  import scalaz.{ Scalaz, ValidationNel }, Scalaz._
 
   override protected type Target      = UserWorkSupplement
   override protected type ConsTuple   = (Option[Long], Option[Long], String, String, Array[Byte], String)
@@ -55,7 +55,7 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
 
   }
 
-  protected def validate(refID: String, typ: String, rawData: Array[Byte], metadata: String) : ValidationNEL[FailType, ConsTuple] = {
+  protected def validate(refID: String, typ: String, rawData: Array[Byte], metadata: String) : ValidationNel[FailType, ConsTuple] = {
 
     val refIDMaybe = Validator.validateRefID(refID)
     val typeMaybe  = Validator.accept(typ)

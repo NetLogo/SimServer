@@ -78,7 +78,7 @@ object JNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], packEnabledBox: ParamBox[Boolean], depsPathBox: ParamBox[String],
             vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
-            argumentsBox: ParamBox[Seq[String]]) : ValidationNEL[String, JNLP] = {
+            argumentsBox: ParamBox[Seq[String]]) : ValidationNel[String, JNLP] = {
 
     val errorStrFormat  = "Bad data supplied for: " + (_: String)
     val f               =  (box: ParamBox[String]) => box map (_.successNel[String]) getOrElse errorStrFormat(box.key).failNel[String]

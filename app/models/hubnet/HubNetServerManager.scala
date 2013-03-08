@@ -1,6 +1,6 @@
 package models.hubnet
 
-import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,13 +16,13 @@ object HubNetServerManager {
 
   private val teacherToIPPortMap = collection.mutable.Map[String, (String, Int)]()
 
-  def registerTeacherIPAndPort(teacherName: String, ip: String, portOpt: Option[Int] = None) : ValidationNEL[String, (String, Int)] = {
+  def registerTeacherIPAndPort(teacherName: String, ip: String, portOpt: Option[Int] = None) : ValidationNel[String, (String, Int)] = {
     val entry = (ip, portOpt getOrElse StartingPort)
     teacherToIPPortMap += teacherName -> entry
     entry.successNel[String]
   }
 
-  def getPortByTeacherName(teacherName: String) : ValidationNEL[String, (String, Int)] =
+  def getPortByTeacherName(teacherName: String) : ValidationNel[String, (String, Int)] =
     teacherToIPPortMap.get(teacherName) map (_.successNel[String]) getOrElse NotStartedFormat(teacherName).failNel
 
 }

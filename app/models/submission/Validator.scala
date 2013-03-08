@@ -1,6 +1,6 @@
 package models.submission
 
-import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,7 +12,7 @@ import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 private[submission] object Validator {
 
   protected type Fail = String
-  protected type V[T] = ValidationNEL[Fail, T]
+  protected type V[T] = ValidationNel[Fail, T]
 
   def accept[T](x: T) = x.successNel[Fail]
   def deny  [T](x: T) = x.failNel

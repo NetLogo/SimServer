@@ -1,7 +1,7 @@
 package controllers
 
 import
-  scalaz.{ NonEmptyList, Scalaz, ValidationNEL },
+  scalaz.{ NonEmptyList, Scalaz, ValidationNel },
     Scalaz._
 
 import
@@ -22,7 +22,7 @@ import
 object Submission extends Controller {
 
   protected class EnhancedParamMap(paramMap: Map[String, String]) {
-    def extract(key: String) : ValidationNEL[String, String] =
+    def extract(key: String) : ValidationNel[String, String] =
       paramMap.get(key) map (_.successNel[String]) getOrElse s"No such parameter found: $key".failNel
   }
 
@@ -156,7 +156,7 @@ object Submission extends Controller {
   private def registerFile[T <% Updatable](getTypeNameFunc:     T => String)
                                           (getFileContentsFunc: T => Array[Byte])
                                           (cloneFunc:           (Long, String) => T => T)
-                                          (subjectAndID:        (T, Long)) : ValidationNEL[String, Long] = {
+                                          (subjectAndID:        (T, Long)) : ValidationNel[String, Long] = {
     val (subject, id) = subjectAndID
     SubmissionDBManager.getOrCreateTypeBundleByName(getTypeNameFunc(subject)) map {
       typeBundle =>
@@ -167,8 +167,8 @@ object Submission extends Controller {
   }
 
   private def submit[T <% Submittable](request: Request[AnyContent],
-                                       constructorFunc: (ParamBundle) => ValidationNEL[String, T],
-                                       cleanup: ((T, Long)) => ValidationNEL[String, Long]) : SimpleResult[_] = {
+                                       constructorFunc: (ParamBundle) => ValidationNel[String, T],
+                                       cleanup: ((T, Long)) => ValidationNel[String, Long]) : SimpleResult[_] = {
     val paramBundle = PlayUtil.extractBundle(request)
     constructorFunc(paramBundle) flatMap {
       submittable =>

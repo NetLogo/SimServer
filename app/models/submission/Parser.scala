@@ -1,7 +1,7 @@
 package models.submission
 
 import
-  scalaz.{ Scalaz, ValidationNEL},
+  scalaz.{ Scalaz, ValidationNel},
     Scalaz.ToValidationV
 
 import
@@ -21,8 +21,8 @@ private[submission] trait Parser {
   protected type ConsTuple   <: Product
   protected type ParsedTuple <: Product
   protected type FailType    =  String
-  protected type Parsed      =  ValidationNEL[FailType, ParsedTuple]
-  protected type Output      =  ValidationNEL[FailType, Target]
+  protected type Parsed      =  ValidationNel[FailType, ParsedTuple]
+  protected type Output      =  ValidationNel[FailType, Target]
 
   protected def constructFrom(parsed: Parsed) : Output
 

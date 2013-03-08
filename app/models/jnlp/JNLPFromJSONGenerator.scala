@@ -1,7 +1,7 @@
 package models.jnlp
 
 import
-  scalaz.ValidationNEL
+  scalaz.ValidationNel
 
 import
   play.api.libs.json.JsValue
@@ -17,7 +17,7 @@ import
  */
 
 object JNLPFromJSONGenerator {
-  def apply(json: JsValue, host: String) : ValidationNEL[String, String] = {
+  def apply(json: JsValue, host: String) : ValidationNel[String, String] = {
     val filename     = JNLPFileManager.MyFolderName + "/" + java.util.UUID.randomUUID().toString + ".jnlp"
     val jnlpParamSet = JNLPParamSetManager.determineSet(json)
     val jnlpMaybe    = jnlpParamSet.bindFromJson(json, filename)(s"http://$host/assets")

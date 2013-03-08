@@ -6,7 +6,7 @@ import play.api.db.DB
 
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
 
-import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.
@@ -163,7 +163,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getTypeBundleByName(name: String) : ValidationNEL[String, TypeBundle] = {
+  def getTypeBundleByName(name: String) : ValidationNel[String, TypeBundle] = {
     DB.withConnection { implicit connection =>
       import DBConstants.TypeBundles._
       val opt = SQL (
@@ -183,19 +183,19 @@ object SubmissionDBManager {
     }
   }
 
-  def getOrCreateTypeBundleByName(name: String) : ValidationNEL[String, TypeBundle] = {
+  def getOrCreateTypeBundleByName(name: String) : ValidationNel[String, TypeBundle] = {
     getTypeBundleByName(name) orElse {
       submit(TypeBundle(name, "", "", "")) flatMap (_ => getTypeBundleByName(name))
     }
   }
 
-  def submit[T <% Submittable](submission: T) : ValidationNEL[String, Long] = submission.submit
+  def submit[T <% Submittable](submission: T) : ValidationNel[String, Long] = submission.submit
   def update[T <% Updatable]  (update: T)                                   { update.update() }
 
 }
 
 sealed trait Submittable {
-  def submit : ValidationNEL[String, Long]
+  def submit : ValidationNel[String, Long]
 }
 
 private object Submittable {
@@ -203,7 +203,7 @@ private object Submittable {
   import AnormExtras.tryInsert
 
   implicit def userWork2Submittable(userWork: UserWork) = new Submittable {
-    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
+    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.UserWork._
       val sql = SQL (
@@ -229,7 +229,7 @@ private object Submittable {
   }
 
   implicit def workComment2Submittable(workComment: UserWorkComment) = new Submittable {
-    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
+    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.UserWorkComments._
       val sql = SQL (
@@ -251,7 +251,7 @@ private object Submittable {
   }
 
   implicit def workSupplement2Submittable(workSupplement: UserWorkSupplement) = new Submittable {
-    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
+    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.UserWorkSupplements._
       val sql = SQL (
@@ -273,7 +273,7 @@ private object Submittable {
   }
 
   implicit def typeBundle2Submittable(bundle: TypeBundle) = new Submittable {
-    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
+    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.TypeBundles._
       val sql = SQL (
@@ -382,8 +382,8 @@ object AnormExtras {
   import java.math.{ BigInteger => JBigInt }
   def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
   def raiseDBAccessException = throw new java.sql.SQLException("Retrieved data from database in unexpected format.")
-  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNEL[String, Long])
-               (implicit connection: java.sql.Connection) : ValidationNEL[String, Long] = {
+  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNel[String, Long])
+               (implicit connection: java.sql.Connection) : ValidationNel[String, Long] = {
     try sql.executeInsert() match { case x => f(x) }
     catch {
       case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failNel

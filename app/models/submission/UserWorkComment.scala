@@ -18,7 +18,7 @@ case class UserWorkComment(override val id:        Option[Long],
 
 object UserWorkComment extends FromMapParser with FromBundleParser {
 
-  import scalaz.{ Scalaz, ValidationNEL }, Scalaz._
+  import scalaz.{ Scalaz, ValidationNel }, Scalaz._
 
   override protected type Target      = UserWorkComment
   override protected type ConsTuple   = (Option[Long], Option[Long], Long, String, String)
@@ -40,7 +40,7 @@ object UserWorkComment extends FromMapParser with FromBundleParser {
 
   }
 
-  protected def validate(refID: String, userID: String, comment: String) : ValidationNEL[FailType, ConsTuple] = {
+  protected def validate(refID: String, userID: String, comment: String) : ValidationNel[FailType, ConsTuple] = {
 
     val refIDMaybe     = Validator.validateRefID(refID)
     val userIDMaybe    = Validator.validateUserID(userID)

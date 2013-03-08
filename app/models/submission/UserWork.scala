@@ -30,7 +30,7 @@ case class UserWork(override val id:          Option[Long] = None,
 
 object UserWork extends FromMapParser with DataFromBundleParser {
 
-  import scalaz.{ Scalaz, ValidationNEL }, Scalaz._
+  import scalaz.{ Scalaz, ValidationNel }, Scalaz._
 
   override protected type Target      = UserWork
   override protected type ConsTuple   = (Option[Long], Long, String, String, String, String, String, Array[Byte], String, String, Seq[Supplement], Seq[Comment])
@@ -73,7 +73,7 @@ object UserWork extends FromMapParser with DataFromBundleParser {
   }
 
   protected def validate(runID: String, periodID: String, userID: String,
-                         typ: String, rawData: Array[Byte], metadata: String, description: String) : ValidationNEL[FailType, ConsTuple] = {
+                         typ: String, rawData: Array[Byte], metadata: String, description: String) : ValidationNel[FailType, ConsTuple] = {
 
     val runIDMaybe       = Validator.validateRunID(runID)
     val periodIDMaybe    = Validator.validatePeriodID(periodID)

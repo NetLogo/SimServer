@@ -1,6 +1,6 @@
 package models.jnlp
 
-import scalaz.ValidationNEL
+import scalaz.ValidationNel
 
 import models.web.ParamBox
 
@@ -34,7 +34,7 @@ object HubNetJNLP {
            (roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean], modelURLBox: ParamBox[String],
             usesExtensionsBox: ParamBox[Boolean], serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],
             userIDBox: ParamBox[String])
-           (implicit thisServerCodebaseURL: String) : ValidationNEL[String, JNLP] = {
+           (implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] = {
 
     // Through proper use of applicatives, I would be able to abstract this over arity.
     // But I won't, because that'd be a lot of work. --JAB (11/20/12)

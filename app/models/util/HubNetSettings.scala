@@ -27,7 +27,7 @@ object HubNetSettings {
   val IsHeadlessKey  = "is_headless"
   val IsLoggingKey   = "is_logging"
 
-  // Could return a `ValidationNEL`, but I don't think that my use of `ValidationNEL` is this class's business
+  // Could return a `ValidationNel`, but I don't think that my use of `ValidationNel` is this class's business
   def apply(inMap: Map[String, String], isTeacher: Boolean) : Option[HubNetSettings] = {
 
     // These are all `Option`s
