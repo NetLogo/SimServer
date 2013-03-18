@@ -27,6 +27,7 @@ GET     /models/hubnet/list/        controllers.Models.modelNames(responseType =
 GET     /models/hubnet/list/:rType  controllers.Models.modelNames(rType: String)
 
 GET     /jnlp/params                controllers.JNLP.getParamFormats
+GET     /jnlp/gen                   controllers.JNLP.generateJNLP
 POST    /jnlp/gen                   controllers.JNLP.generateJNLP
 
 GET     /work-type/create           controllers.Submission.viewTypeCreationForm
