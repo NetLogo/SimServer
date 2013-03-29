@@ -6,6 +6,10 @@
 
 @main("HubNet Teacher JNLP Test Page!") {
 
+    <div style="background: #343434; border: 4px solid orange; padding: 6px; border-radius: 10px;">
+      <span style="font-weight: bold; text-decoration: blink; color: red;">Teacher Directions: </span><span style="color: white">Close all other HubNet sessions that are already open on your computer. Select a Model Name from the menu below and then press the "Start the model" button to run a HubNet Model for your students to join.</span>
+    </div>
+
     @form(action = routes.HubNet.bindTeacher) {
 
       @select(myForm("Model Name"), options = options(ModelMapper.modelNames.toList))
@@ -15,7 +19,7 @@
       @select(myForm("Is Headless"), options = options(TeacherInfo.YesNoChoices.toList))
       @select(myForm("Is Logging"), options = options(TeacherInfo.YesNoChoices.toList))
 
-      <input type="submit" value="Test It">
+      <input type="submit" value="Start the model">
 
     }
 
