@@ -41,7 +41,6 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
     val RefIDKey    = "ref_id"
 
     // Not required
- // val DataKey
     val TypeKey     = "type"
     val MetadataKey = "metadata"
 

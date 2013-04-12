@@ -10,11 +10,7 @@ import java.net.URLEncoder
  */
 
 object NetUtil {
-
   private val CharEncoding = "UTF-8"
-
-  // Javaaaaaaaa!!!!  Why do you do this to meeeeeeee?!
-  def encodeForURL(str: String) = encode(str).replaceAllLiterally("+", "%20")
-
+  def encodeForURL(str: String) = encode(str).replaceAllLiterally("+", "%20") // Javaaaaaaaa!!!!  Why do you do this to meeeeeeee?!
   def encode(str: String) = URLEncoder.encode(str, CharEncoding)
 }

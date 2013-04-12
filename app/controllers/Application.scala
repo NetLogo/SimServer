@@ -1,8 +1,10 @@
 package controllers
 
-import play.api.mvc.{ Action, Controller }
+import
+  play.api.mvc.{ Action, Controller }
 
-import models.util.{ PlayUtil, Util }
+import
+  models.util.{ PlayUtil, Util }
 
 object Application extends Controller {
 
@@ -20,13 +22,17 @@ object Application extends Controller {
   def displayHttpRequest = APIAction {
     request =>
       val bundle = PlayUtil.extractBundle(request)
-      val text = "\nRequest Type: \n" + request.method +
-                 "\n\nHeaders: \n" + (request.headers.toSimpleMap map { case (k, v) => s"$k: $v" } mkString("\n")) +
-                 "\n\nBody: \n" + (
-                   Util.noneIfEmpty(bundle.stringParams, ((_: Map[String, String]) map { case (k, v) => s"$k=$v" } mkString ("\n"))) getOrElse "[empty]"
-                 ) + "\n\n" + (
-                   bundle.byteParams map { case (k, v) => s"$k={{{${new String(v)}}}}" } mkString ("\n")
-                 )
+      val text = s"""
+                   |Request Type:
+                   |${request.method}
+                   |
+                   |Headers:
+                   |${request.headers.toSimpleMap map { case (k, v) => s"$k: $v" } mkString("\n")}
+                   |
+                   |Body:
+                   |${Util.noneIfEmpty(bundle.stringParams, ((_: Map[String, String]) map { case (k, v) => s"$k=$v" } mkString ("\n"))) getOrElse "[empty]"}
+                   |
+                   |${bundle.byteParams map { case (k, v) => s"$k={{{${new String(v)}}}}" } mkString ("\n")}""".stripMargin
       Ok(text)
   }
 

@@ -13,7 +13,7 @@ import org.apache.commons.codec.binary.Base64
 
 object FileUtil {
 
-  private val ImageExtensions     = List("jpeg", "jpg", "png", "bmp", "gif")
+  private val ImageExtensions = List("jpeg", "jpg", "png", "bmp", "gif")
 
   val NetLogoFileExt  = "nlogo"
   val ModelFileFilter = extFilter(NetLogoFileExt)

@@ -1,16 +1,18 @@
 package models.util
 
+import
+  javax.crypto.{ Cipher, SecretKeyFactory, spec },
+    spec.{ PBEKeySpec, PBEParameterSpec }
+
+
+import sun.misc.{ BASE64Decoder, BASE64Encoder }
+
 /**
  * Created by IntelliJ IDEA.
  * User: Jason
  * Date: 5/24/12
  * Time: 11:31 AM
  */
-
-import javax.crypto.spec.{PBEKeySpec, PBEParameterSpec}
-import javax.crypto.{Cipher, SecretKeyFactory}
-
-import sun.misc.{BASE64Decoder, BASE64Encoder}
 
 sealed trait EncryptionAlgorithm {
   protected def algorithm: String
