@@ -16,11 +16,6 @@ GET     /bindstudent                controllers.HubNet.bindStudent
 
 GET     /hubteach                   controllers.HubNet.hubTeach
 GET     /bindteacher                controllers.HubNet.bindTeacher
-GET     /hubsnoop/:str              controllers.HubNet.hubSnoop(str)
-
-GET     /teacherproxy/:str/:ip      controllers.HubNet.handleTeacherProxy(str, ip)
-
-GET     /hubnet/javascripts/routes  controllers.HubNet.javascriptRoutes()
 
 GET     /models/hubnet/list         controllers.Models.modelNames(responseType = "plain")
 GET     /models/hubnet/list/        controllers.Models.modelNames(responseType = "plain")

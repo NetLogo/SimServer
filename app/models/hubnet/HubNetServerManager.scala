@@ -1,6 +1,11 @@
 package models.hubnet
 
-import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
+import
+  scala.collection.mutable.{ Map => MMap }
+
+import
+  scalaz.{ Scalaz, ValidationNel },
+    Scalaz.ToValidationV
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,15 +17,8 @@ import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
 object HubNetServerManager {
 
   private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format((_: String))
-  private val StartingPort = 9173
 
-  private val teacherToIPPortMap = collection.mutable.Map[String, (String, Int)]()
-
-  def registerTeacherIPAndPort(teacherName: String, ip: String, portOpt: Option[Int] = None) : ValidationNel[String, (String, Int)] = {
-    val entry = (ip, portOpt getOrElse StartingPort)
-    teacherToIPPortMap += teacherName -> entry
-    entry.successNel[String]
-  }
+  private val teacherToIPPortMap = MMap[String, (String, Int)]()
 
   def getPortByTeacherName(teacherName: String) : ValidationNel[String, (String, Int)] =
     teacherToIPPortMap.get(teacherName) map (_.successNel[String]) getOrElse NotStartedFormat(teacherName).failNel

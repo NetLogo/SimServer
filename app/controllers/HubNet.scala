@@ -1,12 +1,17 @@
 package controllers
 
-import play.api.{ Logger, mvc}, mvc._
+import
+  play.api.mvc._
 
-import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
+import
+  scalaz.Scalaz,
+    Scalaz.ToValidationV
 
-import models.hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo }
-import models.jnlp._
-import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PBEWithMF5AndDES, ResourceManager, Util }
+import
+  models.{ hubnet, jnlp, util },
+    hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo },
+    jnlp._,
+    util.{ HubNetSettings, Util }
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,8 +35,7 @@ object HubNet extends Controller {
           val vals  = Seq(userName,    teacherName)
           val keys  = Seq(UserNameKey, TeacherNameKey)
           val pairs = keys zip vals
-          val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
-          handleHubNet(encryptedMaybe, false)
+          handleHubNet(pairs.toMap, false)
       }
     )
   }
@@ -49,52 +53,25 @@ object HubNet extends Controller {
           val vals  = Seq(modelName,    userName,    teacherName,    portNumber, isHeadless,    isLogging)
           val keys  = Seq(ModelNameKey, UserNameKey, TeacherNameKey, PortNumKey, IsHeadlessKey, IsLoggingKey)
           val pairs = keys zip vals
-          val encryptedMaybe = encryptHubNetInfoPairs(Map(pairs: _*))
-          encryptedMaybe fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (str => Redirect(routes.HubNet.hubSnoop(NetUtil.encode(str)))))
-          // Fail or redirect to snoop the IP
+          handleHubNet(pairs.toMap, true)
       }
     )
   }
 
-  private def encryptHubNetInfoPairs(requiredInfo: Map[String, String], optionalPairs: Option[(String, String)]*) : ValidationNel[String, String] = {
-    try {
-      val kvMap = requiredInfo ++ optionalPairs.flatten
-      val delimed = kvMap.toSeq map { case (k, v) => s"$k=$v" } mkString ResourceManager(ResourceManager.HubnetDelim)
-      val encrypted = (new EncryptionUtil(ResourceManager(ResourceManager.HubNetKeyPass)) with PBEWithMF5AndDES) encrypt(delimed)
-      encrypted.successNel[String]
-    }
-    catch {
-      case ex: Exception =>
-        val errorStr = "Failed to encrypt HubNet info"
-        Logger.warn(errorStr, ex)
-        s"$errorStr; ${ex.getMessage}".failNel
-    }
-  }
+  private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : Result = {
 
-  def hubSnoop(encryptedInfo: String) = Action {
-    Ok(views.html.hubsnoop(NetUtil.encode(encryptedInfo)))
-  }
+    val HubNetDefaultPort = 9173
 
-  def handleTeacherProxy(encryptedStr: String, teacherIP: String) = Action {
-    request => handleHubNet(encryptedStr.successNel[String], true, Option(teacherIP))(request)
-  }
+    val settingsMaybe = HubNetSettings(params, isTeacher) map (_.successNel[String]) getOrElse "Failed to interpret settings".failNel
 
-  def handleHubNet(encryptedStrMaybe: ValidationNel[String, String], isTeacher: Boolean, teacherIP: Option[String] = None)
-                  (implicit request: Request[AnyContent]) : Result = {
-
-    val inputAndSettingsMaybe =
-      for (
-        encryptedStr <- encryptedStrMaybe;
-        settings     <- DecryptionUtil.decodeForHubNet(encryptedStr, isTeacher)
-      ) yield (encryptedStr, settings)
-
-    inputAndSettingsMaybe flatMap {
-      case (input, HubNetSettings(modelNameOpt, username, isHeadless, teacherName, preferredPortOpt, isLogging)) =>
+    settingsMaybe flatMap {
+      case HubNetSettings(modelNameOpt, username, isHeadless, teacherName, preferredPortOpt, isLogging) =>
 
         val ipPortMaybe = {
-          import HubNetServerManager._
-          if (isTeacher) registerTeacherIPAndPort(teacherName, teacherIP.get, preferredPortOpt)
-          else           getPortByTeacherName(teacherName)
+          if (isTeacher)
+            ("", preferredPortOpt getOrElse HubNetDefaultPort).successNel
+          else
+            HubNetServerManager.getPortByTeacherName(teacherName)
         }
 
         val connectPath = s"http://${request.host}/logging"
@@ -167,15 +144,6 @@ object HubNet extends Controller {
 
     } fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Redirect("/" + url)))
 
-  }
-
-  def javascriptRoutes() = Action {
-    implicit request =>
-    Ok(
-      play.api.Routes.javascriptRouter("jsRoutes")(
-        routes.javascript.HubNet.handleTeacherProxy
-      )
-    ).as("text/javascript")
   }
 
 }
