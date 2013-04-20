@@ -17,10 +17,6 @@ import models.util.{ DecryptionUtil, EncryptionUtil, HubNetSettings, NetUtil, PB
 
 object HubNet extends Controller {
 
-  val HubNetKy     = "hubnet_data"
-  val ModelsSubDir = "assets/models"
-  val DepsSubDir   = "assets/deps"
-
   def hubTest = Action {
     Ok(views.html.hubtest(StudentInfo.form))
   }
