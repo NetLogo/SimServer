@@ -1,6 +1,7 @@
-package models.util
+package models.hubnet
 
-import java.util.InputMismatchException
+import
+  java.util.InputMismatchException
 
 /**
  * Created by IntelliJ IDEA.
@@ -56,5 +57,5 @@ object HubNetSettings {
     }
 
   }
-  
+
 }

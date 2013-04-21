@@ -1,7 +1,7 @@
 package controllers
 
 import
-  play.api.mvc._
+  play.api.mvc.{ Action, AnyContent, Controller, Request, Result }
 
 import
   scalaz.{ Scalaz, ValidationNel },
@@ -12,9 +12,9 @@ import
 
 import
   models.{ hubnet, jnlp, util },
-    hubnet.{ HubNetServerManager, StudentInfo, TeacherInfo },
+    hubnet.{ HubNetSettings, HubNetServerRegistry, StudentInfo, TeacherInfo },
     jnlp.Jar,
-    util.{ HubNetSettings, Util }
+    util.{ PlayUtil, Util }
 
 /**
  * Created by IntelliJ IDEA.
