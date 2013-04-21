@@ -1,6 +1,7 @@
 package models.web
 
-import play.api.libs.json.{ JsValue, Reads }
+import
+  play.api.libs.json.{ JsValue, Reads }
 
 /**
  * Created with IntelliJ IDEA.

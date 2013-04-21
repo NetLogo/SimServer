@@ -1,10 +1,12 @@
 package models.hubnet
 
-import play.api.data.Form
-import play.api.data.Forms._
-import play.api.Logger
+import
+  play.api.{ data, Logger },
+    data.{ Form, Forms },
+      Forms._
 
-import models.util.ModelMapper
+import
+  models.util.ModelMapper
 
 import Converter.str2Option
 

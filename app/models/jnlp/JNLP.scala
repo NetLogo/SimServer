@@ -1,11 +1,16 @@
 package models.jnlp
 
-import java.net.URI
+import
+  java.net.URI
 
-import scalaz._, Scalaz._
+import
+  scalaz._,
+    Scalaz._
 
-import JNLPDefaults._
-import models.web.ParamBox
+import
+  models.{ jnlp, web },
+    jnlp.JNLPDefaults._,
+    web.ParamBox
 
 /**
  * Created by IntelliJ IDEA.

@@ -1,12 +1,18 @@
 package models.submission
 
-import anorm._
-import anorm.SqlParser._
-import play.api.db.DB
+import
+  com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
 
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
+import
+  scalaz.{ Scalaz, ValidationNel },
+    Scalaz.ToValidationV
 
-import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
+import
+  anorm.{ ~, Column, Row, RowParser, SimpleSql, SQL, SqlParser },
+    SqlParser._
+
+import
+  play.api.db.DB
 
 /**
  * Created with IntelliJ IDEA.

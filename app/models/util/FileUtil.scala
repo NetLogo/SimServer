@@ -1,8 +1,10 @@
 package models.util
 
-import java.io.{ File, FileOutputStream, PrintWriter }
+import
+  java.io.{ File, FileOutputStream, PrintWriter }
 
-import org.apache.commons.codec.binary.Base64
+import
+  org.apache.commons.codec.binary.Base64
 
 /**
  * Created by IntelliJ IDEA.

@@ -1,10 +1,13 @@
 package models.util
 
-import java.io.File
+import
+  java.io.File
 
-import org.bizzle.datastructure.mutable.BiHashMap
+import
+  org.bizzle.datastructure.mutable.BiHashMap
 
-import FileUtil.{ dropExt, ModelFileFilter }
+import
+  FileUtil.{ dropExt, ModelFileFilter }
 
 /**
  * Created by IntelliJ IDEA.

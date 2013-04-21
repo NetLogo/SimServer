@@ -2,7 +2,8 @@ package models.submission
 
 import play.api.libs.json.Json
 
-import scalaz.Success
+import
+  scalaz.Success
 
 /**
  * Created with IntelliJ IDEA.

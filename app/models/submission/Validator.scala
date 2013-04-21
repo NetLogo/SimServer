@@ -1,6 +1,8 @@
 package models.submission
 
-import scalaz.{ Scalaz, ValidationNel }, Scalaz.ToValidationV
+import
+  scalaz.{ Scalaz, ValidationNel },
+    Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.

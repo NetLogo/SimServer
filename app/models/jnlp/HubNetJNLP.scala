@@ -1,8 +1,10 @@
 package models.jnlp
 
-import scalaz.ValidationNel
+import
+  scalaz.ValidationNel
 
-import models.web.ParamBox
+import
+  models.web.ParamBox
 
 /**
  * Created with IntelliJ IDEA.

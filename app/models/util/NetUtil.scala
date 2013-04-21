@@ -1,6 +1,7 @@
 package models.util
 
-import java.net.URLEncoder
+import
+  java.net.URLEncoder
 
 /**
  * Created with IntelliJ IDEA.

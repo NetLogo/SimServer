@@ -1,11 +1,15 @@
 package models.jnlp
 
-import play.api.libs.json.JsValue
+import
+  scalaz.ValidationNel
 
-import scalaz.ValidationNel
+import
+  play.api.libs.json.JsValue
 
-import models.web.{ Param, ParamBox }
-import models.util.Util.noneIfEmpty
+import
+  models.{ util, web },
+    util.Util.noneIfEmpty,
+    web.{ Param, ParamBox }
 
 /**
  * Created with IntelliJ IDEA.
