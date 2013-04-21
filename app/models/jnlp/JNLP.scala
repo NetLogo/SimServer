@@ -14,7 +14,7 @@ import models.web.ParamBox
  * Time: 3:40 PM
  */
 
-class JNLP(
+case class JNLP(
  /* Required */ codebaseURI: URI,   // Should just be the 'public' folder
  /* Required */ jnlpLoc: String,
  /* Required */ mainJar: MainJar,

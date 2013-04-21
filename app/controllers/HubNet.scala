@@ -25,6 +25,15 @@ import
 
 object HubNet extends Controller {
 
+  def registerTeacherAddress = Action {
+    request =>
+      val bundle      = PlayUtil.extractBundle(request)
+      val teacherName = bundle.stringParams(SecureJNLP.HTTPParams.TeacherNameKey)
+      val data        = bundle.stringParams(SecureJNLP.HTTPParams.DataKey)
+      HubNetServerRegistry.registerLookupAddress(teacherName, data)
+      Ok
+  }
+
   def hubTest = Action {
     Ok(views.html.hubtest(StudentInfo.form))
   }
@@ -78,7 +87,7 @@ object HubNet extends Controller {
           if (isTeacher)
             ("", preferredPortOpt getOrElse HubNetDefaultPort).successNel
           else
-            HubNetServerManager.getPortByTeacherName(teacherName)
+            HubNetServerRegistry.getPortByTeacherName(teacherName)
         }
 
         val connectPath = s"http://${request.host}/logging"

@@ -11,6 +11,8 @@ POST    /http                       controllers.Application.displayHttpRequest
 GET     /logging                    controllers.Logging.startLogging
 POST    /logging/:id                controllers.Logging.logData(id)
 
+POST    /hubregister                controllers.HubNet.registerTeacherAddress
+
 GET     /hubtest                    controllers.HubNet.hubTest
 GET     /bindstudent                controllers.HubNet.bindStudent
 
@@ -24,6 +26,9 @@ GET     /models/hubnet/list/:rType  controllers.Models.modelNames(rType: String)
 GET     /jnlp/params                controllers.JNLP.getParamFormats
 GET     /jnlp/gen                   controllers.JNLP.generateJNLP
 POST    /jnlp/gen                   controllers.JNLP.generateJNLP
+
+GET     /jnlp/gen/hubnet/:tName     controllers.SecureJNLP.generateHubNetServerJNLP(tName)
+POST    /jnlp/gen/hubnet/:tName     controllers.SecureJNLP.generateHubNetServerJNLP(tName)
 
 GET     /work-type/create           controllers.Submission.viewTypeCreationForm
 POST    /work-type/create           controllers.Submission.createType
