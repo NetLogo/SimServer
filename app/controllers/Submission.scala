@@ -8,6 +8,9 @@ import
   play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
 
 import
+  controllers.action.APIAction
+
+import
   models.{ submission, util },
     submission._,
     util.{ ParamBundle, PlayUtil }

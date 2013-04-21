@@ -1,9 +1,15 @@
 package controllers
 
-import play.api.mvc.Controller
+import
+  play.api.mvc.{ AnyContent, Controller, Request }
 
-import models.jnlp.{ JNLPFromJSONGenerator, JNLPParamSetManager }
-import models.util.PlayUtil
+import
+  controllers.action.APIAction
+
+import
+  models.{ jnlp, util },
+    jnlp.{ JNLPFromJSONGenerator, JNLPParamSetManager },
+    util.PlayUtil
 
 /**
  * Created with IntelliJ IDEA.

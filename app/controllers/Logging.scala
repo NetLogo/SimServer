@@ -1,9 +1,15 @@
 package controllers
 
-import play.api.mvc._
+import
+  play.api.mvc.Controller
 
-import models.log.LoggingHandler
-import models.util.PlayUtil
+import
+  controllers.action.APIAction
+
+import
+  models.{ log, util },
+    log.LoggingHandler,
+    util.PlayUtil
 
 /**
  * Created by IntelliJ IDEA.

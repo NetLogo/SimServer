@@ -4,6 +4,9 @@ import
   play.api.mvc.{ Action, Controller }
 
 import
+  controllers.action.APIAction
+
+import
   models.util.{ PlayUtil, Util }
 
 object Application extends Controller {
