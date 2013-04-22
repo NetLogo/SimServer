@@ -74,7 +74,7 @@ trait FileManager extends Delayer {
         actor ! Initialize
         actor ! Write(contents)
 
-        // Kill the actor on termination for our scheduled "delete" task doesn't go off
+        // Kill the actor on termination so our scheduled "delete" task doesn't go off
         // The temp gen file is accessible for <LifeSpan> before being deleted
         Akka.system.registerOnTermination { actor ! PoisonPill }
         Akka.system.scheduler.scheduleOnce(LifeSpan) { actor ! Delete }
