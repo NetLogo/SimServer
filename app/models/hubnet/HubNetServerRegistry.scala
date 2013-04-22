@@ -22,7 +22,8 @@ object HubNetServerRegistry {
   private val NotFoundFormat   = "Teacher %s has not attempted to start any HubNet servers recently.".format((_: String))
   private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format((_: String))
 
-  private val registryMap = MMap[String, RegistryBundle]()
+  private val registryMap   = MMap[String, RegistryBundle]()
+  private val expiryManager = new ExpiryManager(removeEntry _, "hubnet-registry")
 
   def registerTeacher(teacherName: String) : (String, String) = {
     val cryptoBundle = new CryptoManager with RSA with K2048
@@ -36,6 +37,7 @@ object HubNetServerRegistry {
         val decrypted     = crypto.decrypt(encryptedData)
         val Seq(ip, port) = decrypted.split(":").toSeq
         registryMap += teacherName -> RegistryBundle(crypto, Option(LookupAddress(ip, port.toInt)))
+        expiryManager(teacherName)
     }
   }
 
@@ -46,6 +48,10 @@ object HubNetServerRegistry {
       case _ =>
         NotStartedFormat(teacherName).failNel
     } getOrElse NotFoundFormat(teacherName).failNel
+
+  private def removeEntry(teacherName: String) {
+    registryMap -= teacherName
+  }
 
 }
 
