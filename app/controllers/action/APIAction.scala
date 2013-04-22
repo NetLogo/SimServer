@@ -13,21 +13,21 @@ import
 private[controllers] object APIAction extends OpenAction
 private[controllers] object RestrictedAction {
   def apply(origins: Seq[String]) = new OpenAction {
-    override protected val APIDomains = origins
+    override protected def APIDomains = origins
   }
 }
 
 private[controllers] trait OpenAction {
 
-  protected val APIDomains = Seq("*")
+  protected def APIDomains = Seq("*")
 
-  protected val APIDomainHeaders  = APIDomains map ("Access-Control-Allow-Origin"  -> _)
-  protected val APIReqTypesHeader = "Access-Control-Allow-Methods" -> "POST, GET, OPTIONS, PUT, DELETE"
-  protected val APIControlsHeader = "Access-Control-Allow-Headers" -> "Content-Type"
+  protected def APIDomainHeaders  = APIDomains map ("Access-Control-Allow-Origin"  -> _)
+  protected def APIReqTypesHeader = "Access-Control-Allow-Methods" -> "POST, GET, OPTIONS, PUT, DELETE"
+  protected def APIControlsHeader = "Access-Control-Allow-Headers" -> "Content-Type"
 
-  protected val APIHeaders = APIDomainHeaders :+ APIReqTypesHeader :+ APIControlsHeader
+  protected def APIHeaders = APIDomainHeaders :+ APIReqTypesHeader :+ APIControlsHeader
 
-  protected val result2apiResult = (result: SimpleResult[_]) => result.withHeaders(APIHeaders: _*)
+  protected def result2apiResult = (result: SimpleResult[_]) => result.withHeaders(APIHeaders: _*)
 
   def apply[A](bodyParser: BodyParser[A])(block: Request[A] => SimpleResult[_]) = Action(bodyParser)(block andThen result2apiResult)
   def apply(block: Request[AnyContent] => SimpleResult[_])                      = Action(block andThen result2apiResult)
