@@ -26,19 +26,35 @@ object HubNetServerRegistry {
   private val expiryManager = new ExpiryManager(removeEntry _, "hubnet-registry")
 
   def registerTeacher(teacherName: String) : (String, String) = {
+    val bundle       = registryMap.getOrElse(teacherName, RegistryBundle(Seq(), None))
     val cryptoBundle = new CryptoManager with RSA with K2048
-    registryMap += teacherName -> RegistryBundle(cryptoBundle, None)
+    registryMap += teacherName -> bundle.copy(cryptos = cryptoBundle +: bundle.cryptos)
     (cryptoBundle.publicModulus.toString, cryptoBundle.publicExponent.toString)
   }
 
   def registerLookupAddress(teacherName: String, encryptedData: Array[Byte]) {
+
+    def findFirstThatDecrypts(cryptos: Seq[CryptoManager], data: Array[Byte]) : Option[String] =
+      cryptos.foldLeft(Option[String](null)) {
+        case (acc, x) =>
+          if (acc.isEmpty) {
+            try Option(x.decrypt(data))
+            catch { case ex: Exception => None }
+          }
+          else
+            acc
+      }
+
     registryMap.get(teacherName) foreach {
-      case RegistryBundle(crypto, _) => // This is kinda lens-y!
-        val decrypted     = crypto.decrypt(encryptedData)
-        val Seq(ip, port) = decrypted.split(":").toSeq
-        registryMap += teacherName -> RegistryBundle(crypto, Option(LookupAddress(ip, port.toInt)))
-        expiryManager(teacherName)
+      case RegistryBundle(cryptos, _) => // This is kinda lens-y!
+        findFirstThatDecrypts(cryptos, encryptedData) foreach {
+          decrypted =>
+            val Seq(ip, port) = decrypted.split(":").toSeq
+            registryMap += teacherName -> RegistryBundle(cryptos, Option(LookupAddress(ip, port.toInt)))
+            expiryManager(teacherName)
+        }
     }
+
   }
 
   def getPortByTeacherName(teacherName: String) : ValidationNel[String, (String, Int)] =
@@ -56,4 +72,5 @@ object HubNetServerRegistry {
 }
 
 private case class LookupAddress(ip: String, port: Int)
-private case class RegistryBundle(crypto: CryptoManager, address: Option[LookupAddress])
+private case class RegistryBundle(cryptos: Seq[CryptoManager], address: Option[LookupAddress])
+
