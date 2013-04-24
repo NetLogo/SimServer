@@ -29,7 +29,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class ExpiryManager[T](expireFunc: (T) => Unit, name: String) {
 
-  protected val ActorPrefix = s"$name/expiry/"
+  protected val ActorPrefix = s"$name-expiry-"
 
   protected lazy val system = ActorSystem(name)
 
