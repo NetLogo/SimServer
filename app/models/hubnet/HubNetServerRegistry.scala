@@ -31,7 +31,7 @@ object HubNetServerRegistry {
     (cryptoBundle.publicModulus.toString, cryptoBundle.publicExponent.toString)
   }
 
-  def registerLookupAddress(teacherName: String, encryptedData: String) {
+  def registerLookupAddress(teacherName: String, encryptedData: Array[Byte]) {
     registryMap.get(teacherName) foreach {
       case RegistryBundle(crypto, _) => // This is kinda lens-y!
         val decrypted     = crypto.decrypt(encryptedData)

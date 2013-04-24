@@ -44,21 +44,21 @@ trait CryptoManager {
   protected def decryptCipherInit : (Cipher) => Unit
 
   final def encrypt(entry: String) : String = {
-    performCrypto(entry) {
+    performCrypto(entry.getBytes("UTF-8")) {
       encryptCipherInit(_)
     }
   }
 
-  final def decrypt(entry: String) : String = {
+  final def decrypt(entry: Array[Byte]) : String = {
     performCrypto(entry) {
       decryptCipherInit(_)
     }
   }
 
-  private def performCrypto(entry: String)(cipherInit: (Cipher) => Unit) : String = {
+  private def performCrypto(entry: Array[Byte])(cipherInit: (Cipher) => Unit) : String = {
     val cipher = Cipher.getInstance(algorithm)
     cipherInit(cipher)
-    new String(cipher.doFinal(entry.getBytes("UTF-8")))
+    new String(cipher.doFinal(entry))
   }
 
 }

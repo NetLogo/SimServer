@@ -30,7 +30,8 @@ object HubNet extends Controller {
       val bundle      = PlayUtil.extractBundle(request)
       val teacherName = bundle.stringParams(SecureJNLP.HTTPParams.TeacherNameKey)
       val data        = bundle.stringParams(SecureJNLP.HTTPParams.DataKey)
-      HubNetServerRegistry.registerLookupAddress(teacherName, data)
+      val decodedData = org.apache.commons.codec.binary.Base64.decodeBase64(data.getBytes)
+      HubNetServerRegistry.registerLookupAddress(teacherName, decodedData)
       Ok
   }
 
