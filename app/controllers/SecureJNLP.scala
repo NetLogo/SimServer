@@ -18,7 +18,7 @@ import
 
 object SecureJNLP extends Controller {
 
-  private val SecureDomains = Seq("http://modelsim.tech.northwestern.edu", "http://abmplus.tech.northwestern.edu")
+  private val SecureDomains = Seq("http://modelsim.tech.northwestern.edu:8080", "http://abmplus.tech.northwestern.edu:8080")
 
   object HTTPParams {
     val TeacherNameKey = "teacher_name"
