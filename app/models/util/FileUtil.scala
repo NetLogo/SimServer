@@ -1,7 +1,7 @@
 package models.util
 
 import
-  java.io.{ File, FileOutputStream, PrintWriter }
+  java.io.{ File, FilenameFilter, FileOutputStream, PrintWriter }
 
 import
   org.apache.commons.codec.binary.Base64
@@ -20,7 +20,7 @@ object FileUtil {
   val NetLogoFileExt  = "nlogo"
   val ModelFileFilter = extFilter(NetLogoFileExt)
 
-  def extFilter(ext: String) = new java.io.FilenameFilter() { def accept(file: File, name: String) = name.toLowerCase.endsWith("." + ext) }
+  def extFilter(ext: String) = new FilenameFilter() { def accept(file: File, name: String) = name.toLowerCase.endsWith("." + ext) }
 
   def dropExt(filename: String) : String = {
     val index = filename.lastIndexOf(".")

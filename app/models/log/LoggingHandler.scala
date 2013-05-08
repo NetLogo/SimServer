@@ -8,8 +8,9 @@ import
     util_scala.Random
 
 import
-  java.{ io, util => util_java },
+  java.{ io, net, util => util_java },
     io.{ ByteArrayInputStream, File },
+    net.URLDecoder,
     util_java.zip.GZIPInputStream
 
 import
@@ -19,7 +20,8 @@ import
     util_akka.Timeout
 
 import
-  play.api.libs.concurrent.Akka
+  play.api.{ libs, Logger },
+    libs.concurrent.Akka
 
 import play.api.Play.current
 
@@ -80,7 +82,7 @@ object LoggingHandler {
   }
 
   private def decompressData(data: String, encoding: String = DefaultEncoding) : Option[String] = {
-    unGzip(java.net.URLDecoder.decode(data, encoding).getBytes(encoding))
+    unGzip(URLDecoder.decode(data, encoding).getBytes(encoding))
   }
 
   private def unGzip(data: Array[Byte]) : Option[String] =
@@ -98,7 +100,7 @@ object LoggingHandler {
     }
     catch {
       case ex: Exception =>
-        play.api.Logger.warn("Failed to un-GZIP log data",  ex)
+        Logger.warn("Failed to un-GZIP log data",  ex)
         None
     }
 

@@ -1,6 +1,11 @@
 package models.submission
 
 import
+  java.{ math, sql },
+    math.{ BigInteger => JBigInt },
+    sql.{ Connection, SQLException }
+
+import
   com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
 
 import
@@ -118,7 +123,7 @@ object SubmissionDBManager {
     }
   }
 
-  private def parseUserWork(sql: SimpleSql[Row])(implicit connection: java.sql.Connection) : Seq[UserWork] = {
+  private def parseUserWork(sql: SimpleSql[Row])(implicit connection: Connection) : Seq[UserWork] = {
     import DBConstants.UserWork._
     sql as {
       long(IDKey) ~ timestamp(TimestampKey) ~ str(RunIDKey) ~ str(PeriodIDKey) ~ str(UserIDKey) ~
@@ -126,7 +131,7 @@ object SubmissionDBManager {
         case id ~ timestamp ~ run ~ period ~ user ~ typ ~ data ~ metadata ~ description =>
           UserWork(Option(id), timestamp, run, period, user, typ, data, Array(), metadata, description,
                    getWorkSupplementsByRefID(id), getWorkCommentsByRefID(id))
-        case _ => raiseDBAccessException
+        case _ => raiseDBAccessException()
       } *
     }
   }
@@ -144,7 +149,7 @@ object SubmissionDBManager {
       ) as {
         long(IDKey) ~ long(RefIDKey) ~ timestamp(TimestampKey) ~ str(UserIDKey) ~ str(CommentKey) map {
           case id ~ refID ~ timestamp ~ user ~ comment => UserWorkComment(Option(id), Option(refID), timestamp, user, comment)
-          case _ => raiseDBAccessException
+          case _ => raiseDBAccessException()
         } *
       }
     }
@@ -163,7 +168,7 @@ object SubmissionDBManager {
       ) as {
         long(IDKey) ~ long(RefIDKey) ~ str(TypeKey) ~ str(DataKey) ~ str(MetadataKey) map {
           case id ~ refID ~ typ ~ data ~ metadata => UserWorkSupplement(Option(id), Option(refID), typ, data, Array(), metadata)
-          case _ => raiseDBAccessException
+          case _ => raiseDBAccessException()
         } *
       }
     }
@@ -182,7 +187,7 @@ object SubmissionDBManager {
       ) as {
         str(NameKey) ~ str(ActionJSKey) ~ str(PresentationJSKey) ~ str(FileExtensionKey) map {
           case name ~ action ~ presentation ~ ext => TypeBundle(name, action, presentation, ext)
-          case _                                  => raiseDBAccessException
+          case _                                  => raiseDBAccessException()
         } *
       } headOption;
       opt map (_.successNel[String]) getOrElse (s"No type bundle found with name $name".failNel)
@@ -385,16 +390,17 @@ private object Updatable {
 }
 
 object AnormExtras {
-  import java.math.{ BigInteger => JBigInt }
+
   def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
-  def raiseDBAccessException = throw new java.sql.SQLException("Retrieved data from database in unexpected format.")
-  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNel[String, Long])
-               (implicit connection: java.sql.Connection) : ValidationNel[String, Long] = {
-    try sql.executeInsert() match { case x => f(x) }
+  def raiseDBAccessException()      : Nothing         = throw new SQLException("Retrieved data from database in unexpected format.")
+
+  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNel[String, Long])(implicit connection: Connection) : ValidationNel[String, Long] = {
+    try f(sql.executeInsert())
     catch {
       case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failNel
     }
   }
+
 }
 
 private object DBConstants {
