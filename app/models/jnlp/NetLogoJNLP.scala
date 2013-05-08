@@ -75,7 +75,7 @@ object NetLogoJNLP {
 }
 
 private[jnlp] object NetLogoJNLPDefaults {
-  import models.util.Util.noneIfEmpty
+  import Util.noneIfEmpty
   private val Defs                      = JNLPDefaults
   val MainJar                           = new MainJar("NetLogoGUI.jar")
   val MainClass                         = "org.nlogo.app.App"

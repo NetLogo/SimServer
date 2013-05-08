@@ -1,19 +1,21 @@
 package controllers
 
 import
-  play.api.mvc.{ Action, AnyContent, Controller, Request, Result }
+  org.apache.commons.codec.binary.Base64
 
 import
   scalaz.{ Scalaz, ValidationNel },
     Scalaz.ToValidationV
 
 import
-  play.api.libs.json.JsValue
+  play.api.{ libs, mvc },
+    libs.json.{ Json, JsValue },
+    mvc.{ Action, AnyContent, Controller, Request, Result }
 
 import
   models.{ hubnet, jnlp, util },
     hubnet.{ HubNetSettings, HubNetServerRegistry, StudentInfo, TeacherInfo },
-    jnlp.Jar,
+    jnlp.{ HubNetJNLP, HubNetKeys, Jar, JNLPFromJSONGenerator, JNLPKeys, NetLogoJNLP, NetLogoKeys },
     util.{ PlayUtil, Util }
 
 /**
@@ -30,7 +32,7 @@ object HubNet extends Controller {
       val bundle      = PlayUtil.extractBundle(request)
       val teacherName = bundle.stringParams(SecureJNLP.HTTPParams.TeacherNameKey)
       val data        = bundle.stringParams(SecureJNLP.HTTPParams.DataKey)
-      val decodedData = org.apache.commons.codec.binary.Base64.decodeBase64(data.getBytes)
+      val decodedData = Base64.decodeBase64(data.getBytes)
       HubNetServerRegistry.registerLookupAddress(teacherName, decodedData)
       Ok
   }
@@ -73,7 +75,6 @@ object HubNet extends Controller {
 
   private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : Result = {
 
-    import models.jnlp.{ HubNetJNLP, JNLPFromJSONGenerator, NetLogoJNLP }
     import HubNetJNLP.{ generateAppName, generateDesc, generateIPArgs, generatePortArgs, generateShortDesc, generateUserIDArgs }
     import NetLogoJNLP.generateLoggingArgs
 
@@ -123,8 +124,7 @@ object HubNet extends Controller {
                            modelURLOpt: Option[String], args: Seq[String], properties: Seq[(String, String)],
                            otherJars: Seq[Jar]) : ValidationNel[String, JsValue] = {
 
-    import play.api.libs.json.Json.{ toJson => js }
-    import models.jnlp.{ HubNetKeys, Jar, JNLPKeys, NetLogoKeys }
+    import Json.{ toJson => js }
 
     def propertyToJSON(property: (String, String)) = js(
       Map(

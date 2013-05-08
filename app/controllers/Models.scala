@@ -2,7 +2,7 @@ package controllers
 
 import
   play.api.{ libs, mvc },
-    libs.json.Json,
+    libs.json.Json.toJson,
     mvc.{ Controller, RequestHeader }
 
 import
@@ -27,7 +27,7 @@ object Models extends Controller {
     val names = ModelMapper.modelNames
     responseType match {
       case PlainType => Ok(names.mkString("", "\n", "\n"))
-      case JsonType  => import Json.toJson; Ok(toJson(names map (toJson(_))) + "\n")
+      case JsonType  => Ok(toJson(names map (toJson(_))) + "\n")
       case x         => BadRequest("Unrecognized response type requested: " + x + "\n")
     }
   }

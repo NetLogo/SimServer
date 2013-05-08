@@ -1,4 +1,6 @@
 package models.web
+import
+  scala.reflect.{ classTag, ClassTag }
 
 import
   play.api.libs.json.{ JsValue, Reads }
@@ -35,9 +37,9 @@ object Param {
   // Oh, boy... the trouble that I went through to make this what-turned-out-to-be-trashy factory API...
   // You can't reasonably do `jsFunc` and `pathDescriptor` as default arguments
   // PROTIP: You probably don't want to get me started on this.
-  def apply[T : Reads : scala.reflect.ClassTag](key: String) : Param[T] = {
+  def apply[T : Reads : ClassTag](key: String) : Param[T] = {
     val jsFunc         = standardJsonExtractor(key)(_: JsValue).asOpt[T]
-    val pathDescriptor = standardJsonPathFormat(extractClassName(scala.reflect.classTag[T].runtimeClass))
+    val pathDescriptor = standardJsonPathFormat(extractClassName(classTag[T].runtimeClass))
     new Param(key, jsFunc, pathDescriptor, None)
   }
 

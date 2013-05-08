@@ -1,6 +1,10 @@
 package models.submission
 
 import
+  scalaz.{ Scalaz, ValidationNel },
+    Scalaz._
+
+import
   models.util.ParamBundle
 
 /**
@@ -17,8 +21,6 @@ case class UserWorkComment(override val id:        Option[Long],
                                         comment:   String) extends Association
 
 object UserWorkComment extends FromMapParser with FromBundleParser {
-
-  import scalaz.{ Scalaz, ValidationNel }, Scalaz._
 
   override protected type Target      = UserWorkComment
   override protected type ConsTuple   = (Option[Long], Option[Long], Long, String, String)

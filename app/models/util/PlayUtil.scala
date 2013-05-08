@@ -1,6 +1,9 @@
 package models.util
 
 import
+  scala.io.{ Codec, Source }
+
+import
   play.api.{ libs, Logger, mvc },
     libs.json._,
     mvc.{ AnyContent, Request }
@@ -23,7 +26,7 @@ object PlayUtil {
       formData =>
         val fileKVs = formData.files map {
           formFile =>
-            import scala.io.{ Codec, Source }, FileUtil.using
+            import FileUtil.using
             val file = formFile.ref.file
             val arr  = {
               if (file.length > 20E6.toLong)

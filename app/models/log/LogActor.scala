@@ -1,12 +1,16 @@
 package models.log
 
 import
-  scala.{ concurrent, util },
+  scala.{ concurrent, io => sio, util => sutil },
     concurrent.duration._,
-    util.control.Exception
+    sio.Source,
+    sutil.control.Exception
 
 import
-  java.io.File
+  java.{ io => jio, text, util => jutil },
+    jio.{ BufferedWriter, File, FileWriter, IOException },
+    text.SimpleDateFormat,
+    jutil.Calendar
 
 import
   akka.actor.{ Actor, ActorRef, PoisonPill, ReceiveTimeout }
@@ -63,7 +67,6 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   }
 
   private def generateFile(id: Long): File = {
-    import java.text.SimpleDateFormat, java.util.Calendar
     val timeFormat = new SimpleDateFormat("MM-dd-yy__HH'h'mm'm'ss's'")
     val filename = s"${timeFormat.format(Calendar.getInstance.getTime)}__sid${id}${LogActor.LogFileExtension}"
     createFile(filename)
@@ -77,8 +80,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   }
 
   private def appendToFile(data: String, file: File) {
-    import java.io.{ BufferedWriter, FileWriter }
-    Exception.ignoring(classOf[java.io.IOException]) {
+    Exception.ignoring(classOf[IOException]) {
       val writer = new FileWriter(file, true)
       val out = new BufferedWriter(writer)
       out.write(data.replaceAllLiterally("\r\n", "\n") + "\n")
@@ -106,7 +108,6 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   }
 
   private def readLastLineOfText(file: File): String = {
-    import scala.io.Source
     val src = Source.fromFile(file)
     val last = src.getLines().foldLeft("") { case (acc, line) => if (line.matches(""".*[\w].*""")) line else acc }
     src.close()
