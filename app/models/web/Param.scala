@@ -64,7 +64,7 @@ sealed abstract class ParamBox[+T] {
 
   def get     : T
   def isEmpty : Boolean
-  def nonefy  : NoneParam
+  def nonefy  : NoneParam[T]
 
   def exists           (p: T => Boolean)      : Boolean     =    !isEmpty && p(this.get)
   def flatMap  [U]     (f: T => ParamBox[U])  : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else f(this.get) // NOT A MONADIC `flatMap`!!!!!
@@ -80,17 +80,17 @@ sealed abstract class ParamBox[+T] {
 }
 
 object ParamBox {
-  def apply[T](key: String, opt: Option[T]) : ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam(key)
+  def apply[T](key: String, opt: Option[T]) : ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam[T](key)
 }
 
 // I wanted to use an `OptionProxy`, but, apparently, one doesn't exist... :(
-case class SomeParam[T](override val key: String, value: T) extends ParamBox[T] {
+case class SomeParam[+T](override val key: String, value: T) extends ParamBox[T] {
   override def get     = value
   override def isEmpty = false
   override def nonefy  = NoneParam(key)
 }
 
-case class NoneParam(override val key: String) extends ParamBox[Nothing] {
+case class NoneParam[+T](override val key: String) extends ParamBox[T] {
   override def get     = throw new NoSuchElementException("NoneParam.get")
   override def isEmpty = true
   override def nonefy  = this
