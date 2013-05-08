@@ -12,9 +12,9 @@ import
 
 case class UserWorkComment(override val id:        Option[Long],
                            override val refID:     Option[Long],
-                           timestamp: Long = System.currentTimeMillis(),
-                           userID:    String,
-                           comment:   String) extends Association
+                                        timestamp: Long = System.currentTimeMillis(),
+                                        userID:    String,
+                                        comment:   String) extends Association
 
 object UserWorkComment extends FromMapParser with FromBundleParser {
 
