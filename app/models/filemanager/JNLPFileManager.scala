@@ -11,7 +11,7 @@ import
  */
 
 object JNLPFileManager extends FileManager {
-            override val MyFolderName = "gen"
-  protected override val LifeSpan     = 1000 days
-  protected override val SystemName   = "JNLPFiles"
+            override lazy val MyFolderName = "gen"
+  protected override lazy val LifeSpan     = 1000 days
+  protected override lazy val SystemName   = "JNLPFiles"
 }

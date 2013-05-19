@@ -411,7 +411,7 @@ private object DBConstants {
 
   object TypeBundles extends Table {
 
-    override val TableName = "type_bundles"
+    override lazy val TableName = "type_bundles"
 
     val ActionJSKey       = "action_js"
     val FileExtensionKey  = "file_extension"
@@ -422,7 +422,7 @@ private object DBConstants {
 
   object UserWork extends Table {
 
-    override val TableName = "user_work"
+    override lazy val TableName = "user_work"
 
     val DataKey        = "data"
     val DescriptionKey = "description"
@@ -438,7 +438,7 @@ private object DBConstants {
 
   object UserWorkComments extends Table {
 
-    override val TableName = "user_work_comments"
+    override lazy val TableName = "user_work_comments"
 
     val CommentKey   = "comment"
     val IDKey        = "id"
@@ -450,7 +450,7 @@ private object DBConstants {
 
   object UserWorkSupplements extends Table {
 
-    override val TableName = "user_work_supplements"
+    override lazy val TableName = "user_work_supplements"
 
     val DataKey     = "data"
     val IDKey       = "id"

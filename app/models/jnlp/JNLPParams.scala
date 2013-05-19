@@ -153,9 +153,9 @@ object BaseJNLPParams extends JNLPParams {
 
   import JNLPParams._
 
-  override val bonusStringifyParams = BaseParams
-  override val additionalParams     = Seq[Param[_]]()
-  override val paramCategoryLabel   = "Base"
+  override lazy val bonusStringifyParams = BaseParams
+  override lazy val additionalParams     = Seq[Param[_]]()
+  override lazy val paramCategoryLabel   = "Base"
 
   override private[jnlp] def doesAffiliate(js: JsValue) = false
 
@@ -195,8 +195,8 @@ object NetLogoParams extends JNLPParams {
   private[jnlp] val ModelURLParam       = Param[String](ModelURLKey)
   private[jnlp] val UsesExtensionsParam = Param[Boolean](UsesExtensionsKey)
 
-  override val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam, ModelURLParam, UsesExtensionsParam)
-  override val paramCategoryLabel              = "NetLogo"
+  override lazy val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam, ModelURLParam, UsesExtensionsParam)
+  override lazy val paramCategoryLabel              = "NetLogo"
 
   override private[jnlp] def doesAffiliate(js: JsValue) = IsNetLogoParam(js) is true
 
@@ -248,9 +248,9 @@ object HubNetParams extends JNLPParams {
 
   override private[jnlp] def doesAffiliate(js: JsValue) = (IsHubNetServerParam(js) is true) || (IsHubNetClientParam(js) is true)
 
-  override val additionalParams   = Seq(IsHubNetClientParam, IsHubNetServerParam, ProgramNameParam,
-                                        RoleParam, ServerIPParam, ServerPortParam, UserIDParam)
-  override val paramCategoryLabel = "HubNet"
+  override lazy val additionalParams   = Seq(IsHubNetClientParam, IsHubNetServerParam, ProgramNameParam,
+                                             RoleParam, ServerIPParam, ServerPortParam, UserIDParam)
+  override lazy val paramCategoryLabel = "HubNet"
 
   override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] =
     HubNetJNLP(
