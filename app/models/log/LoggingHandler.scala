@@ -68,10 +68,11 @@ object LoggingHandler {
   }
 
   private def prepareData(data: String, encoding: String = DefaultEncoding) : String = {
-    (unGzip(data.getBytes(encoding)) flatMap (validateData(_))).
-      orElse (decompressData(data, encoding) orElse Option(data) flatMap (validateData(_))).
+    (unGzip(data.getBytes(encoding))
+      flatMap (validateData(_))).
+      orElse (decompressData(data, encoding)
+      orElse Option(data) flatMap (validateData(_))).
       getOrElse ("ERROR   DATA MUST BE TEXT OR GZIP COMPRESSED" replaceAll(" ", "_"))
-
   }
 
   /* Some(data)  if valid

@@ -42,8 +42,8 @@ trait FileManager extends Delayer {
   protected def LifeSpan  : FiniteDuration
   protected def SystemName: String
 
-  protected lazy val system      = ActorSystem(SystemName)
-  protected lazy val fileFolder  = new File(PublicPath + File.separator + MyFolderName)
+  protected lazy val system     = ActorSystem(SystemName)
+  protected lazy val fileFolder = new File(PublicPath + File.separator + MyFolderName)
 
   def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
     s"$MyFolderName/$fileNameBasis/$fileExt"
@@ -95,6 +95,7 @@ trait FileManager extends Delayer {
     fileFolder.listFiles foreach { file => system.actorOf(Props(new FileActor(file))) ! Delete }
   }
 
+  //@ Use work-type to determine this
   protected def idToActorName(id: String) = s"file-actor--${id.##.toString}"
 
 }

@@ -36,9 +36,9 @@ class ExpiryManager[T](expireFunc: (T) => Unit, name: String) {
   protected object Messages {
     case object Expire
     case object Init
-    case object Ping
-    case object Pang
-    case object Pong
+    case object Ping // Used to check if actor exists; if not, create one; else, refresh timeout
+    case object Pang // Timed out on existence check
+    case object Pong // Existed
     case object Refresh
   }
 
