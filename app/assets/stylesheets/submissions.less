@@ -1,14 +1,38 @@
+// Values
+
+@dark-color: #343434;
+
+
+// Abstract Rules
+
+.full-width {
+  width: 100%;
+}
+
+.pleasantly-padded {
+  padding: 7px;
+}
+
+.rounded-corners {
+  border-radius: 10px;
+}
+
+.has-footroom {
+  margin-bottom: 4px;
+}
+
+
 // Class Rules
 
 .comment {
-  margin-bottom: 4px;
+  .has-footroom;
   width:         90%;
 }
 
 .submission-contrast {
-  border-radius:    10px;
+  .pleasantly-padded;
+  .rounded-corners;
   background-color: #77BBFF;
-  padding:          7px;
 }
 
 .submission-id {
@@ -16,24 +40,24 @@
 }
 
 .submission {
-  border-radius:    10px;
+  .pleasantly-padded;
+  .full-width;
+  .rounded-corners;
+  .has-footroom;
   background-color: #FFFF77;
-  padding:          7px;
-  margin-bottom:    4px;
-  width:            100%;
 }
 
 .entry {
-  border:           3px solid white;
-  border-radius:    10px;
+  .rounded-corners;
   width:            750px;
-  margin-bottom:    15px;
+  background-color: @dark-color;
   padding:          10px;
-  background-color: #343434;
+  margin-bottom:    15px;
+  border:           3px solid white;
 }
 
 .main_body {
-  background: #343434;
+  background: @dark-color;
 }
 
 .field_set {
@@ -42,7 +66,7 @@
 }
 
 .work_image {
-  width:  100%;
+  .full-width;
   height: auto;
 }
 
