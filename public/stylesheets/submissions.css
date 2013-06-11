@@ -1,12 +1,12 @@
 .comment {
   margin-bottom: 4px;
-  width: 90%;
+  width:         90%;
 }
 
 .submission-contrast {
-  border-radius: 10px;
+  border-radius:    10px;
   background-color: #77BBFF;
-  padding: 7px;
+  padding:          7px;
 }
 
 .submission-id {
@@ -14,19 +14,19 @@
 }
 
 .submission {
-  border-radius: 10px;
+  border-radius:    10px;
   background-color: #FFFF77;
-  padding: 7px;
-  margin-bottom: 4px;
-  width: 100%;
+  padding:          7px;
+  margin-bottom:    4px;
+  width:            100%;
 }
 
 .entry {
-  border: 3px solid white;
-  border-radius: 10px;
-  width: 750px;
-  margin-bottom: 15px;
-  padding: 10px;
+  border:           3px solid white;
+  border-radius:    10px;
+  width:            750px;
+  margin-bottom:    15px;
+  padding:          10px;
   background-color: #343434;
 }
 
@@ -35,12 +35,12 @@
 }
 
 .field_set {
-  border: none;
+  border:  none;
   padding: 0;
 }
 
 .work_image {
-  width: 100%;
+  width:  100%;
   height: auto;
 }
 
