@@ -20,7 +20,6 @@ GET     /hubteach                   controllers.HubNet.hubTeach
 GET     /bindteacher                controllers.HubNet.bindTeacher
 
 GET     /models/hubnet/list         controllers.Models.modelNames(responseType = "plain")
-GET     /models/hubnet/list/        controllers.Models.modelNames(responseType = "plain")
 GET     /models/hubnet/list/:rType  controllers.Models.modelNames(rType: String)
 
 GET     /jnlp/params                controllers.JNLP.getParamFormats
@@ -47,6 +46,9 @@ POST    /work/:run/:period          controllers.Submission.updateAndViewWork(run
 POST    /work/:run                  controllers.Submission.updateAndViewWork(run, period ?= "", id ?= "")
 POST    /submit-work                controllers.Submission.submitWork
 POST    /submit-supplement          controllers.Submission.submitSupplement
+
+# Redirect trailing slashes
+GET     /*path/                     controllers.Application.redirect(path)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

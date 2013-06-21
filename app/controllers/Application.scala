@@ -22,6 +22,10 @@ object Application extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
+  def redirect(path: String) = Action {
+    MovedPermanently(s"/$path")
+  }
+
   def displayHttpRequest = APIAction {
     request =>
       val bundle = PlayUtil.extractBundle(request)
