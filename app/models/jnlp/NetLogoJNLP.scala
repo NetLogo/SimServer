@@ -29,9 +29,11 @@ object NetLogoJNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], packEnabledBox: ParamBox[Boolean], depsPathBox: ParamBox[String],
             vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
-            usesExtensionsBox: ParamBox[Boolean], propertiesBox: ParamBox[Seq[(String, String)]],
+            usesExtensionsBox: ParamBox[Boolean], isLoggingBox: ParamBox[Boolean], propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]])
-           (implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] = {
+           (implicit context: GenerationContext) : ValidationNel[String, JNLP] = {
+
+    import context._
 
     val extensionsJar    = usesExtensionsBox map (if (_) Option(ExtensionsJar) else None) getOrElse Option(ExtensionsJar)
 
@@ -48,8 +50,10 @@ object NetLogoJNLP {
     val depsPath         = depsPathBox         orElseApply DepsPath
     val vmArgs           = vmArgsBox           orElseApply VMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((extensionsJar ++ NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
-    val properties       = propertiesBox       orElseApply Properties
-    val arguments        = argumentsBox        orElseApply Arguments map(_ ++ (modelURLBox map generateModelURLArgs getOrElse Seq()))
+    val properties       = propertiesBox       orElseApply Properties map (_ ++ (isLoggingBox map (_ => Seq(("jnlp.connectpath", loggingURL))) getOrElse Seq()))
+    val arguments        = argumentsBox        orElseApply Arguments map (_ ++
+                                                                           (isLoggingBox map (_ => Seq("--logging")) getOrElse Seq()) ++
+                                                                           (modelURLBox map generateModelURLArgs getOrElse Seq()))
 
     JNLP(
       codebaseURI,

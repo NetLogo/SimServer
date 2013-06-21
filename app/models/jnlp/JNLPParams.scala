@@ -44,7 +44,7 @@ trait JNLPParams {
 
   private[jnlp] def doesAffiliate(js: JsValue) : Boolean
 
-  def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP]
+  def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP]
 
 }
 
@@ -159,7 +159,7 @@ object BaseJNLPParams extends JNLPParams {
 
   override private[jnlp] def doesAffiliate(js: JsValue) = false
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP] =
     JNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -185,6 +185,7 @@ object NetLogoKeys {
   val IsNetLogoKey      = "is_netlogo"
   val ModelURLKey       = "model_url"
   val UsesExtensionsKey = "uses_extensions"
+  val IsLoggingKey      = "is_logging"
 }
 
 object NetLogoParams extends JNLPParams {
@@ -192,15 +193,16 @@ object NetLogoParams extends JNLPParams {
   import JNLPParams._, NetLogoKeys._
 
   private       val IsNetLogoParam      = Param[Boolean](IsNetLogoKey)
-  private[jnlp] val ModelURLParam       = Param[String](ModelURLKey)
+  private[jnlp] val ModelURLParam       = Param[String] (ModelURLKey)
   private[jnlp] val UsesExtensionsParam = Param[Boolean](UsesExtensionsKey)
+  private[jnlp] val IsLoggingParam      = Param[Boolean](IsLoggingKey)
 
   override lazy val additionalParams: Seq[Param[_]] = Seq(IsNetLogoParam, ModelURLParam, UsesExtensionsParam)
   override lazy val paramCategoryLabel              = "NetLogo"
 
   override private[jnlp] def doesAffiliate(js: JsValue) = IsNetLogoParam(js) is true
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP] =
     NetLogoJNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -218,6 +220,7 @@ object NetLogoParams extends JNLPParams {
       OtherJarsParam(js),
       ModelURLParam(js),
       UsesExtensionsParam(js),
+      IsLoggingParam(js),
       PropertiesParam(js),
       ArgumentsParam(js)
     )
@@ -252,7 +255,7 @@ object HubNetParams extends JNLPParams {
                                              RoleParam, ServerIPParam, ServerPortParam, UserIDParam)
   override lazy val paramCategoryLabel = "HubNet"
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP] =
     HubNetJNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -276,6 +279,7 @@ object HubNetParams extends JNLPParams {
       IsHubNetServerParam(js) orElse (IsHubNetClientParam(js) map (!_)),
       NetLogoParams.ModelURLParam(js),
       NetLogoParams.UsesExtensionsParam(js),
+      NetLogoParams.IsLoggingParam(js),
       ServerIPParam(js),
       ServerPortParam(js),
       UserIDParam(js)

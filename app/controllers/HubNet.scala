@@ -76,7 +76,6 @@ object HubNet extends Controller {
   private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : Result = {
 
     import HubNetJNLP.{ generateAppName, generateDesc, generateIPArgs, generatePortArgs, generateShortDesc, generateUserIDArgs }
-    import NetLogoJNLP.generateLoggingArgs
 
     val HubNetDefaultPort = 9173
 
@@ -92,7 +91,6 @@ object HubNet extends Controller {
             HubNetServerRegistry.getPortByTeacherName(teacherName)
         }
 
-        val connectPath = s"http://${request.host}/logging"
         val programName = modelNameOpt getOrElse "NetLogo"
         val roleStr     = if (isTeacher) "Server" else "Client"
 
@@ -101,19 +99,19 @@ object HubNet extends Controller {
         val shortDesc        = generateShortDesc(programName)
         val isOfflineAllowed = false
         val modelURLOpt      = modelNameOpt map (Models.getHubNetModelURL(_))
-        val properties       = Util.ifFirstWrapSecond(isLogging, ("jnlp.connectpath", connectPath)).toSeq
+        val properties       = Seq()
         val otherJars        = Seq()
 
         val args = {
           if (isTeacher)
-            ipPortMaybe.fold({_ => Seq()}, { case (_, port) => generatePortArgs(port) }) ++ generateLoggingArgs(isLogging)
+            ipPortMaybe.fold({_ => Seq()}, { case (_, port) => generatePortArgs(port) })
           else
             ipPortMaybe map {
               case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
             } getOrElse Seq()
         }
 
-        val jsonMaybe = paramsToJson(appName, desc, shortDesc, isOfflineAllowed, isTeacher, modelURLOpt, args, properties, otherJars)
+        val jsonMaybe = paramsToJson(appName, desc, shortDesc, isOfflineAllowed, isTeacher, isLogging, modelURLOpt, args, properties, otherJars)
         jsonMaybe flatMap (JNLPFromJSONGenerator(_, request.host))
 
     } fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Redirect("/" + url)))
@@ -121,7 +119,7 @@ object HubNet extends Controller {
   }
 
   private def paramsToJson(appName: String, desc: String, shortDesc: String, isOfflineAllowed: Boolean,  isTeacher: Boolean,
-                           modelURLOpt: Option[String], args: Seq[String], properties: Seq[(String, String)],
+                           isLogging: Boolean, modelURLOpt: Option[String], args: Seq[String], properties: Seq[(String, String)],
                            otherJars: Seq[Jar]) : ValidationNel[String, JsValue] = {
 
     import Json.{ toJson => js }
@@ -149,6 +147,7 @@ object HubNet extends Controller {
             Map(
               HubNetKeys.IsHubNetServerKey -> js(true),
               NetLogoKeys.ModelURLKey      -> js(modelURL),
+              NetLogoKeys.IsLoggingKey     -> js(isLogging),
               JNLPKeys.PropertiesKey       -> js(properties map propertyToJSON),
               JNLPKeys.OtherJarsKey        -> js(otherJars  map jarToJSON)
             ).successNel[String]

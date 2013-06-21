@@ -34,9 +34,9 @@ object HubNetJNLP {
             vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]],propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]], programNameBox: ParamBox[String])
            (roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean], modelURLBox: ParamBox[String],
-            usesExtensionsBox: ParamBox[Boolean], serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],
+            usesExtensionsBox: ParamBox[Boolean], isLoggingBox: ParamBox[Boolean], serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],
             userIDBox: ParamBox[String])
-           (implicit thisServerCodebaseURL: String) : ValidationNel[String, JNLP] = {
+           (implicit context: GenerationContext) : ValidationNel[String, JNLP] = {
 
     // Through proper use of applicatives, I would be able to abstract this over arity.
     // But I won't, because that'd be a lot of work. --JAB (11/20/12)
@@ -46,6 +46,8 @@ object HubNetJNLP {
         b <- box2
       } yield (f(a)(b))
     }
+
+    import context._
 
     val generateAppNameBox   = contextify2IntoBox((generateAppName _).curried)
     val generateDescBox      = contextify2IntoBox((generateDesc _).curried)
@@ -92,6 +94,7 @@ object HubNetJNLP {
         otherJars,
         modelURLBox,       // For `NetLogoJNLP` only
         usesExtensionsBox, // For `NetLogoJNLP` only
+        isLoggingBox,      // For `NetLogoJNLP` only
         properties,
         arguments
       )
