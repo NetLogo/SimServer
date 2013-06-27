@@ -13,7 +13,8 @@ import
 private[controllers] object APIAction extends OpenAction
 private[controllers] object RestrictedAction {
   def apply(origins: Seq[String]) = new OpenAction {
-    override protected def APIDomains = origins
+//    override protected def APIDomains = origins
+    //@ Currently, don't override, since play doesn't properly support multiple of the same header
   }
 }
 
