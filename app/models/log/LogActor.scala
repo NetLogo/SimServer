@@ -39,19 +39,19 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   }
 
   private def handleMessage(message: String, sender: ActorRef) {
-    val (msgType, data) = LogActor.MessageSplitter.findFirstMatchIn(message) map (x => (x.group(1), x.group(2))) getOrElse ("unrecognized_type", "error_data")
-    msgType match {
-      case "pulse" =>
+    import LogActor.{ MessageSplitter => Message }
+    message match {
+      case Message("pulse", _) =>
         sender ! KeepAlive
-      case "write" =>
+      case Message("write", data) =>
         appendToFile(data, logFile)
         sender ! KeepAlive
-      case "finalize" =>
+      case Message("finalize", _) =>
         replyCloseConnection(sender)
         finalizeLog()
         Logger.info(s"Actor for log with ID $id reports mission accomplished")
         self ! PoisonPill
-      case "abandon" =>
+      case Message("abandon", _) =>
         replyCloseConnection(sender)
         logFile.delete()
         Logger.info(s"Actor for log with ID $id is aborting and deleting log")
