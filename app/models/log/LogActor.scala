@@ -120,7 +120,7 @@ object LogActor {
   val ExpectedLogDir = "nl_logs"
   val LogFileExtension = ".txt"
   // val LogTerminator = "</eventSet>"
-  private val MessageSplitter = """(?s)([\w]+)(\|(.*))?""".r // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
+  private val MessageSplitter = """(?s)([\w]+?)(?:\|(.*))?""".r // Messages are expected to be a [message type] followed by an optional ['|' and [data]]
 }
 
 object LogActorMessages {
