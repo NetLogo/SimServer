@@ -15,8 +15,8 @@ import
 import
   models.{ hubnet, jnlp, util },
     hubnet.{ HubNetSettings, HubNetServerRegistry, StudentInfo, TeacherInfo },
-    jnlp.{ HubNetJNLP, HubNetKeys, Jar, JNLPFromJSONGenerator, JNLPKeys, NetLogoJNLP, NetLogoKeys },
-    util.{ PlayUtil, Util }
+    jnlp.{ HubNetJNLP, HubNetKeys, Jar, JNLPFromJSONGenerator, JNLPKeys, NetLogoKeys },
+    util.PlayUtil
 
 /**
  * Created by IntelliJ IDEA.
