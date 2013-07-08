@@ -10,7 +10,10 @@ import
 import
   play.api.{ libs, mvc },
     libs.json.{ Json, JsValue },
-    mvc.{ Action, AnyContent, Controller, Request, Result }
+    mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
+
+import
+  controllers.action.APIAction
 
 import
   models.{ hubnet, jnlp, util },
@@ -41,7 +44,7 @@ object HubNet extends Controller {
     Ok(views.html.hubtest(StudentInfo.form))
   }
 
-  def bindStudent = Action {
+  def bindStudent = APIAction {
     implicit request => StudentInfo.form.bindFromRequest.fold(
       errors => Ok(views.html.hubtest(errors)),
       {
@@ -73,7 +76,7 @@ object HubNet extends Controller {
     )
   }
 
-  private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : Result = {
+  private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : SimpleResult[_] = {
 
     import HubNetJNLP.{ generateAppName, generateDesc, generateIPArgs, generatePortArgs, generateShortDesc, generateUserIDArgs }
 
