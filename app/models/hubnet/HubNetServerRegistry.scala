@@ -32,7 +32,7 @@ object HubNetServerRegistry {
     (cryptoBundle.publicModulus.toString, cryptoBundle.publicExponent.toString)
   }
 
-  def registerLookupAddress(teacherName: String, encryptedData: Array[Byte]) {
+  def registerLookupAddress(teacherName: String, encryptedData: Array[Byte]) : Unit = {
 
     def findFirstThatDecrypts(cryptos: Seq[CryptoManager], data: Array[Byte]) : Option[String] =
       cryptos.foldLeft(Option[String](null)) {
@@ -65,7 +65,7 @@ object HubNetServerRegistry {
         NotStartedFormat(teacherName).failNel
     } getOrElse NotFoundFormat(teacherName).failNel
 
-  private def removeEntry(teacherName: String) {
+  private def removeEntry(teacherName: String) : Unit = {
     registryMap -= teacherName
   }
 

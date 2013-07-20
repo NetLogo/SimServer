@@ -27,11 +27,11 @@ object FileUtil {
     if (index >= 0) filename.substring(0, index) else filename
   }
 
-  def printTextToFile(f: File)(op: PrintWriter => Unit) {
+  def printTextToFile(f: File)(op: PrintWriter => Unit) : Unit = {
     using(new PrintWriter(f))(op)
   }
 
-  def printBytesToFile(filename: String)(data: Array[Byte]) {
+  def printBytesToFile(filename: String)(data: Array[Byte]) : Unit = {
     val bytes = {
       if (ImageExtensions.exists(filename.endsWith(_)))
         decodeBase64(data)

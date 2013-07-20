@@ -91,7 +91,7 @@ trait FileManager extends Delayer {
   }
 
   // Could _easily_ be more efficient (at least for small numbers of files), but I want to stick to having actors manage the files
-  def removeAll() {
+  def removeAll() : Unit = {
     fileFolder.listFiles foreach { file => system.actorOf(Props(new FileActor(file))) ! Delete }
   }
 
@@ -114,7 +114,7 @@ class FileActor(file: File) extends Actor {
 // This was created to seamlessly hide nitty-gritty detail that a class's body is delayed init (usually for superfluous reasons)
 // Why does this not already exist in the Scala library to begin with? --JAB (8/29/12)
 sealed trait Delayer extends DelayedInit {
-  override def delayedInit(body: => Unit) {
+  override def delayedInit(body: => Unit) : Unit = {
     body
   }
 }

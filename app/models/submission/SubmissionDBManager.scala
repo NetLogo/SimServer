@@ -315,7 +315,7 @@ sealed trait Updatable {
 private object Updatable {
 
   implicit def userWork2Updatable(userWork: UserWork) = new Updatable {
-    override def update() { DB.withConnection { implicit connection =>
+    override def update() : Unit = { DB.withConnection { implicit connection =>
 
       import DBConstants.UserWork._
       val sql = SQL (
@@ -343,7 +343,7 @@ private object Updatable {
   }
 
   implicit def workSupplement2Updatable(workSupplement: UserWorkSupplement) = new Updatable {
-    override def update() { DB.withConnection { implicit connection =>
+    override def update() : Unit = { DB.withConnection { implicit connection =>
 
       import DBConstants.UserWorkSupplements._
       val sql = SQL (
@@ -366,7 +366,7 @@ private object Updatable {
   }
 
   implicit def typeBundle2Updatable(bundle: TypeBundle) = new Updatable {
-    override def update() { DB.withConnection { implicit connection =>
+    override def update() : Unit = { DB.withConnection { implicit connection =>
 
       import DBConstants.TypeBundles._
       val sql = SQL (

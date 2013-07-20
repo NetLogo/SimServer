@@ -49,7 +49,7 @@ class ExpiryManager[T](expireFunc: (T) => Unit, name: String) {
     protected val LifeSpan = 8 hours
 
     private var task = new Cancellable {
-      override def cancel() {}
+      override def cancel() : Unit = {}
       override def isCancelled = true
     }
 
@@ -62,7 +62,7 @@ class ExpiryManager[T](expireFunc: (T) => Unit, name: String) {
 
   }
 
-  def apply(entryKey: T) {
+  def apply(entryKey: T) : Unit = {
 
     implicit val timeout = Timeout(1500 millis)
 
@@ -81,7 +81,7 @@ class ExpiryManager[T](expireFunc: (T) => Unit, name: String) {
 
   }
 
-  private def initExpiry(entryKey: T) {
+  private def initExpiry(entryKey: T) : Unit = {
 
     val actorOpt = {
       try Option(system.actorOf(Props(new ExpiryActor(entryKey)), name = generateActorPath(entryKey)))

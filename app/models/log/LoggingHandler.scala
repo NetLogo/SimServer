@@ -49,7 +49,7 @@ object LoggingHandler {
   // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably should exist.
 //  def retrieveLogText(key: Long) : String = {
 //    val logDir = new File(LogActor.ExpectedLogDir)
-//    val arr = logDir.listFiles(new FilenameFilter() {
+//    val arr = logDir.listFiles(new FilenameFilter() : Unit = {
 //      def accept(file: File, name: String): Boolean = {
 //        name.toLowerCase.endsWith(s"sid$key${LogActor.LogFileExtension}")
 //      }
@@ -58,11 +58,11 @@ object LoggingHandler {
 //    ("Invalid log key given: " + key)
 //  }
 
-  private[models] def closeLog(id: Long) {
+  private[models] def closeLog(id: Long) : Unit = {
     idActorMap.remove(id)
   }
 
-  private def ensureLogDirExists() {
+  private def ensureLogDirExists() : Unit = {
     val logDir = new File(LogActor.ExpectedLogDir)
     if (!logDir.exists()) logDir.mkdir()
   }
