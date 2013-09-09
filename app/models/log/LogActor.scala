@@ -83,7 +83,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
     Exception.ignoring(classOf[IOException]) {
       val writer = new FileWriter(file, true)
       val out = new BufferedWriter(writer)
-      out.write(data.replaceAllLiterally("\r\n", "\n") + "\n")
+      out.write(data.replaceAllLiterally("\r\n", "\n"))
       out.close()
       writer.close()
     }
@@ -93,13 +93,13 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   private def markLogTimedOut() : Unit = {
     val terminator = "" // if (!logProperlyTerminated(logFile)) LogActor.LogTerminator else ""
     val timeOutData = terminator + "\n<!-- Log terminated due to connection with WebStart client timing out -->"
-    appendToFile(timeOutData, logFile)
+    appendToFile(timeOutData + "\n", logFile)
   }
 
   // Right now, we do nothing to finalize logs
   private def finalizeLog() : Unit = {
     val finalData = ""
-    appendToFile(finalData, logFile)
+    appendToFile(finalData + "\n", logFile)
   }
 
   private def logProperlyTerminated(file: File): Boolean = {
