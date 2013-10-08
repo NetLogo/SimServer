@@ -66,8 +66,8 @@ object UserWork extends FromMapParser with DataFromBundleParser {
     // All `Failure`s coalesce in a `NonEmptyList`, and the code will essentially short-circuit to avoid the "success" path
     (fetch(RunIDKey) |@| fetch(PeriodIDKey) |@| fetch(UserIDKey)) {
       (runID, periodID, userID) =>
-        val metadata = params.getOrElse(MetadataKey, "")
-        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => tryHarderToGetNested(MetadataKey) get TypeKey getOrElse ""), (_.getType)))
+        val metadata = params.getOrElse(MetadataKey, tryHarderToGetNested(MetadataKey))
+        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => ""), (_.getType)))
         val rawData  = params.getOrElse(DataKey, "").getBytes
         (runID, periodID, userID, typ, rawData, metadata, params.getOrElse(DescriptionKey, ""))
     }
