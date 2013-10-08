@@ -49,7 +49,7 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
     fetch(RefIDKey) map {
       refID =>
         val metadata = params.getOrElse(MetadataKey, "")
-        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => ""), (_.getType)))
+        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => tryHarderToGetNested(MetadataKey) get TypeKey getOrElse ""), (_.getType)))
         val rawData  = params.getOrElse(DataKey, "").getBytes
         (refID, typ, rawData, metadata)
     }

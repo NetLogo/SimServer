@@ -67,7 +67,7 @@ object UserWork extends FromMapParser with DataFromBundleParser {
     (fetch(RunIDKey) |@| fetch(PeriodIDKey) |@| fetch(UserIDKey)) {
       (runID, periodID, userID) =>
         val metadata = params.getOrElse(MetadataKey, "")
-        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => ""), (_.getType)))
+        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => tryHarderToGetNested(MetadataKey) get TypeKey getOrElse ""), (_.getType)))
         val rawData  = params.getOrElse(DataKey, "").getBytes
         (runID, periodID, userID, typ, rawData, metadata, params.getOrElse(DescriptionKey, ""))
     }

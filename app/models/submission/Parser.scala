@@ -62,6 +62,11 @@ private[submission] trait FromMapParser extends Parser {
   def fetch(key: String)(implicit params: MapInput) = // Converts keys to `Validation`s
     params.get(key) map (_.successNel[String]) getOrElse (s"No item with key '$key' passed in".failNel)
 
+  protected def tryHarderToGetNested(innerMapName: String)(implicit params: MapInput) : Map[String, String] = {
+    val KeyRegex = s"""$innerMapName\\[(.*)\\]""".r
+    params collect { case (key @ KeyRegex(innerKey), value) => innerKey -> value } toMap
+  }
+
 }
 
 private[submission] trait FromStringParser extends Parser {

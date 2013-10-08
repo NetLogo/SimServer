@@ -3,7 +3,7 @@ package models.submission
 import play.api.libs.json.Json
 
 import
-  scalaz.Success
+  scalaz.Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,7 +22,17 @@ object Metadata extends FromStringParser {
   override protected type ParsedTuple = Nothing
   override def constructFrom(parsed: Parsed)     = ??? // It just doesn't seem worth it in this trivial case to fully implement things
   override def fromString(str: String) : Output  = {
-    Success(new Metadata { override def getType = (Json.parse(str) \ "type").as[String] })
+
+    val metadata = new Metadata { override def getType = (Json.parse(str) \ "type").as[String] }
+
+    try {
+      metadata.getType
+      metadata.successNel
+    }
+    catch {
+      case ex: Exception => ex.getMessage.failNel
+    }
+
   }
 }
 
