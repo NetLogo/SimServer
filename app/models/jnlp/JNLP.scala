@@ -43,7 +43,7 @@ case class JNLP(
     val jars = mainJar +: otherJars
 
     val offlineAllowedStr = if (isOfflineAllowed) "\n" + formatXMLNode("offline-allowed", Map(), 2) else ""
-    val propsStr = properties map { case (key, value) => formatXMLNode("property", Map("name" -> key, "value" -> value), 2) } mkString("\n", "\n", "")
+    val propsStr = properties map { case (key, value) => formatXMLNode("property", Map("name" -> s"jnlp.$key", "value" -> value), 2) } mkString("\n", "\n", "")
     val argsStr = arguments map (formatXMLPair("argument", Map(), _, 2)) mkString("\n", "\n", "\n" + formatIndentation(1))
     val appDesc = "\n" + formatXMLPair("application-desc", Map("name" -> applicationName, "main-class" -> mainClass), argsStr, 1)
     val jarsStr = jars map {

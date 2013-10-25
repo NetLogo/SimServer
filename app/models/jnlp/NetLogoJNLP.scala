@@ -50,7 +50,7 @@ object NetLogoJNLP {
     val depsPath         = depsPathBox         orElseApply DepsPath
     val vmArgs           = vmArgsBox           orElseApply VMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((extensionsJar ++ NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
-    val properties       = propertiesBox       orElseApply Properties map (_ ++ (isLoggingBox map (_ => Seq(("jnlp.connectpath", loggingURL))) getOrElse Seq()))
+    val properties       = propertiesBox       orElseApply Properties map (_ ++ (isLoggingBox map (_ => Seq(("connectpath", loggingURL))) getOrElse Seq()))
     val arguments        = argumentsBox        orElseApply Arguments map (_ ++
                                                                            (isLoggingBox map (_ => Seq("--logging")) getOrElse Seq()) ++
                                                                            (modelURLBox map generateModelURLArgs getOrElse Seq()))
