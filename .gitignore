@@ -12,7 +12,7 @@ private
 .idea/inspectionProfiles/
 /info_file
 /out
-/public/gen
+/public/gen/*
 .DS_Store
 /*.iml
 /.idea/runConfigurations
