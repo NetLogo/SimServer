@@ -129,7 +129,7 @@ private object NetLogoJarManager {
   def getDefaultJars : Seq[Jar] = {
     def generateJar(name: String, isLazy: Boolean) = new Jar(name, isLazy)
     val jarsAndIsLazyPairs = Seq((DefaultLazyJarNames, true), (DefaultJarNames, false))
-    jarsAndIsLazyPairs map { case (jars, isLazy) => jars map (generateJar(_, isLazy)) } flatten
+    jarsAndIsLazyPairs flatMap { case (jars, isLazy) => jars map (generateJar(_, isLazy)) }
   }
 
 }
