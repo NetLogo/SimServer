@@ -9,9 +9,6 @@ import
 import
   play.api.libs.json.JsValue
 
-import
-  models.filemanager.JNLPFileManager
-
 /**
  * Created with IntelliJ IDEA.
  * User: jason

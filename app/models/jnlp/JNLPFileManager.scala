@@ -1,7 +1,10 @@
-package models.filemanager
+package models.jnlp
 
 import
   scala.concurrent.duration._
+
+import
+  models.filemanager.FileManager
 
 /**
  * Created with IntelliJ IDEA.
