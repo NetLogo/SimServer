@@ -81,8 +81,8 @@ object NetLogoJNLP {
 private[jnlp] object NetLogoJNLPDefaults {
   import Util.noneIfEmpty
   private val Defs                      = JNLPDefaults
-  val MainJar                           = new MainJar("NetLogo.jar")
-  val MainClass                         = "org.nlogo.app.App"
+  val MainJar                           = new MainJar("NetLogoShim.jar")
+  val MainClass                         = "org.nlogo.app.ShimApp"
   val ApplicationName                   = "NetLogo"
   val Desc                              = "A NetLogo WebStart app"
   val ShortDesc                         = "NetLogo (WebStart)"
@@ -117,6 +117,7 @@ private object NetLogoJarManager {
     "logging.jar",
     "log4j-1.2.16.jar",
     "mrjadapter-1.2.jar",
+    "NetLogo.jar",
     "knockoff_2.9.2-0.8.1.jar",
     "picocontainer-2.13.6.jar",
     "quaqua-7.3.4.jar",
