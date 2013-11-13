@@ -49,8 +49,9 @@ case class JNLP(
     val jarsStr = jars map {
       jar =>
         import jar._
+        val depsStr = if (depsPath.isEmpty) "" else s"$depsPath/"
         val hrefProps =
-          Seq("href" -> s"$depsPath/$jarName") ++
+          Seq("href" -> s"$depsStr$jarName") ++
             (if (isMain) Seq("main"     -> "true") else Seq()) ++
             (if (isLazy) Seq("download" -> "lazy") else Seq())
         formatXMLNode("jar", Map(hrefProps: _*), 2)
