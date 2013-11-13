@@ -62,6 +62,12 @@ case class JNLP(
 
   }
 
+  def replaceMainJar(path: String): JNLP = {
+    val newMain   = new MainJar(path)
+    val newOthers = otherJars map (other => new Jar(s"$depsPath/${other.jarName}", other.isLazy))
+    this.copy(mainJar = newMain, otherJars = newOthers, depsPath = "")
+  }
+
   private def formatXMLNode(tagName: String, attrKVs: Map[String, String], indentationLevel: Int) : String =
     s"${formatIndentation(indentationLevel)}<${tagName}${formatAttrs(attrKVs)} />"
 
