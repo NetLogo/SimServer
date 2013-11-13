@@ -7,6 +7,5 @@ protected[jnlp] object SigningConfig {
   lazy val KeyName      = PlayConfig.getString("jarsigner.keyname")
   lazy val KeystorePass = PlayConfig.getString("jarsigner.keystorepass")
   lazy val KeyPass      = PlayConfig.getString("jarsigner.keypass")
-  lazy val OutputDir    = PlayConfig.getString("jarsigner.outputdir")
 
 }

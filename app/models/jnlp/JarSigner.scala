@@ -12,7 +12,7 @@ import
 
 object JarSigner {
 
-  def apply(baseJar: File, jnlpFile: File, guid: String, codebase: String, appName: String): Unit = {
+  def apply(baseJar: File, jnlpFile: File, targetFile: File, codebase: String, appName: String): Unit = {
 
     implicit val tempJarDir = Files.createTempDirectory(null).toFile
 
@@ -20,8 +20,7 @@ object JarSigner {
     insertJNLP(jnlpFile)
 
     val manifestFile = createManifest(codebase, appName)
-    val distDir      = createDistDir()
-    val jarFile      = rebundleJar(distDir, baseJar.getName, manifestFile.getAbsolutePath, guid)
+    val jarFile      = rebundleJar(targetFile, baseJar.getName, manifestFile.getAbsolutePath)
 
     signAndPack(jarFile)
 
@@ -42,21 +41,14 @@ object JarSigner {
 
   }
 
-  private def createDistDir(): File = {
-    val distDir = new File(SigningConfig.OutputDir)
-    distDir.mkdirs()
-    distDir
-  }
-
-  private def rebundleJar(distDir: File, baseJarName: String, manifestPath: String, guid: String)(implicit temp: File): File = {
+  private def rebundleJar(target: File, baseJarName: String, manifestPath: String)(implicit temp: File): File = {
 
     val filesStr = temp.listFiles().toSeq map (_.getAbsolutePath drop (temp.getAbsolutePath.length + 1)) filter (_ != "META-INF") mkString " "
-    val jarFile  = new File(distDir, s"$guid/$baseJarName")
-    jarFile.getParentFile.mkdirs()
+    target.getParentFile.mkdirs()
 
-    shell(s"jar -cfm ${jarFile.getAbsolutePath} $manifestPath $filesStr")
+    shell(s"jar -cfm ${target.getAbsolutePath} $manifestPath $filesStr")
 
-    jarFile
+    target
 
   }
 
