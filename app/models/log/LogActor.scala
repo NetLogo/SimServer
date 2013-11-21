@@ -22,7 +22,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
 
   import LogActorMessages._
 
-  context.setReceiveTimeout(15 seconds)
+  context.setReceiveTimeout(60 seconds)
 
   private val logFile = generateFile(id)
 
