@@ -1,7 +1,7 @@
 package controllers.action
 
 import
-  play.api.mvc.{ Action, AnyContent, BodyParser, Request, SimpleResult }
+  play.api.mvc.{ Action, AnyContent, BodyParser, Request, Result }
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,11 +28,11 @@ private[controllers] trait OpenAction {
 
   protected def APIHeaders = APIDomainHeaders :+ APIReqTypesHeader :+ APIControlsHeader
 
-  protected def result2apiResult = (result: SimpleResult[_]) => result.withHeaders(APIHeaders: _*)
+  protected def result2apiResult = (result: Result) => result.withHeaders(APIHeaders: _*)
 
-  def apply[A](bodyParser: BodyParser[A])(block: Request[A] => SimpleResult[_]) = Action(bodyParser)(block andThen result2apiResult)
-  def apply(block: Request[AnyContent] => SimpleResult[_])                      = Action(block andThen result2apiResult)
-  def apply(block: => SimpleResult[_])                                          = Action(result2apiResult(block))
+  def apply[A](bodyParser: BodyParser[A])(block: Request[A] => Result) = Action(bodyParser)(block andThen result2apiResult)
+  def apply(block: Request[AnyContent] => Result)                      = Action(block andThen result2apiResult)
+  def apply(block: => Result)                                          = Action(result2apiResult(block))
 
 }
 

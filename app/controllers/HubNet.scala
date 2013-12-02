@@ -10,7 +10,7 @@ import
 import
   play.api.{ libs, mvc },
     libs.json.{ Json, JsValue },
-    mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
+    mvc.{ Action, AnyContent, Controller, Request, Result }
 
 import
   controllers.action.APIAction
@@ -76,7 +76,7 @@ object HubNet extends Controller {
     )
   }
 
-  private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : SimpleResult[_] = {
+  private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : Result = {
 
     import HubNetJNLP.{ generateAppName, generateDesc, generateIPArgs, generatePortArgs, generateShortDesc, generateUserIDArgs }
 

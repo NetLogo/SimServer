@@ -2,10 +2,10 @@ package models.log
 
 import
   scala.{ collection, concurrent, util => util_scala },
-    collection.mutable.{ ArrayBuffer, HashMap },
+    collection.mutable.ArrayBuffer,
     concurrent.{ Await, duration },
       duration._,
-    util_scala.Random
+    util_scala.{ Random, Try }
 
 import
   java.{ io, net, util => util_java },
@@ -15,35 +15,32 @@ import
 
 import
   akka.{ actor, pattern, util => util_akka },
-    actor.{ ActorRef, Props },
+    actor.{ ActorSystem, PoisonPill, Props },
     pattern.ask,
     util_akka.Timeout
 
 import
-  play.api.{ libs, Logger },
-    libs.concurrent.Akka
+  play.api.Logger
 
 import play.api.Play.current
 
 object LoggingHandler {
 
   val DefaultEncoding = "ISO-8859-1"
-  private val idActorMap = new HashMap[Long, ActorRef]()
 
-  def createNewLog() : Long = {
+  private lazy val system = ActorSystem("Logging")
+
+  def createNewLog(): Long = {
     ensureLogDirExists()
     val id = Random.nextInt().abs
-    val actor = Akka.system.actorOf(Props(new LogActor(id, closeLog(_))))
-    idActorMap.put(id, actor)
+    system.actorOf(Props(new LogActor(id, closeLog)), name = id.toString)
     id
   }
 
-  def log(key: Long, data: String) : String = {
+  def log(key: Long, data: String): String = {
     implicit val timeout = Timeout(5 seconds)
-    idActorMap.get(key) flatMap {
-      case x if (!x.isTerminated) => Option(Await.result(x ? prepareData(data), timeout.duration).toString + '\n')
-      case _                      => None
-    } getOrElse ("File already closed")
+    val actor = system.actorSelection(s"/user/$key")
+    Try(Await.result(actor ? prepareData(data), timeout.duration).toString + '\n') getOrElse "File already closed"
   }
 
   // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably shouldn't exist.
@@ -58,9 +55,8 @@ object LoggingHandler {
 //    ("Invalid log key given: " + key)
 //  }
 
-  private[models] def closeLog(id: Long) : Unit = {
-    idActorMap.remove(id)
-  }
+  private[models] def closeLog(id: Long): Unit =
+    system.actorSelection(s"/user/$id") ! PoisonPill
 
   private def ensureLogDirExists() : Unit = {
     val logDir = new File(LogActor.ExpectedLogDir)

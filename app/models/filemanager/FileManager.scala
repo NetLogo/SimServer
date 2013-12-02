@@ -87,7 +87,7 @@ trait FileManager extends Delayer {
 
   def retrieveFile(fileNameBasis: String) : File = {
     implicit val timeout = Timeout(3 seconds)
-    Await.result(system.actorFor(s"/user/${idToActorName(fileNameBasis)}") ? Get, timeout.duration).asInstanceOf[File]
+    Await.result(system.actorSelection(s"/user/${idToActorName(fileNameBasis)}") ? Get, timeout.duration).asInstanceOf[File]
   }
 
   // Could _easily_ be more efficient (at least for small numbers of files), but I want to stick to having actors manage the files

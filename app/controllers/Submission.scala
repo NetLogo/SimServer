@@ -5,7 +5,7 @@ import
     Scalaz._
 
 import
-  play.api.mvc.{ Action, AnyContent, Controller, Request, SimpleResult }
+  play.api.mvc.{ Action, AnyContent, Controller, Request, Result, SimpleResult }
 
 import
   controllers.action.APIAction
@@ -101,7 +101,7 @@ object Submission extends Controller {
     presentWork(SubmissionDBManager.getUserWork(run, period, user))
   }
 
-  private def presentWork(userWorks: Seq[UserWork]) : SimpleResult[_] = {
+  private def presentWork(userWorks: Seq[UserWork]) : Result = {
 
     val ActionFuncType       = "do"
     val PresentationFuncType = "present"
@@ -120,7 +120,7 @@ object Submission extends Controller {
 
   def updateAndViewWork(run: String, period: String, user: String) = Action {
     (submit(_: Request[AnyContent], UserWorkComment.fromBundle(_), noCleanup)) andThen {
-      case x if (x.header.status == OK) => Redirect((period, user) match {
+      case x: SimpleResult if (x.header.status == OK) => Redirect((period, user) match {
         case ("", "") => routes.Submission.viewWork1(run)
         case (p, "")  => routes.Submission.viewWork2(run, p)
         case (p, u)   => routes.Submission.viewWork3(run, p, u)
@@ -171,7 +171,7 @@ object Submission extends Controller {
 
   private def submit[T <% Submittable](request: Request[AnyContent],
                                        constructorFunc: (ParamBundle) => ValidationNel[String, T],
-                                       cleanup: ((T, Long)) => ValidationNel[String, Long]) : SimpleResult[_] = {
+                                       cleanup: ((T, Long)) => ValidationNel[String, Long]) : Result = {
     val paramBundle = PlayUtil.extractBundle(request)
     constructorFunc(paramBundle) flatMap {
       submittable =>

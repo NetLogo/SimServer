@@ -49,7 +49,7 @@ class ExpiryManager[T](expireFunc: (T) => Unit, name: String) {
     protected val LifeSpan = 8 hours
 
     private var task = new Cancellable {
-      override def cancel() : Unit = {}
+      override def cancel(): Boolean = true
       override def isCancelled = true
     }
 
@@ -66,7 +66,7 @@ class ExpiryManager[T](expireFunc: (T) => Unit, name: String) {
 
     implicit val timeout = Timeout(1500 millis)
 
-    val actor    = system.actorFor(s"/user/${generateActorPath(entryKey)}")
+    val actor    = system.actorSelection(s"/user/${generateActorPath(entryKey)}")
     val response = {
       try Await.result(actor ? Ping, timeout.duration)
       catch {
