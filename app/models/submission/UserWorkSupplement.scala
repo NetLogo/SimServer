@@ -27,7 +27,7 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
   override protected type ConsTuple   = (Option[Long], Option[Long], String, String, Array[Byte], String)
   override protected type ParsedTuple = (String, String, Array[Byte], String)
 
-  override protected def fromBundleHelper(bundle: ParamBundle) : Output = {
+  override protected def fromBundleHelper(bundle: ParamBundle): Output = {
     constructFrom(parseFromMap(bundle.stringParams) flatMap {
       case (refID, typ, rawData, metadata) if (rawData.isEmpty) =>
         byteFetch(DataKey)(bundle.byteParams) map {
@@ -38,7 +38,7 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
     })
   }
 
-  override protected def parseFromMap(implicit params: MapInput) : Parsed = {
+  override protected def parseFromMap(implicit params: MapInput): Parsed = {
 
     val RefIDKey    = "ref_id"
 
@@ -49,14 +49,14 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
     fetch(RefIDKey) map {
       refID =>
         val metadata = params.getOrElse(MetadataKey, tryHarderToGetNested(MetadataKey))
-        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold((_ => ""), (_.getType)))
+        val typ      = params.getOrElse(TypeKey, Metadata.fromString(metadata).fold(_ => "", _.getType))
         val rawData  = params.getOrElse(DataKey, "").getBytes
         (refID, typ, rawData, metadata)
     }
 
   }
 
-  protected def validate(refID: String, typ: String, rawData: Array[Byte], metadata: String) : ValidationNel[FailType, ConsTuple] = {
+  protected def validate(refID: String, typ: String, rawData: Array[Byte], metadata: String): ValidationNel[FailType, ConsTuple] = {
 
     val refIDMaybe = Validator.validateRefID(refID)
     val typeMaybe  = Validator.accept(typ)
@@ -70,7 +70,7 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
 
   }
 
-  override protected def constructFrom(parsed: Parsed) : Output =
+  override protected def constructFrom(parsed: Parsed): Output =
     parsed flatMap (validate _).tupled map (UserWorkSupplement.apply _).tupled
 
 }

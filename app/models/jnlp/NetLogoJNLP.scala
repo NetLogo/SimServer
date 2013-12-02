@@ -31,7 +31,7 @@ object NetLogoJNLP {
             vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]], modelURLBox: ParamBox[String],
             usesExtensionsBox: ParamBox[Boolean], isLoggingBox: ParamBox[Boolean], propertiesBox: ParamBox[Seq[(String, String)]],
             argumentsBox: ParamBox[Seq[String]])
-           (implicit context: GenerationContext) : ValidationNel[String, JNLP] = {
+           (implicit context: GenerationContext): ValidationNel[String, JNLP] = {
 
     import context._
 
@@ -127,7 +127,7 @@ private object NetLogoJarManager {
 
   val ExtensionsJar = new Jar("extensions.jar", true)
 
-  def getDefaultJars : Seq[Jar] = {
+  def getDefaultJars: Seq[Jar] = {
     def generateJar(name: String, isLazy: Boolean) = new Jar(name, isLazy)
     val jarsAndIsLazyPairs = Seq((DefaultLazyJarNames, true), (DefaultJarNames, false))
     jarsAndIsLazyPairs flatMap { case (jars, isLazy) => jars map (generateJar(_, isLazy)) }

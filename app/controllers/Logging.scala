@@ -37,7 +37,7 @@ object Logging extends Controller {
       val status = for {
         logDataSeq <- paramBundle.stringSeqParams.get(LoggingDataKey)
         logData    <- logDataSeq.headOption
-      } yield (LoggingHandler.log(id.toLong, logData))
+      } yield LoggingHandler.log(id.toLong, logData)
       status map (Ok(_)) getOrElse BadRequest("ERROR_IN_PARSING")
   }
 

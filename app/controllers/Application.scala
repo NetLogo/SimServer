@@ -34,12 +34,12 @@ object Application extends Controller {
                    |${request.method}
                    |
                    |Headers:
-                   |${request.headers.toSimpleMap map { case (k, v) => s"$k: $v" } mkString("\n")}
+                   |${request.headers.toSimpleMap map { case (k, v) => s"$k: $v" } mkString "\n"}
                    |
                    |Body:
-                   |${Util.noneIfEmpty(bundle.stringParams, ((_: Map[String, String]) map { case (k, v) => s"$k=$v" } mkString ("\n"))) getOrElse "[empty]"}
+                   |${Util.noneIfEmpty(bundle.stringParams, (_: Map[String, String]) map { case (k, v) => s"$k=$v" } mkString "\n") getOrElse "[empty]"}
                    |
-                   |${bundle.byteParams map { case (k, v) => s"$k={{{${new String(v)}}}}" } mkString ("\n")}""".stripMargin
+                   |${bundle.byteParams map { case (k, v) => s"$k={{{${new String(v)}}}}" } mkString "\n"}""".stripMargin
       Ok(text)
   }
 

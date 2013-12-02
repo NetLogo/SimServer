@@ -38,7 +38,7 @@ case class JNLP(
                 arguments: Seq[String]                = Arguments
  ) {
 
-  def toXMLStr : String = {
+  def toXMLStr: String = {
 
     val jars = mainJar +: otherJars
 
@@ -68,13 +68,13 @@ case class JNLP(
     this.copy(mainJar = newMain, otherJars = newOthers, depsPath = "")
   }
 
-  private def formatXMLNode(tagName: String, attrKVs: Map[String, String], indentationLevel: Int) : String =
+  private def formatXMLNode(tagName: String, attrKVs: Map[String, String], indentationLevel: Int): String =
     s"${formatIndentation(indentationLevel)}<${tagName}${formatAttrs(attrKVs)} />"
 
-  private def formatXMLPair(tagName: String, attrKVs: Map[String, String], data: String, indentationLevel: Int) : String =
+  private def formatXMLPair(tagName: String, attrKVs: Map[String, String], data: String, indentationLevel: Int): String =
     s"${formatIndentation(indentationLevel)}<${tagName}${formatAttrs(attrKVs)}>$data</$tagName>"
 
-  private def formatAttrs(attrKVs: Map[String, String]) : String = {
+  private def formatAttrs(attrKVs: Map[String, String]): String = {
     val attrs = attrKVs.toList map { case (k, v) => s"""$k=\"$v\" """.trim } mkString " "
     if (attrs.isEmpty) "" else " " + attrs
   }
@@ -90,7 +90,7 @@ object JNLP {
             shortDescBox: ParamBox[String], isOfflineAllowedBox: ParamBox[Boolean], appNameInMenuBox: ParamBox[String],
             vendorBox: ParamBox[String], packEnabledBox: ParamBox[Boolean], depsPathBox: ParamBox[String],
             vmArgsBox: ParamBox[String], otherJarsBox: ParamBox[Seq[(String, Boolean)]], propertiesBox: ParamBox[Seq[(String, String)]],
-            argumentsBox: ParamBox[Seq[String]]) : ValidationNel[String, JNLP] = {
+            argumentsBox: ParamBox[Seq[String]]): ValidationNel[String, JNLP] = {
 
     val errorStrFormat  = "Bad data supplied for: " + (_: String)
     val f               =  (box: ParamBox[String]) => box map (_.successNel[String]) getOrElse errorStrFormat(box.key).failNel[String]

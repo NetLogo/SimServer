@@ -17,7 +17,7 @@ import
  */
 
 object JNLPFromJSONGenerator {
-  def apply(json: JsValue, host: String, extraProps: Map[String, String] = Map()) : ValidationNel[String, String] = {
+  def apply(json: JsValue, host: String, extraProps: Map[String, String] = Map()): ValidationNel[String, String] = {
     val uuid         = UUID.randomUUID().toString
     val codebaseURL  = s"http://$host/assets"
     val filename     = JNLPFileManager.genFilename(uuid)

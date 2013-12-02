@@ -27,7 +27,7 @@ trait PublicKeyCrypto {
   }
 
   object KeyPair {
-    def unapply(keyPair: KeyPair) : Option[(PublicKey, PrivateKey)] = Option((keyPair.getPublic, keyPair.getPrivate))
+    def unapply(keyPair: KeyPair): Option[(PublicKey, PrivateKey)] = Option((keyPair.getPublic, keyPair.getPrivate))
   }
 
   override protected def encryptCipherInit = (cipher: Cipher) => cipher.init(Cipher.ENCRYPT_MODE, publicKey)
@@ -40,22 +40,18 @@ trait CryptoManager {
   self: CryptoAlgorithm =>
 
   // Different algorithms call different overloaded versions of `cipher.init`
-  protected def encryptCipherInit : (Cipher) => Unit
-  protected def decryptCipherInit : (Cipher) => Unit
+  protected def encryptCipherInit: (Cipher) => Unit
+  protected def decryptCipherInit: (Cipher) => Unit
 
-  final def encrypt(entry: String) : String = {
-    performCrypto(entry.getBytes("UTF-8")) {
-      encryptCipherInit(_)
-    }
+  final def encrypt(entry: String): String = {
+    performCrypto(entry.getBytes("UTF-8"))(encryptCipherInit)
   }
 
-  final def decrypt(entry: Array[Byte]) : String = {
-    performCrypto(entry) {
-      decryptCipherInit(_)
-    }
+  final def decrypt(entry: Array[Byte]): String = {
+    performCrypto(entry)(decryptCipherInit)
   }
 
-  private def performCrypto(entry: Array[Byte])(cipherInit: (Cipher) => Unit) : String = {
+  private def performCrypto(entry: Array[Byte])(cipherInit: (Cipher) => Unit): String = {
     val cipher = Cipher.getInstance(algorithm)
     cipherInit(cipher)
     new String(cipher.doFinal(entry))

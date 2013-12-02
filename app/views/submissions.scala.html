@@ -16,7 +16,7 @@
 
       var makeReplacement = function (index, presentation) {
         $('#temp_' + index).replaceWith(presentation);
-      }
+      };
 
       @submissions.zipWithIndex.map{ case (submission, index) =>
         @Html(s"makeReplacement($index, present_custom_${submission.typ}(${submission.toJson}));")
@@ -47,7 +47,7 @@
 @insertWorkEntry(submission: UserWork, index: Int) = {
   <div class="entry">
     @insertUserWorkRow(submission, index)
-    @submission.comments.sortBy(_.timestamp).map(insertCommentRow _)
+    @submission.comments.sortBy(_.timestamp).map(insertCommentRow)
     @insertCommentInputRow(submission)
   </div>
 }

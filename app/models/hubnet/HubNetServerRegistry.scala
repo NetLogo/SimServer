@@ -19,22 +19,22 @@ import
 
 object HubNetServerRegistry {
 
-  private val NotFoundFormat   = "Teacher %s has not attempted to start any HubNet servers recently.".format((_: String))
-  private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format((_: String))
+  private val NotFoundFormat   = "Teacher %s has not attempted to start any HubNet servers recently.".format(_: String)
+  private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format(_: String)
 
   private val registryMap   = MMap[String, RegistryBundle]()
   private val expiryManager = new ExpiryManager(removeEntry _, "hubnet-registry")
 
-  def registerTeacher(teacherName: String) : (String, String) = {
+  def registerTeacher(teacherName: String): (String, String) = {
     val bundle       = registryMap.getOrElse(teacherName, RegistryBundle(Seq(), None))
     val cryptoBundle = new CryptoManager with RSA with K2048
     registryMap += teacherName -> bundle.copy(cryptos = cryptoBundle +: bundle.cryptos)
     (cryptoBundle.publicModulus.toString, cryptoBundle.publicExponent.toString)
   }
 
-  def registerLookupAddress(teacherName: String, encryptedData: Array[Byte]) : Unit = {
+  def registerLookupAddress(teacherName: String, encryptedData: Array[Byte]): Unit = {
 
-    def findFirstThatDecrypts(cryptos: Seq[CryptoManager], data: Array[Byte]) : Option[String] =
+    def findFirstThatDecrypts(cryptos: Seq[CryptoManager], data: Array[Byte]): Option[String] =
       cryptos.foldLeft(Option[String](null)) {
         case (acc, x) =>
           if (acc.isEmpty) {
@@ -57,7 +57,7 @@ object HubNetServerRegistry {
 
   }
 
-  def getPortByTeacherName(teacherName: String) : ValidationNel[String, (String, Int)] =
+  def getPortByTeacherName(teacherName: String): ValidationNel[String, (String, Int)] =
     registryMap.get(teacherName) map {
       case RegistryBundle(_, Some(LookupAddress(ip, port))) =>
         (ip, port).successNel[String]
@@ -65,7 +65,7 @@ object HubNetServerRegistry {
         NotStartedFormat(teacherName).failNel
     } getOrElse NotFoundFormat(teacherName).failNel
 
-  private def removeEntry(teacherName: String) : Unit = {
+  private def removeEntry(teacherName: String): Unit = {
     registryMap -= teacherName
   }
 

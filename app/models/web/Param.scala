@@ -20,9 +20,9 @@ class Param[T] private (val key: String, jsFunc: (JsValue) => Option[T], val pat
 
   private def unpeel(opt: Option[T]) = opt orElse (if (this.hasDefault) Option(default) else None)
 
-  def apply(js: JsValue)    : ParamBox[T] = ParamBox(key, unpeel(jsFunc(js)))
-  def unpeelJs(js: JsValue) : T           = unpeel(jsFunc(js)) get // BOOM!
-  def hasDefault            : Boolean     = !defaulter.isEmpty
+  def apply(js: JsValue):    ParamBox[T] = ParamBox(key, unpeel(jsFunc(js)))
+  def unpeelJs(js: JsValue): T           = unpeel(jsFunc(js)) get // BOOM!
+  def hasDefault:            Boolean     = !defaulter.isEmpty
 
 }
 
@@ -37,7 +37,7 @@ object Param {
   // Oh, boy... the trouble that I went through to make this what-turned-out-to-be-trashy factory API...
   // You can't reasonably do `jsFunc` and `pathDescriptor` as default arguments
   // PROTIP: You probably don't want to get me started on this.
-  def apply[T : Reads : ClassTag](key: String) : Param[T] = {
+  def apply[T : Reads : ClassTag](key: String): Param[T] = {
     val jsFunc         = standardJsonExtractor(key)(_: JsValue).asOpt[T]
     val pathDescriptor = standardJsonPathFormat(extractClassName(classTag[T].runtimeClass))
     new Param(key, jsFunc, pathDescriptor, None)
@@ -64,25 +64,25 @@ sealed abstract class ParamBox[+T] {
 
   def key: String
 
-  def get     : T
-  def isEmpty : Boolean
-  def nonefy  : NoneParam[T]
+  def get:     T
+  def isEmpty: Boolean
+  def nonefy:  NoneParam[T]
 
-  def exists           (p: T => Boolean)      : Boolean     =    !isEmpty && p(this.get)
-  def flatMap  [U]     (f: T => ParamBox[U])  : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else f(this.get) // NOT A MONADIC `flatMap`!!!!!
-  def getOrElse[U >: T](default: => U)        : U           = if (isEmpty) default                   else this.get
-  def map      [U]     (f: T => U)            : ParamBox[U] = if (isEmpty) NoneParam(this.key)       else SomeParam(this.key, f(this.get))
-  def replaceKey       (newKey: String)       : ParamBox[T] = if (isEmpty) NoneParam(newKey)         else SomeParam(newKey, this.get)
-  def orElse   [U >: T](that: => ParamBox[U]) : ParamBox[U] = if (isEmpty) that.replaceKey(this.key) else this
+  def exists           (p: T => Boolean):      Boolean     =    !isEmpty && p(this.get)
+  def flatMap  [U]     (f: T => ParamBox[U]):  ParamBox[U] = if (isEmpty) NoneParam(this.key)       else f(this.get) // NOT A MONADIC `flatMap`!!!!!
+  def getOrElse[U >: T](default: => U):        U           = if (isEmpty) default                   else this.get
+  def map      [U]     (f: T => U):            ParamBox[U] = if (isEmpty) NoneParam(this.key)       else SomeParam(this.key, f(this.get))
+  def replaceKey       (newKey: String):       ParamBox[T] = if (isEmpty) NoneParam(newKey)         else SomeParam(newKey, this.get)
+  def orElse   [U >: T](that: => ParamBox[U]): ParamBox[U] = if (isEmpty) that.replaceKey(this.key) else this
 
   // Bizzle-made!
-  def is         [U >: T](that: U)           : Boolean     = if (isEmpty) false                     else this.get == that
-  def orElseApply[U >: T](that: U)           : ParamBox[U] = if (isEmpty) SomeParam(this.key, that) else this
+  def is         [U >: T](that: U): Boolean     = if (isEmpty) false                     else this.get == that
+  def orElseApply[U >: T](that: U): ParamBox[U] = if (isEmpty) SomeParam(this.key, that) else this
 
 }
 
 object ParamBox {
-  def apply[T](key: String, opt: Option[T]) : ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam[T](key)
+  def apply[T](key: String, opt: Option[T]): ParamBox[T] = opt map (value => SomeParam(key, value)) getOrElse NoneParam[T](key)
 }
 
 // I wanted to use an `OptionProxy`, but, apparently, one doesn't exist... :(

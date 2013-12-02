@@ -19,7 +19,7 @@ private[submission] object Validator {
   def accept[T](x: T) = x.successNel[Fail]
   def deny  [T](x: T) = x.failNel
 
-  def validateRefID(refID: String) : V[Long] =
+  def validateRefID(refID: String): V[Long] =
     ensureNotEmpty(refID, "ref ID") flatMap {
       x =>
         try x.toLong match { case y => accept(y) }
@@ -34,18 +34,18 @@ private[submission] object Validator {
 
   protected val ErrorMessageTemplate = "Invalid value given for %s; %s".format(_: String, _: String)
 
-  def ensure[T](data: T, dataName: String)(errorDesc: String)(errorCond: (T) => Boolean) : V[T] = {
+  def ensure[T](data: T, dataName: String)(errorDesc: String)(errorCond: (T) => Boolean): V[T] = {
     lazy val errorMessage = ErrorMessageTemplate(dataName, errorDesc)
     failUnderCond(data, errorCond, errorMessage)
   }
 
-  def ensureNotEmpty[T <% { def isEmpty : Boolean }](data: T, dataName: String) : V[T] =
+  def ensureNotEmpty[T <% { def isEmpty: Boolean }](data: T, dataName: String): V[T] =
     ensure(data, dataName)("cannot be empty")(_.isEmpty)
 
-  def ensureNonNegative[T <% AnyVal { def <=(x: Int) : Boolean }](data: T, dataName: String) : V[T] =
+  def ensureNonNegative[T <% AnyVal { def <=(x: Int): Boolean }](data: T, dataName: String): V[T] =
     ensure(data, dataName)("value is too small")(_ <= 0)
 
-  protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: => String) : V[T] = param match {
+  protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: => String): V[T] = param match {
     case x if cond(x) => deny(errorStr)
     case x            => accept(x)
   }

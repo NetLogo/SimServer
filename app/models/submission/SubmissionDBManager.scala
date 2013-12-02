@@ -32,7 +32,7 @@ object SubmissionDBManager {
 
   import AnormExtras._
 
-  def getRuns : Seq[String] = {
+  def getRuns: Seq[String] = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserWork._
       SQL (
@@ -45,7 +45,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getPeriodsByRun(runID: String) : Seq[String] = {
+  def getPeriodsByRun(runID: String): Seq[String] = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserWork._
       SQL (
@@ -61,7 +61,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getStudentsByRunAndPeriod(runID: String, periodID: String) : Seq[String] = {
+  def getStudentsByRunAndPeriod(runID: String, periodID: String): Seq[String] = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserWork._
       SQL (
@@ -78,7 +78,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getUserWork(run: String) : Seq[UserWork] = {
+  def getUserWork(run: String): Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
       parseUserWork(SQL (
@@ -92,7 +92,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getUserWork(run: String, period: String) : Seq[UserWork] = {
+  def getUserWork(run: String, period: String): Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
       parseUserWork(SQL (
@@ -107,7 +107,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getUserWork(run: String, period: String, user: String) : Seq[UserWork] = {
+  def getUserWork(run: String, period: String, user: String): Seq[UserWork] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWork._
       parseUserWork(SQL (
@@ -123,7 +123,7 @@ object SubmissionDBManager {
     }
   }
 
-  private def parseUserWork(sql: SimpleSql[Row])(implicit connection: Connection) : Seq[UserWork] = {
+  private def parseUserWork(sql: SimpleSql[Row])(implicit connection: Connection): Seq[UserWork] = {
     import DBConstants.UserWork._
     sql as {
       long(IDKey) ~ timestamp(TimestampKey) ~ str(RunIDKey) ~ str(PeriodIDKey) ~ str(UserIDKey) ~
@@ -136,7 +136,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getWorkCommentsByRefID(workRefID: Long) : Seq[UserWorkComment] = {
+  def getWorkCommentsByRefID(workRefID: Long): Seq[UserWorkComment] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWorkComments._
       SQL (
@@ -155,7 +155,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getWorkSupplementsByRefID(workRefID: Long) : Seq[UserWorkSupplement] = {
+  def getWorkSupplementsByRefID(workRefID: Long): Seq[UserWorkSupplement] = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserWorkSupplements._
       SQL (
@@ -174,7 +174,7 @@ object SubmissionDBManager {
     }
   }
 
-  def getTypeBundleByName(name: String) : ValidationNel[String, TypeBundle] = {
+  def getTypeBundleByName(name: String): ValidationNel[String, TypeBundle] = {
     DB.withConnection { implicit connection =>
       import DBConstants.TypeBundles._
       val opt = SQL (
@@ -190,23 +190,23 @@ object SubmissionDBManager {
           case _                                  => raiseDBAccessException()
         } *
       } headOption;
-      opt map (_.successNel[String]) getOrElse (s"No type bundle found with name $name".failNel)
+      opt map (_.successNel[String]) getOrElse s"No type bundle found with name $name".failNel
     }
   }
 
-  def getOrCreateTypeBundleByName(name: String) : ValidationNel[String, TypeBundle] = {
+  def getOrCreateTypeBundleByName(name: String): ValidationNel[String, TypeBundle] = {
     getTypeBundleByName(name) orElse {
       submit(TypeBundle(name, "", "", "")) flatMap (_ => getTypeBundleByName(name))
     }
   }
 
-  def submit[T <% Submittable](submission: T) : ValidationNel[String, Long] = submission.submit
-  def update[T <% Updatable]  (update: T)                                   { update.update() }
+  def submit[T <% Submittable](submission: T): ValidationNel[String, Long] = submission.submit
+  def update[T <% Updatable]  (update: T):     Unit                        = update.update()
 
 }
 
 sealed trait Submittable {
-  def submit : ValidationNel[String, Long]
+  def submit: ValidationNel[String, Long]
 }
 
 private object Submittable {
@@ -214,7 +214,7 @@ private object Submittable {
   import AnormExtras.tryInsert
 
   implicit def userWork2Submittable(userWork: UserWork) = new Submittable {
-    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
+    override def submit: ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.UserWork._
       val sql = SQL (
@@ -240,7 +240,7 @@ private object Submittable {
   }
 
   implicit def workComment2Submittable(workComment: UserWorkComment) = new Submittable {
-    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
+    override def submit: ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.UserWorkComments._
       val sql = SQL (
@@ -262,7 +262,7 @@ private object Submittable {
   }
 
   implicit def workSupplement2Submittable(workSupplement: UserWorkSupplement) = new Submittable {
-    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
+    override def submit: ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.UserWorkSupplements._
       val sql = SQL (
@@ -284,7 +284,7 @@ private object Submittable {
   }
 
   implicit def typeBundle2Submittable(bundle: TypeBundle) = new Submittable {
-    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
+    override def submit: ValidationNel[String, Long] = DB.withConnection { implicit connection =>
 
       import DBConstants.TypeBundles._
       val sql = SQL (
@@ -315,7 +315,7 @@ sealed trait Updatable {
 private object Updatable {
 
   implicit def userWork2Updatable(userWork: UserWork) = new Updatable {
-    override def update() : Unit = { DB.withConnection { implicit connection =>
+    override def update(): Unit = { DB.withConnection { implicit connection =>
 
       import DBConstants.UserWork._
       val sql = SQL (
@@ -343,7 +343,7 @@ private object Updatable {
   }
 
   implicit def workSupplement2Updatable(workSupplement: UserWorkSupplement) = new Updatable {
-    override def update() : Unit = { DB.withConnection { implicit connection =>
+    override def update(): Unit = { DB.withConnection { implicit connection =>
 
       import DBConstants.UserWorkSupplements._
       val sql = SQL (
@@ -366,7 +366,7 @@ private object Updatable {
   }
 
   implicit def typeBundle2Updatable(bundle: TypeBundle) = new Updatable {
-    override def update() : Unit = { DB.withConnection { implicit connection =>
+    override def update(): Unit = { DB.withConnection { implicit connection =>
 
       import DBConstants.TypeBundles._
       val sql = SQL (
@@ -391,10 +391,10 @@ private object Updatable {
 
 object AnormExtras {
 
-  def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
-  def raiseDBAccessException()      : Nothing         = throw new SQLException("Retrieved data from database in unexpected format.")
+  def timestamp(columnName: String): RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
+  def raiseDBAccessException():      Nothing         = throw new SQLException("Retrieved data from database in unexpected format.")
 
-  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNel[String, Long])(implicit connection: Connection) : ValidationNel[String, Long] = {
+  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNel[String, Long])(implicit connection: Connection): ValidationNel[String, Long] = {
     try f(sql.executeInsert())
     catch {
       case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failNel

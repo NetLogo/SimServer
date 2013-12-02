@@ -22,18 +22,18 @@ object FileUtil {
 
   def extFilter(ext: String) = new FilenameFilter() { def accept(file: File, name: String) = name.toLowerCase.endsWith("." + ext) }
 
-  def dropExt(filename: String) : String = {
+  def dropExt(filename: String): String = {
     val index = filename.lastIndexOf(".")
     if (index >= 0) filename.substring(0, index) else filename
   }
 
-  def printTextToFile(f: File)(op: PrintWriter => Unit) : Unit = {
+  def printTextToFile(f: File)(op: PrintWriter => Unit): Unit = {
     using(new PrintWriter(f))(op)
   }
 
-  def printBytesToFile(filename: String)(data: Array[Byte]) : Unit = {
+  def printBytesToFile(filename: String)(data: Array[Byte]): Unit = {
     val bytes = {
-      if (ImageExtensions.exists(filename.endsWith(_)))
+      if (ImageExtensions exists filename.endsWith)
         decodeBase64(data)
       else
         data
@@ -41,7 +41,7 @@ object FileUtil {
     using (new FileOutputStream(filename))(_.write(bytes))
   }
 
-  def using[A <: { def close() }, B](param: A)(f: A => B) : B = {
+  def using[A <: { def close() }, B](param: A)(f: A => B): B = {
     try { f(param) } finally { param.close() }
   }
 

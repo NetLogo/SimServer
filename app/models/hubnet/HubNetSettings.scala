@@ -29,7 +29,7 @@ object HubNetSettings {
   val IsLoggingKey   = "is_logging"
 
   // Could return a `ValidationNel`, but I don't think that my use of `ValidationNel` is this class's business
-  def apply(inMap: Map[String, String], isTeacher: Boolean) : Option[HubNetSettings] = {
+  def apply(inMap: Map[String, String], isTeacher: Boolean): Option[HubNetSettings] = {
 
     // These are all `Option`s
     val (modelName, userName, isHeadless, teacherName, portNum, isLogging) = {
@@ -37,7 +37,7 @@ object HubNetSettings {
         case "Yes" => "true"
         case "No"  => "false"
         case x     => x
-      } map (_.toBoolean) getOrElse false)
+      } exists (_.toBoolean))
       import inMap.get
       (get(ModelNameKey), get(UserNameKey), defaultOnAndWrapBoolStr(get(IsHeadlessKey)),
        get(TeacherNameKey), get(PortNumKey) map (_.toInt), defaultOnAndWrapBoolStr(get(IsLoggingKey)))

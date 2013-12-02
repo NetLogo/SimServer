@@ -25,13 +25,13 @@ import
 object Submission extends Controller {
 
   protected class EnhancedParamMap(paramMap: Map[String, String]) {
-    def extract(key: String) : ValidationNel[String, String] =
+    def extract(key: String): ValidationNel[String, String] =
       paramMap.get(key) map (_.successNel[String]) getOrElse s"No such parameter found: $key".failNel
   }
 
   implicit def paramMap2Enhanced(paramMap: Map[String, String]) = new EnhancedParamMap(paramMap)
 
-  private val noCleanup = ((_: (_, Long))._2.successNel[String])
+  private val noCleanup = (_: (_, Long))._2.successNel[String]
 
   private def nel2Str(nel: NonEmptyList[String]) = nel.list.mkString("\n")
 
@@ -61,15 +61,15 @@ object Submission extends Controller {
           val bundle = TypeBundle(name, "", "", "")
           SubmissionDBManager.submit(bundle) map { _ => bundle }
       } fold (
-        (nel    => ExpectationFailed(nel2Str(nel))),
-        (bundle => Redirect(routes.Submission.viewTypeEditForm(bundle.name)))
+        nel    => ExpectationFailed(nel2Str(nel)),
+        bundle => Redirect(routes.Submission.viewTypeEditForm(bundle.name))
       )
   }
 
   def viewTypeEditForm(name: String) = Action {
     implicit request =>
       SubmissionDBManager.getTypeBundleByName(name) fold (
-        (nel => ExpectationFailed(nel2Str(nel))), (bundle => Ok(views.html.edit_sub_type(bundle)))
+        nel => ExpectationFailed(nel2Str(nel)), bundle => Ok(views.html.edit_sub_type(bundle))
       )
   }
 
@@ -84,8 +84,8 @@ object Submission extends Controller {
           val bundle = TypeBundle(name, action, presentation, fileExt)
           SubmissionDBManager.update(bundle)
       } fold (
-        (nel => ExpectationFailed(nel2Str(nel))),
-        (_   => Redirect(routes.Submission.viewTypeEditForm(name)))
+        nel => ExpectationFailed(nel2Str(nel)),
+        _   => Redirect(routes.Submission.viewTypeEditForm(name))
       )
   }
 
@@ -101,7 +101,7 @@ object Submission extends Controller {
     presentWork(SubmissionDBManager.getUserWork(run, period, user))
   }
 
-  private def presentWork(userWorks: Seq[UserWork]) : Result = {
+  private def presentWork(userWorks: Seq[UserWork]): Result = {
 
     val ActionFuncType       = "do"
     val PresentationFuncType = "present"
@@ -109,8 +109,8 @@ object Submission extends Controller {
     val (actionJsSeq, presentationJsSeq) = userWorks.map(_.typ).distinct.map {
       name =>
         val bundle               = SubmissionDBManager.getTypeBundleByName(name)
-        val actionFuncBody       = bundle map (_.actionJS)       getOrElse (generateDefaultJS(name, ActionFuncType))
-        val presentationFuncBody = bundle map (_.presentationJS) getOrElse (generateDefaultJS(name, PresentationFuncType))
+        val actionFuncBody       = bundle map (_.actionJS)       getOrElse generateDefaultJS(name, ActionFuncType)
+        val presentationFuncBody = bundle map (_.presentationJS) getOrElse generateDefaultJS(name, PresentationFuncType)
         (finalizeJS(actionFuncBody, name, ActionFuncType), finalizeJS(presentationFuncBody, name, PresentationFuncType))
     }.unzip
 
@@ -119,7 +119,7 @@ object Submission extends Controller {
   }
 
   def updateAndViewWork(run: String, period: String, user: String) = Action {
-    (submit(_: Request[AnyContent], UserWorkComment.fromBundle(_), noCleanup)) andThen {
+    (submit(_: Request[AnyContent], UserWorkComment.fromBundle _, noCleanup)) andThen {
       case x: SimpleResult if (x.header.status == OK) => Redirect((period, user) match {
         case ("", "") => routes.Submission.viewWork1(run)
         case (p, "")  => routes.Submission.viewWork2(run, p)
@@ -129,14 +129,14 @@ object Submission extends Controller {
     }
   }
 
-  private def finalizeJS(funcBody: String, name: String, funcType: String) : String =
+  private def finalizeJS(funcBody: String, name: String, funcType: String): String =
    s"""
       |function ${funcType}_custom_$name(data) {
       |  $funcBody
       |}
     """.stripMargin
 
-  private def generateDefaultJS(name: String, funcType: String) : String =
+  private def generateDefaultJS(name: String, funcType: String): String =
     s"""alert("No '$funcType' action defined for content type '$name'");"""
 
   def submitWork = APIAction {
@@ -144,7 +144,7 @@ object Submission extends Controller {
       val fileRegistrationFunc = registerFile[UserWork](_.typ)(_.rawData) {
         (id, newData) => _.copy(id = Option(id), data = newData)
       } _
-      submit(request, UserWork.fromBundle(_), fileRegistrationFunc)
+      submit(request, UserWork.fromBundle, fileRegistrationFunc)
   }
 
   def submitSupplement = APIAction {
@@ -152,14 +152,14 @@ object Submission extends Controller {
       val fileRegistrationFunc = registerFile[UserWorkSupplement](_.typ)(_.rawData) {
         (id, newData) => _.copy(id = Option(id), data = newData)
       } _
-      submit(request, UserWorkSupplement.fromBundle(_), fileRegistrationFunc)
+      submit(request, UserWorkSupplement.fromBundle, fileRegistrationFunc)
   }
 
 
   private def registerFile[T <% Updatable](getTypeNameFunc:     T => String)
                                           (getFileContentsFunc: T => Array[Byte])
                                           (cloneFunc:           (Long, String) => T => T)
-                                          (subjectAndID:        (T, Long)) : ValidationNel[String, Long] = {
+                                          (subjectAndID:        (T, Long)): ValidationNel[String, Long] = {
     val (subject, id) = subjectAndID
     SubmissionDBManager.getOrCreateTypeBundleByName(getTypeNameFunc(subject)) map {
       typeBundle =>
@@ -171,13 +171,13 @@ object Submission extends Controller {
 
   private def submit[T <% Submittable](request: Request[AnyContent],
                                        constructorFunc: (ParamBundle) => ValidationNel[String, T],
-                                       cleanup: ((T, Long)) => ValidationNel[String, Long]) : Result = {
+                                       cleanup: ((T, Long)) => ValidationNel[String, Long]): Result = {
     val paramBundle = PlayUtil.extractBundle(request)
     constructorFunc(paramBundle) flatMap {
       submittable =>
         val submissionStatus = SubmissionDBManager.submit(submittable)
         submissionStatus flatMap (id => cleanup(submittable, id))
-    } fold ((nel => ExpectationFailed(nel2Str(nel))), (x => Ok(x.toString)))
+    } fold (nel => ExpectationFailed(nel2Str(nel)), x => Ok(x.toString))
   }
 
 }

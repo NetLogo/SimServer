@@ -17,11 +17,11 @@ import
 
 object PlayUtil {
 
-  def commonExtractMap(request: Request[AnyContent]) : Map[String, String] =
+  def commonExtractMap(request: Request[AnyContent]): Map[String, String] =
     extractBundle(request).stringParams
 
   // If Play actually made a good-faith effort at parameter extraction, I wouldn't have to go through this rubbish...
-  def extractBundle(request: Request[AnyContent]) : ParamBundle =
+  def extractBundle(request: Request[AnyContent]): ParamBundle =
     request.body.asMultipartFormData map {
       formData =>
         val fileKVs = formData.files map {
@@ -46,13 +46,13 @@ object PlayUtil {
     }
 
   // Try _really_ hard to parse the body into JSON (pretty much the only thing I don't try is XML conversion)
-  def extractJSONOpt(request: Request[AnyContent]) : Option[JsValue] = {
+  def extractJSONOpt(request: Request[AnyContent]): Option[JsValue] = {
     val body = request.body
     body.asJson orElse {
       try {
         body.asText orElse {
           body.asRaw flatMap (_.asBytes() map (new String(_)))
-        } map (Json.parse(_))
+        } map Json.parse
       }
       catch {
         case ex: Exception =>
@@ -60,13 +60,13 @@ object PlayUtil {
           None
       }
     } orElse {
-      (extractBundle _ andThen (_.stringSeqParams) andThen paramMap2JSON _)(request)
+      (extractBundle _ andThen (_.stringSeqParams) andThen paramMap2JSON)(request)
     }
   }
 
-  private def stringSeq2JSONOpt(seq: Seq[String]) : Option[JsValue] = {
+  private def stringSeq2JSONOpt(seq: Seq[String]): Option[JsValue] = {
 
-    def generousParse(str: String) : JsValue = {
+    def generousParse(str: String): JsValue = {
       try Json.parse(str)
       catch {
         case ex: Exception => JsString(str) // Ehh...
@@ -77,7 +77,7 @@ object PlayUtil {
       seq.toList match {
         case Nil      => None
         case h :: Nil => Option(generousParse(h))
-        case arr      => Option(new JsArray(arr map (generousParse(_))))
+        case arr      => Option(new JsArray(arr map generousParse))
       }
     }
     catch {
@@ -88,7 +88,7 @@ object PlayUtil {
 
   }
 
-  private def paramMap2JSON(paramMap: Map[String, Seq[String]]) : Option[JsValue] = {
+  private def paramMap2JSON(paramMap: Map[String, Seq[String]]): Option[JsValue] = {
     val parsedParams    = paramMap map { case (k, v) => (k, stringSeq2JSONOpt(v)) }
     val validatedParams = parsedParams collect { case (k, Some(v)) => (k, v) }
     if (!validatedParams.isEmpty) Option(new JsObject(validatedParams.toSeq)) else None

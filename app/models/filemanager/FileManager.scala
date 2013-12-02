@@ -39,22 +39,22 @@ trait FileManager extends Delayer {
   def MyFolderName: String
 
   protected val CharEncoding = "UTF-8"
-  protected def LifeSpan  : FiniteDuration
+  protected def LifeSpan:   FiniteDuration
   protected def SystemName: String
 
   protected lazy val system     = ActorSystem(SystemName)
   protected lazy val fileFolder = new File(PublicPath + File.separator + MyFolderName)
 
-  def formatFilePath(fileNameBasis: String, fileExt: String) : String = {
+  def formatFilePath(fileNameBasis: String, fileExt: String): String = {
     s"$MyFolderName/$fileNameBasis/$fileExt"
   }
 
-  def registerFile(contents: Array[Byte], fileNameBasis: String, fileExt: String = "") : String = {
+  def registerFile(contents: Array[Byte], fileNameBasis: String, fileExt: String = ""): String = {
     val filename  = if (!fileExt.isEmpty) formatFilePath(fileNameBasis, fileExt) else fileNameBasis
     saveFile(contents, filename)
   }
 
-  protected def saveFile(contents: Array[Byte], filename: String) : String = {
+  protected def saveFile(contents: Array[Byte], filename: String): String = {
 
     val file         = new File(s"${PublicPath}${File.separator}$filename")
     val fileActorOpt = {
@@ -85,13 +85,13 @@ trait FileManager extends Delayer {
 
   }
 
-  def retrieveFile(fileNameBasis: String) : File = {
+  def retrieveFile(fileNameBasis: String): File = {
     implicit val timeout = Timeout(3 seconds)
     Await.result(system.actorSelection(s"/user/${idToActorName(fileNameBasis)}") ? Get, timeout.duration).asInstanceOf[File]
   }
 
   // Could _easily_ be more efficient (at least for small numbers of files), but I want to stick to having actors manage the files
-  def removeAll() : Unit = {
+  def removeAll(): Unit = {
     fileFolder.listFiles foreach { file => system.actorOf(Props(new FileActor(file))) ! Delete }
   }
 
@@ -114,7 +114,7 @@ class FileActor(file: File) extends Actor {
 // This was created to seamlessly hide nitty-gritty detail that a class's body is delayed init (usually for superfluous reasons)
 // Why does this not already exist in the Scala library to begin with? --JAB (8/29/12)
 sealed trait Delayer extends DelayedInit {
-  override def delayedInit(body: => Unit) : Unit = {
+  override def delayedInit(body: => Unit): Unit = {
     body
   }
 }

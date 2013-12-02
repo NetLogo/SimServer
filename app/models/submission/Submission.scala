@@ -12,7 +12,7 @@ sealed trait Submission {
 }
 
 trait Association extends Submission {
-  def refID : Option[Long]
+  def refID: Option[Long]
 }
 
 trait Entry extends Submission

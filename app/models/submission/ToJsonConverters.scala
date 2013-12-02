@@ -14,15 +14,15 @@ import
  */
 
 trait JsonWritable {
-  def toJsonObj : JsObject
+  def toJsonObj: JsObject
   def toJson = toJsonObj.toString
 }
 
 object ToJsonConverters {
 
-  implicit def work2JsonWritable(work: UserWork) : JsonWritable = new JsonWritable {
+  implicit def work2JsonWritable(work: UserWork): JsonWritable = new JsonWritable {
     import work._
-    override def toJsonObj : JsObject = {
+    override def toJsonObj: JsObject = {
       val periodIDTuple    = ("period_id",   JsString(periodID))
       val runIDTuple       = ("run_id",      JsString(runID))
       val userIDTuple      = ("user_id",     JsString(userID))
@@ -38,8 +38,8 @@ object ToJsonConverters {
     }
   }
 
-  implicit def comment2JsonWritable(comment: UserWorkComment) : JsonWritable = new JsonWritable {
-    override def toJsonObj : JsObject = {
+  implicit def comment2JsonWritable(comment: UserWorkComment): JsonWritable = new JsonWritable {
+    override def toJsonObj: JsObject = {
       val timestampTuple = ("timestamp", JsNumber(comment.timestamp))
       val userIDTuple    = ("user_id",   JsString(comment.userID))
       val commentTuple   = ("comment",   JsString(comment.comment))
@@ -48,9 +48,9 @@ object ToJsonConverters {
     }
   }
 
-  implicit def supplement2JsonWritable(supplement: UserWorkSupplement) : JsonWritable = new JsonWritable {
+  implicit def supplement2JsonWritable(supplement: UserWorkSupplement): JsonWritable = new JsonWritable {
     import supplement._
-    override def toJsonObj : JsObject = {
+    override def toJsonObj: JsObject = {
       val typeTuple     = ("type",     JsString(typ))
       val dataTuple     = ("data",     JsString(data))
       val metadataTuple = ("metadata", Json.parse(metadata))

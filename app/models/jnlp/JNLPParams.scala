@@ -20,7 +20,7 @@ import
 
 trait JNLPParams {
 
-  final def stringify : String = {
+  final def stringify: String = {
     def headerAndParamsFormat(header: String, params: String) = s"""$header
                                                                    |
                                                                    |$params""".stripMargin
@@ -38,13 +38,13 @@ trait JNLPParams {
     headerAndParamsFormat(headerStr, paramsStr)
   }
 
-  protected def bonusStringifyParams : Seq[Param[_]] = Seq() // Should pretty much only be used by `BaseJNLPParams`
-  protected def additionalParams     : Seq[Param[_]]
-  protected def paramCategoryLabel   : String
+  protected def bonusStringifyParams: Seq[Param[_]] = Seq() // Should pretty much only be used by `BaseJNLPParams`
+  protected def additionalParams:     Seq[Param[_]]
+  protected def paramCategoryLabel:   String
 
-  private[jnlp] def doesAffiliate(js: JsValue) : Boolean
+  private[jnlp] def doesAffiliate(js: JsValue): Boolean
 
-  def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP]
+  def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext): ValidationNel[String, JNLP]
 
 }
 
@@ -80,13 +80,13 @@ private[jnlp] object JNLPParams {
 
   import JNLPKeys._
 
-  def parseJsArray[T, U](key: String)(js: JsValue)(parseFunc: JsValue => T)(validationFunc: PartialFunction[T, U]) : Option[Seq[U]] =
+  def parseJsArray[T, U](key: String)(js: JsValue)(parseFunc: JsValue => T)(validationFunc: PartialFunction[T, U]): Option[Seq[U]] =
     (js \ key).asOpt[Seq[JsValue]] map { _ map parseFunc collect validationFunc }
 
 
   // -------------------> OTHER JARS SPECIFICS START <------------------- //
 
-  def otherJarsParse(key: String)(js: JsValue) : Option[Seq[(String, Boolean)]] = {
+  def otherJarsParse(key: String)(js: JsValue): Option[Seq[(String, Boolean)]] = {
     val parseFunc = (jar: JsValue) => ((jar \ OtherJarsArrElemNameKey).asOpt[String], (jar \ OtherJarsArrElemIsLazyKey).asOpt[Boolean])
     parseJsArray(key)(js)(parseFunc){ case (Some(jarStr), Some(isLazy)) => (jarStr, isLazy) }
   }
@@ -102,7 +102,7 @@ private[jnlp] object JNLPParams {
 
   // -------------------> PROPERTIES SPECIFICS START <------------------- //
 
-  def propertiesParse(key: String)(js: JsValue) : Option[Seq[(String, String)]] = {
+  def propertiesParse(key: String)(js: JsValue): Option[Seq[(String, String)]] = {
     val parseFunc = (prop: JsValue) => ((prop \ PropertiesArrElemNameKey).asOpt[String], (prop \ PropertiesArrElemValueKey).asOpt[String])
     parseJsArray(key)(js)(parseFunc){ case (Some(name), Some(value)) => (name, value) }
   }
@@ -118,7 +118,7 @@ private[jnlp] object JNLPParams {
 
   // -------------------> ARGUMENTS SPECIFICS START <------------------- //
 
-  def argumentsParse(key: String)(js: JsValue) : Option[Seq[String]] = (js \ key).asOpt[Seq[String]]
+  def argumentsParse(key: String)(js: JsValue): Option[Seq[String]] = (js \ key).asOpt[Seq[String]]
 
   val ArgumentsParseDescriptor = s"""<root> ->
                                     |  <array_name = $ArgumentsArrKey> -> <string>*""".stripMargin
@@ -138,9 +138,9 @@ private[jnlp] object JNLPParams {
   val PackEnabledParam      = Param[Boolean](PackEnabledKey)
   val DepsPathParam         = Param[String](DepsPathKey)
   val VMArgsParam           = Param[String](VMArgsKey)
-  val OtherJarsParam        = Param[Seq[(String, Boolean)]](OtherJarsKey,  otherJarsParse  _, OtherJarsParseDescriptor)
+  val OtherJarsParam        = Param[Seq[(String, Boolean)]](OtherJarsKey,  otherJarsParse _,  OtherJarsParseDescriptor)
   val PropertiesParam       = Param[Seq[(String, String)]] (PropertiesKey, propertiesParse _, PropertiesParseDescriptor)
-  val ArgumentsParam        = Param[Seq[String]]           (ArgumentsKey,  argumentsParse  _, ArgumentsParseDescriptor)
+  val ArgumentsParam        = Param[Seq[String]]           (ArgumentsKey,  argumentsParse _,  ArgumentsParseDescriptor)
 
   // --------------> Adding a param above?  THEN ADD IT TO THIS LIST! <-------------- //
   val BaseParams = Seq(CodebaseURLParam, MainJarParam, MainClassParam, ApplicationNameParam, DescParam,
@@ -159,7 +159,7 @@ object BaseJNLPParams extends JNLPParams {
 
   override private[jnlp] def doesAffiliate(js: JsValue) = false
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext): ValidationNel[String, JNLP] =
     JNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -202,7 +202,7 @@ object NetLogoParams extends JNLPParams {
 
   override private[jnlp] def doesAffiliate(js: JsValue) = IsNetLogoParam(js) is true
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext): ValidationNel[String, JNLP] =
     NetLogoJNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -255,7 +255,7 @@ object HubNetParams extends JNLPParams {
                                              RoleParam, ServerIPParam, ServerPortParam, UserIDParam)
   override lazy val paramCategoryLabel = "HubNet"
 
-  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext) : ValidationNel[String, JNLP] =
+  override def bindFromJson(js: JsValue, jnlpLoc: String)(implicit context: GenerationContext): ValidationNel[String, JNLP] =
     HubNetJNLP(
       CodebaseURLParam(js),
       ParamBox("** JNLP Location **", noneIfEmpty(jnlpLoc)), // If this fails validation... something is seriously messed up!
@@ -290,6 +290,6 @@ object HubNetParams extends JNLPParams {
 object JNLPParamSetManager {
   private val paramTypes = Seq(BaseJNLPParams, NetLogoParams, HubNetParams)
   private val default    = BaseJNLPParams
-  def determineSet(js: JsValue) : JNLPParams = paramTypes find (_.doesAffiliate(js)) getOrElse default
-  def stringifySets                          = paramTypes map (_.stringify) mkString(Stream.fill(4)("\n").mkString)
+  def determineSet(js: JsValue): JNLPParams = paramTypes find (_.doesAffiliate(js)) getOrElse default
+  def stringifySets                          = paramTypes map (_.stringify) mkString Stream.fill(4)("\n").mkString
 }

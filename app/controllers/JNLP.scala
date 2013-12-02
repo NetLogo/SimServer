@@ -30,7 +30,7 @@ object JNLP extends Controller {
 
   private[controllers] def handleJNLPGeneration(request: Request[AnyContent], extraProps: Map[String, String] = Map()) = {
     PlayUtil.extractJSONOpt(request) map (JNLPFromJSONGenerator(_, request.host, extraProps)) map {
-      _ fold((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Ok(s"http://${request.host}/$url")))
+      _ fold(nel => ExpectationFailed(nel.list.mkString("\n")), url => Ok(s"http://${request.host}/$url"))
     } getOrElse BadRequest("Invalid POST body; expected a JSON object")
   }
 

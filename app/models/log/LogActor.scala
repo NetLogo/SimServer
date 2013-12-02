@@ -38,7 +38,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
       sender ! Confused(msg.toString)
   }
 
-  private def handleMessage(message: String, sender: ActorRef) : Unit = {
+  private def handleMessage(message: String, sender: ActorRef): Unit = {
     import LogActor.{ MessageSplitter => Message }
     message match {
       case Message("pulse", _) =>
@@ -61,7 +61,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
     }
   }
 
-  private def replyCloseConnection(sender: ActorRef) : Unit = {
+  private def replyCloseConnection(sender: ActorRef): Unit = {
     closeFunc(id)
     sender ! CloseConnection
   }
@@ -79,7 +79,7 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
     file
   }
 
-  private def appendToFile(data: String, file: File) : Unit = {
+  private def appendToFile(data: String, file: File): Unit = {
     Exception.ignoring(classOf[IOException]) {
       val writer = new FileWriter(file, true)
       val out = new BufferedWriter(writer)
@@ -90,14 +90,14 @@ class LogActor(id: Long, closeFunc: Long => Unit) extends Actor {
   }
 
   // May not function properly with empty/improperly-formed files
-  private def markLogTimedOut() : Unit = {
+  private def markLogTimedOut(): Unit = {
     val terminator = "" // if (!logProperlyTerminated(logFile)) LogActor.LogTerminator else ""
     val timeOutData = terminator + "\n<!-- Log terminated due to connection with WebStart client timing out -->"
     appendToFile(timeOutData + "\n", logFile)
   }
 
   // Right now, we do nothing to finalize logs
-  private def finalizeLog() : Unit = {
+  private def finalizeLog(): Unit = {
     val finalData = ""
     appendToFile(finalData + "\n", logFile)
   }

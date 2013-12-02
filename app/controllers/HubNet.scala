@@ -76,7 +76,7 @@ object HubNet extends Controller {
     )
   }
 
-  private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]) : Result = {
+  private def handleHubNet(params: Map[String, String], isTeacher: Boolean)(implicit request: Request[AnyContent]): Result = {
 
     import HubNetJNLP.{ generateAppName, generateDesc, generateIPArgs, generatePortArgs, generateShortDesc, generateUserIDArgs }
 
@@ -101,7 +101,7 @@ object HubNet extends Controller {
         val desc             = generateDesc(programName, roleStr.toLowerCase)
         val shortDesc        = generateShortDesc(programName)
         val isOfflineAllowed = false
-        val modelURLOpt      = modelNameOpt map (Models.getHubNetModelURL(_))
+        val modelURLOpt      = modelNameOpt map Models.getHubNetModelURL
         val properties       = Seq()
         val otherJars        = Seq()
 
@@ -117,13 +117,13 @@ object HubNet extends Controller {
         val jsonMaybe = paramsToJson(appName, desc, shortDesc, isOfflineAllowed, isTeacher, isLogging, modelURLOpt, args, properties, otherJars)
         jsonMaybe flatMap (JNLPFromJSONGenerator(_, request.host))
 
-    } fold ((nel => ExpectationFailed(nel.list.mkString("\n"))), (url => Redirect("/" + url)))
+    } fold (nel => ExpectationFailed(nel.list.mkString("\n")), url => Redirect("/" + url))
 
   }
 
   private def paramsToJson(appName: String, desc: String, shortDesc: String, isOfflineAllowed: Boolean,  isTeacher: Boolean,
                            isLogging: Boolean, modelURLOpt: Option[String], args: Seq[String], properties: Seq[(String, String)],
-                           otherJars: Seq[Jar]) : ValidationNel[String, JsValue] = {
+                           otherJars: Seq[Jar]): ValidationNel[String, JsValue] = {
 
     import Json.{ toJson => js }
 

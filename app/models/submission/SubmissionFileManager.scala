@@ -19,10 +19,10 @@ object SubmissionFileManager extends FileManager {
   override protected def LifeSpan     = 3650 days
   override protected def SystemName   = "SubmissionFiles"
 
-  def formatFilePath(fileNameBasis: String, bundle: TypeBundle) : String =
+  def formatFilePath(fileNameBasis: String, bundle: TypeBundle): String =
     s"$MyFolderName/${bundle.name}/$fileNameBasis.${bundle.fileExtension}"
 
-  def registerFile(contents: Array[Byte], fileNameBasis: String, bundle: TypeBundle) : String = {
+  def registerFile(contents: Array[Byte], fileNameBasis: String, bundle: TypeBundle): String = {
     val filename = formatFilePath(fileNameBasis, bundle)
     saveFile(contents, filename) dropWhile (_ != '/') drop 1 // Toss out the "assets/"
   }

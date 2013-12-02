@@ -44,9 +44,9 @@ object LoggingHandler {
   }
 
   // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably shouldn't exist.
-//  def retrieveLogText(key: Long) : String = {
+//  def retrieveLogText(key: Long): String = {
 //    val logDir = new File(LogActor.ExpectedLogDir)
-//    val arr = logDir.listFiles(new FilenameFilter() : Unit = {
+//    val arr = logDir.listFiles(new FilenameFilter(): Unit = {
 //      def accept(file: File, name: String): Boolean = {
 //        name.toLowerCase.endsWith(s"sid$key${LogActor.LogFileExtension}")
 //      }
@@ -58,31 +58,32 @@ object LoggingHandler {
   private[models] def closeLog(id: Long): Unit =
     system.actorSelection(s"/user/$id") ! PoisonPill
 
-  private def ensureLogDirExists() : Unit = {
+  private def ensureLogDirExists(): Unit = {
     val logDir = new File(LogActor.ExpectedLogDir)
     if (!logDir.exists()) logDir.mkdir()
   }
 
-  private def prepareData(data: String, encoding: String = DefaultEncoding) : String = {
-    (unGzip(data.getBytes(encoding))
-      flatMap (validateData(_))).
-      orElse (decompressData(data, encoding)
-      orElse Option(data) flatMap (validateData(_))).
-      getOrElse ("ERROR   DATA MUST BE TEXT OR GZIP COMPRESSED" replaceAll(" ", "_"))
-  }
+  private def prepareData(data: String, encoding: String = DefaultEncoding): String =
+    (
+      unGzip(data.getBytes(encoding)) flatMap validateData
+    ) orElse (
+      decompressData(data, encoding) orElse Option(data) flatMap validateData
+    ) getOrElse (
+      "ERROR   DATA MUST BE TEXT OR GZIP COMPRESSED" replaceAll(" ", "_")
+    )
 
   /* Some(data)  if valid
    * None        if invalid
    */
-  private def validateData(data: String) : Option[String] = {
+  private def validateData(data: String): Option[String] = {
     if (isValid(data)) Option(data) else None
   }
 
-  private def decompressData(data: String, encoding: String = DefaultEncoding) : Option[String] = {
+  private def decompressData(data: String, encoding: String = DefaultEncoding): Option[String] = {
     unGzip(URLDecoder.decode(data, encoding).getBytes(encoding))
   }
 
-  private def unGzip(data: Array[Byte]) : Option[String] =
+  private def unGzip(data: Array[Byte]): Option[String] =
     try {
 
       val in = new GZIPInputStream(new ByteArrayInputStream(data))
@@ -102,6 +103,6 @@ object LoggingHandler {
     }
 
   // I used to sass this validation, but, honestly... it's not the worst
-  private def isValid(data: String) : Boolean = data.toLowerCase.matches("""(?s)^[a-z]{3}.*""")
+  private def isValid(data: String): Boolean = data.toLowerCase.matches("""(?s)^[a-z]{3}.*""")
 
 }

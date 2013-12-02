@@ -36,7 +36,7 @@ object HubNetJNLP {
            (roleStrBox: ParamBox[String], isServerBox: ParamBox[Boolean], modelURLBox: ParamBox[String],
             usesExtensionsBox: ParamBox[Boolean], isLoggingBox: ParamBox[Boolean], serverIPBox: ParamBox[String], serverPortBox: ParamBox[Int],
             userIDBox: ParamBox[String])
-           (implicit context: GenerationContext) : ValidationNel[String, JNLP] = {
+           (implicit context: GenerationContext): ValidationNel[String, JNLP] = {
 
     // Through proper use of applicatives, I would be able to abstract this over arity.
     // But I won't, because that'd be a lot of work. --JAB (11/20/12)
@@ -44,7 +44,7 @@ object HubNetJNLP {
       for {
         a <- box1
         b <- box2
-      } yield (f(a)(b))
+      } yield f(a)(b)
     }
 
     import context._

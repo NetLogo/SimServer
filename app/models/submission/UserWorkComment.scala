@@ -26,10 +26,10 @@ object UserWorkComment extends FromMapParser with FromBundleParser {
   override protected type ConsTuple   = (Option[Long], Option[Long], Long, String, String)
   override protected type ParsedTuple = (String, String, String)
 
-  override def fromBundle(bundle: ParamBundle) : Output =
+  override def fromBundle(bundle: ParamBundle): Output =
     fromMap(bundle.stringParams)
 
-  override def parseFromMap(implicit params: MapInput) : Parsed = {
+  override def parseFromMap(implicit params: MapInput): Parsed = {
 
     // Required
     val RefIDKey   = "ref_id"
@@ -42,7 +42,7 @@ object UserWorkComment extends FromMapParser with FromBundleParser {
 
   }
 
-  protected def validate(refID: String, userID: String, comment: String) : ValidationNel[FailType, ConsTuple] = {
+  protected def validate(refID: String, userID: String, comment: String): ValidationNel[FailType, ConsTuple] = {
 
     val refIDMaybe     = Validator.validateRefID(refID)
     val userIDMaybe    = Validator.validateUserID(userID)
@@ -55,7 +55,7 @@ object UserWorkComment extends FromMapParser with FromBundleParser {
 
   }
 
-  override protected def constructFrom(parsed: Parsed) : Output =
+  override protected def constructFrom(parsed: Parsed): Output =
     parsed flatMap (validate _).tupled map (UserWorkComment.apply _).tupled
 
 }

@@ -24,15 +24,15 @@ private[submission] trait Parser {
   protected type Parsed      =  ValidationNel[FailType, ParsedTuple]
   protected type Output      =  ValidationNel[FailType, Target]
 
-  protected def constructFrom(parsed: Parsed) : Output
+  protected def constructFrom(parsed: Parsed): Output
 
 }
 
 private[submission] trait FromBundleParser extends Parser {
   protected type ByteMapInput = Map[String, Array[Byte]]
   def byteFetch(key: String)(implicit params: ByteMapInput) = // Converts keys to `Validation`s
-    params.get(key) map (_.successNel[String]) getOrElse (s"No item with key '$key' passed in".failNel)
-  def fromBundle(bundle: ParamBundle) : Output
+    params.get(key) map (_.successNel[String]) getOrElse s"No item with key '$key' passed in".failNel
+  def fromBundle(bundle: ParamBundle): Output
 }
 
 private[submission] trait DataFromBundleParser extends FromBundleParser {
@@ -41,9 +41,9 @@ private[submission] trait DataFromBundleParser extends FromBundleParser {
 
   protected val DataKey = "data"
 
-  protected def fromBundleHelper(bundle: ParamBundle) : Output
+  protected def fromBundleHelper(bundle: ParamBundle): Output
 
-  override def fromBundle(bundle: ParamBundle) : Output = {
+  override def fromBundle(bundle: ParamBundle): Output = {
     if (bundle.stringParams.contains(DataKey))
       fromMap(bundle.stringParams)
     else
@@ -56,14 +56,14 @@ private[submission] trait FromMapParser extends Parser {
 
   protected type MapInput = Map[String, String]
 
-  protected def parseFromMap(implicit params: MapInput) : Parsed
+  protected def parseFromMap(implicit params: MapInput): Parsed
 
-  def fromMap(implicit params: MapInput) : Output   = constructFrom(parseFromMap(params))
+  def fromMap(implicit params: MapInput): Output   = constructFrom(parseFromMap(params))
   def fetch(key: String)(implicit params: MapInput) = // Converts keys to `Validation`s
-    params.get(key) map (_.successNel[String]) getOrElse (s"No item with key '$key' passed in".failNel)
+    params.get(key) map (_.successNel[String]) getOrElse s"No item with key '$key' passed in".failNel
 
   // But not _too_ hard! --JAB (10/8/13)
-  protected def tryHarderToGetNested(innerMapName: String)(implicit params: MapInput) : String = {
+  protected def tryHarderToGetNested(innerMapName: String)(implicit params: MapInput): String = {
     val KeyRegex = s"""$innerMapName\\[(.*)\\]""".r
     val q        = "\""
     params collect { case (key @ KeyRegex(innerKey), value) => s"$q$innerKey$q: $q$value$q" } mkString ("{ ", ", ", " }")
@@ -72,5 +72,5 @@ private[submission] trait FromMapParser extends Parser {
 }
 
 private[submission] trait FromStringParser extends Parser {
-  def fromString(str: String) : Output
+  def fromString(str: String): Output
 }
