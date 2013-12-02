@@ -101,8 +101,8 @@ object SubmissionDBManager {
           |WHERE $RunIDKey = {run} AND $PeriodIDKey = {period};
         """.stripMargin
       ) on (
-        "run"       -> run,
-        "period"    -> period
+        "run"    -> run,
+        "period" -> period
       ))
     }
   }
@@ -116,9 +116,9 @@ object SubmissionDBManager {
           |WHERE $RunIDKey = {run} AND $PeriodIDKey = {period} AND $UserIDKey = {user};
         """.stripMargin
       ) on (
-        "run"       -> run,
-        "period"    -> period,
-        "user"      -> user
+        "run"    -> run,
+        "period" -> period,
+        "user"   -> user
       ))
     }
   }
