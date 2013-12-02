@@ -46,7 +46,7 @@ object LoggingHandler {
     } getOrElse ("File already closed")
   }
 
-  // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably should exist.
+  // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably shouldn't exist.
 //  def retrieveLogText(key: Long) : String = {
 //    val logDir = new File(LogActor.ExpectedLogDir)
 //    val arr = logDir.listFiles(new FilenameFilter() : Unit = {
