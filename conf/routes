@@ -38,6 +38,10 @@ GET            /runs                             controllers.Submission.listRuns
 GET            /periods-in/:run                  controllers.Submission.listPeriodsIn(run)
 GET            /students-in/:run/:period         controllers.Submission.listStudentsIn(run, period)
 
+GET            /download-work/:run/:period/:id/$filename<.+>.zip   controllers.Submission.downloadWork3(filename, run, period, id)
+GET            /download-work/:run/:period/$filename<.+>.zip       controllers.Submission.downloadWork2(filename, run, period)
+GET            /download-work/:run/$filename<.+>.zip               controllers.Submission.downloadWork1(filename, run)
+
 GET            /work/:run/:period/:id            controllers.Submission.viewWork3(run, period, id)
 GET            /work/:run/:period                controllers.Submission.viewWork2(run, period)
 GET            /work/:run                        controllers.Submission.viewWork1(run)

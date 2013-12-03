@@ -35,6 +35,27 @@ object Submission extends Controller {
 
   private def nel2Str(nel: NonEmptyList[String]) = nel.list.mkString("\n")
 
+  // `filename` is ignored; it's only passed because the router requires us the pass any variables we create,
+  // and we only create the variable because we want the user to be able to specify a coherent name for their
+  // '.zip' file that's being generated. --JAB (12/2/13)
+  def downloadWork3(filename: String, runID: String, periodID: String, studentID: String) = APIAction {
+    val work   = SubmissionDBManager.getUserWork(runID, periodID, studentID)
+    val zipped = WorkZipper(work: _*)
+    Ok(zipped)
+  }
+
+  def downloadWork2(filename: String, runID: String, periodID: String) = APIAction {
+    val work   = SubmissionDBManager.getUserWork(runID, periodID)
+    val zipped = WorkZipper(work: _*)
+    Ok(zipped)
+  }
+
+  def downloadWork1(filename: String, runID: String) = APIAction {
+    val work   = SubmissionDBManager.getUserWork(runID)
+    val zipped = WorkZipper(work: _*)
+    Ok(zipped)
+  }
+
   // These three seem to be a bit of a misfit, but... it actually kind of makes sense to do them here, when you think about it
   def listRuns = APIAction {
     Ok(SubmissionDBManager.getRuns.mkString("\n"))
