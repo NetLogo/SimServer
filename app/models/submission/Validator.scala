@@ -45,9 +45,9 @@ private[submission] object Validator {
   def ensureNonNegative[T <% AnyVal { def <=(x: Int): Boolean }](data: T, dataName: String): V[T] =
     ensure(data, dataName)("value is too small")(_ <= 0)
 
-  protected def failUnderCond[T](param: T, cond: (T) => Boolean, errorStr: => String): V[T] = param match {
-    case x if cond(x) => deny(errorStr)
-    case x            => accept(x)
+  protected def failUnderCond[T](param: T, failureCond: (T) => Boolean, errorStr: => String): V[T] = param match {
+    case x if failureCond(x) => deny(errorStr)
+    case x                   => accept(x)
   }
 
 }
