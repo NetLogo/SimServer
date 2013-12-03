@@ -57,8 +57,8 @@ private[submission] trait FromMapParser extends Parser {
   protected type MapInput = Map[String, String]
 
   protected def parseFromMap(implicit params: MapInput): Parsed
+  def fromMap(implicit params: MapInput): Output    = constructFrom(parseFromMap(params))
 
-  def fromMap(implicit params: MapInput): Output   = constructFrom(parseFromMap(params))
   def fetch(key: String)(implicit params: MapInput) = // Converts keys to `Validation`s
     params.get(key) map (_.successNel[String]) getOrElse s"No item with key '$key' passed in".failNel
 
