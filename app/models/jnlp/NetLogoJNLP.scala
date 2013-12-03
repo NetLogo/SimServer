@@ -35,6 +35,12 @@ object NetLogoJNLP {
 
     import context._
 
+    // See the comment on the definition of `isServerPlus` in `HubNetJNLP` --JAB (12/3/13)
+    val newLoggingBox = isLoggingBox flatMap {
+      case x if x => isLoggingBox
+      case _      => isLoggingBox.nonefy
+    }
+
     val extensionsJar    = usesExtensionsBox map (if (_) Option(ExtensionsJar) else None) getOrElse Option(ExtensionsJar)
 
     val codebaseURI      = codebaseURIBox      orElseApply thisServerCodebaseURL
@@ -50,9 +56,9 @@ object NetLogoJNLP {
     val depsPath         = depsPathBox         orElseApply DepsPath
     val vmArgs           = vmArgsBox           orElseApply VMArgs
     val otherJars        = otherJarsBox        orElseApply Seq() map (_ ++ ((extensionsJar ++ NeededJars ++ OtherJars) map (jar => (jar.jarName, jar.isLazy))))
-    val properties       = propertiesBox       orElseApply Properties map (_ ++ (isLoggingBox map (_ => Seq(("connectpath", loggingURL))) getOrElse Seq()))
+    val properties       = propertiesBox       orElseApply Properties map (_ ++ (newLoggingBox map (_ => Seq(("connectpath", loggingURL))) getOrElse Seq()))
     val arguments        = argumentsBox        orElseApply Arguments map (_ ++
-                                                                           (isLoggingBox map (_ => Seq("--logging")) getOrElse Seq()) ++
+                                                                           (newLoggingBox map (_ => Seq("--logging")) getOrElse Seq()) ++
                                                                            (modelURLBox map generateModelURLArgs getOrElse Seq()))
 
     JNLP(
