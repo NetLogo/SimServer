@@ -3,52 +3,52 @@
 # ~~~~
 
 # Home page
-OPTIONS /*nonsense                  controllers.Application.options(nonsense)
-GET     /                           controllers.Application.index
-GET     /http                       controllers.Application.displayHttpRequest
-POST    /http                       controllers.Application.displayHttpRequest
+OPTIONS        /*nonsense                        controllers.Application.options(nonsense)
+GET            /                                 controllers.Application.index
+GET            /http                             controllers.Application.displayHttpRequest
+POST           /http                             controllers.Application.displayHttpRequest
 
-GET     /logging                    controllers.Logging.startLogging
-POST    /logging/:id                controllers.Logging.logData(id)
+GET            /logging                          controllers.Logging.startLogging
+POST           /logging/:id                      controllers.Logging.logData(id)
 
-POST    /hubregister                controllers.HubNet.registerTeacherAddress
+POST           /hubregister                      controllers.HubNet.registerTeacherAddress
 
-GET     /hubtest                    controllers.HubNet.hubTest
-GET     /bindstudent                controllers.HubNet.bindStudent
+GET            /hubtest                          controllers.HubNet.hubTest
+GET            /bindstudent                      controllers.HubNet.bindStudent
 
-GET     /hubteach                   controllers.HubNet.hubTeach
-GET     /bindteacher                controllers.HubNet.bindTeacher
+GET            /hubteach                         controllers.HubNet.hubTeach
+GET            /bindteacher                      controllers.HubNet.bindTeacher
 
-GET     /models/hubnet/list         controllers.Models.modelNames(responseType = "plain")
-GET     /models/hubnet/list/:rType  controllers.Models.modelNames(rType: String)
+GET            /models/hubnet/list               controllers.Models.modelNames(responseType = "plain")
+GET            /models/hubnet/list/:rType        controllers.Models.modelNames(rType: String)
 
-GET     /jnlp/params                controllers.JNLP.getParamFormats
-GET     /jnlp/gen                   controllers.JNLP.generateJNLP
-POST    /jnlp/gen                   controllers.JNLP.generateJNLP
+GET            /jnlp/params                      controllers.JNLP.getParamFormats
+GET            /jnlp/gen                         controllers.JNLP.generateJNLP
+POST           /jnlp/gen                         controllers.JNLP.generateJNLP
 
-GET     /jnlp/gen/hubnet/:tName     controllers.SecureJNLP.generateHubNetServerJNLP(tName)
-POST    /jnlp/gen/hubnet/:tName     controllers.SecureJNLP.generateHubNetServerJNLP(tName)
+GET            /jnlp/gen/hubnet/:tName           controllers.SecureJNLP.generateHubNetServerJNLP(tName)
+POST           /jnlp/gen/hubnet/:tName           controllers.SecureJNLP.generateHubNetServerJNLP(tName)
 
-GET     /work-type/create           controllers.Submission.viewTypeCreationForm
-POST    /work-type/create           controllers.Submission.createType
-GET     /work-type/edit/:name       controllers.Submission.viewTypeEditForm(name)
-POST    /work-type/edit/:name       controllers.Submission.editType(name)
+GET            /work-type/create                 controllers.Submission.viewTypeCreationForm
+POST           /work-type/create                 controllers.Submission.createType
+GET            /work-type/edit/:name             controllers.Submission.viewTypeEditForm(name)
+POST           /work-type/edit/:name             controllers.Submission.editType(name)
 
-GET     /runs                       controllers.Submission.listRuns
-GET     /periods-in/:run            controllers.Submission.listPeriodsIn(run)
-GET     /students-in/:run/:period   controllers.Submission.listStudentsIn(run, period)
+GET            /runs                             controllers.Submission.listRuns
+GET            /periods-in/:run                  controllers.Submission.listPeriodsIn(run)
+GET            /students-in/:run/:period         controllers.Submission.listStudentsIn(run, period)
 
-GET     /work/:run/:period/:id      controllers.Submission.viewWork3(run, period, id)
-GET     /work/:run/:period          controllers.Submission.viewWork2(run, period)
-GET     /work/:run                  controllers.Submission.viewWork1(run)
-POST    /work/:run/:period/:id      controllers.Submission.updateAndViewWork(run, period,       id)
-POST    /work/:run/:period          controllers.Submission.updateAndViewWork(run, period,       id ?= "")
-POST    /work/:run                  controllers.Submission.updateAndViewWork(run, period ?= "", id ?= "")
-POST    /submit-work                controllers.Submission.submitWork
-POST    /submit-supplement          controllers.Submission.submitSupplement
+GET            /work/:run/:period/:id            controllers.Submission.viewWork3(run, period, id)
+GET            /work/:run/:period                controllers.Submission.viewWork2(run, period)
+GET            /work/:run                        controllers.Submission.viewWork1(run)
+POST           /work/:run/:period/:id            controllers.Submission.updateAndViewWork(run, period,       id)
+POST           /work/:run/:period                controllers.Submission.updateAndViewWork(run, period,       id ?= "")
+POST           /work/:run                        controllers.Submission.updateAndViewWork(run, period ?= "", id ?= "")
+POST           /submit-work                      controllers.Submission.submitWork
+POST           /submit-supplement                controllers.Submission.submitSupplement
 
 # Redirect trailing slashes
-GET     /*path/                     controllers.Application.redirect(path)
+GET            /*path/                           controllers.Application.redirect(path)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET            /assets/*file                     controllers.Assets.at(path="/public", file)
