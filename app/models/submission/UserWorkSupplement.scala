@@ -59,7 +59,7 @@ object UserWorkSupplement extends FromMapParser with DataFromBundleParser {
   protected def validate(refID: String, typ: String, rawData: Array[Byte], metadata: String): ValidationNel[FailType, ConsTuple] = {
 
     val refIDMaybe = Validator.validateRefID(refID)
-    val typeMaybe  = Validator.accept(typ)
+    val typeMaybe  = Validator.validateType(typ)
     val rawMaybe   = Validator.accept(rawData)
     val metaMaybe  = Validator.accept(metadata)
 

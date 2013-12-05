@@ -77,7 +77,7 @@ object Submission extends Controller {
     implicit request =>
       val params    = PlayUtil.commonExtractMap(request)
       val nameMaybe = params extract "name"
-      nameMaybe flatMap {
+      nameMaybe flatMap Validator.validateType flatMap {
         name =>
           val bundle = TypeBundle(name, "", "", "")
           SubmissionDBManager.submit(bundle) map { _ => bundle }

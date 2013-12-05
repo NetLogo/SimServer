@@ -80,7 +80,7 @@ object UserWork extends FromMapParser with DataFromBundleParser {
     val runIDMaybe       = Validator.validateRunID(runID)
     val periodIDMaybe    = Validator.validatePeriodID(periodID)
     val userIDMaybe      = Validator.validateUserID(userID)
-    val typeMaybe        = Validator.accept(typ)
+    val typeMaybe        = Validator.validateType(typ)
     val rawMaybe         = Validator.accept(rawData)
     val metadataMaybe    = Validator.accept(metadata)
     val descriptionMaybe = Validator.accept(description)

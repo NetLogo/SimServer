@@ -11,7 +11,7 @@ import
  * Time: 12:17 PM
  */
 
-private[submission] object Validator {
+object Validator {
 
   protected type Fail = String
   protected type V[T] = ValidationNel[Fail, T]
@@ -31,6 +31,7 @@ private[submission] object Validator {
   def validateUserID    (userID: String) = ensureNotEmpty(userID,   "user ID")
   def validatePeriodID(periodID: String) = ensureNotEmpty(periodID, "period ID")
   def validateRunID      (runID: String) = ensureNotEmpty(runID,    "run ID")
+  def validateType      (`type`: String) =    ensureWordy(`type`,   "type")
 
   protected val ErrorMessageTemplate = "Invalid value given for %s; %s".format(_: String, _: String)
 
@@ -44,6 +45,9 @@ private[submission] object Validator {
 
   def ensureNonNegative[T <% AnyVal { def <=(x: Int): Boolean }](data: T, dataName: String): V[T] =
     ensure(data, dataName)("value is too small")(_ <= 0)
+
+  def ensureWordy(data: String, dataName: String): V[String] =
+    ensure(data, dataName)("may only contain word characters (alphanumerics and underscores))")(x => !(x matches "\\w+"))
 
   protected def failUnderCond[T](param: T, failureCond: (T) => Boolean, errorStr: => String): V[T] = param match {
     case x if failureCond(x) => deny(errorStr)
