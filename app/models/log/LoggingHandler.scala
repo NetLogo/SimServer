@@ -1,17 +1,21 @@
 package models.log
 
 import
-  scala.{ collection, concurrent, util => util_scala },
-    collection.mutable.ArrayBuffer,
-    concurrent.{ Await, duration },
-      duration._,
-    util_scala.{ Random, Try }
-
-import
   java.{ io, net, util => util_java },
     io.{ ByteArrayInputStream, File },
     net.URLDecoder,
     util_java.zip.GZIPInputStream
+
+import
+  scala.{ collection, concurrent, util => util_scala },
+    collection.mutable.ArrayBuffer,
+    concurrent.{ Await, duration },
+      duration._,
+    util_scala.Random
+
+import
+  scalaz.{ Scalaz, ValidationNel },
+    Scalaz.ToValidationV
 
 import
   akka.{ actor, pattern, util => util_akka },
@@ -37,10 +41,19 @@ object LoggingHandler {
     id
   }
 
-  def log(key: Long, data: String): String = {
-    implicit val timeout = Timeout(5 seconds)
-    val actor = system.actorSelection(s"/user/$key")
-    Try(Await.result(actor ? prepareData(data), timeout.duration).toString + '\n') getOrElse "File already closed"
+  def log(key: Long, data: String): ValidationNel[String, String] = {
+
+    implicit val timeout = Timeout(1500 millis)
+
+    try {
+      val actor  = system.actorSelection(s"/user/$key")
+      val result = Await.result(actor ? prepareData(data), timeout.duration).toString + '\n'
+      result.successNel
+    }
+    catch {
+      case ex: Exception => "FILE_ALREADY_CLOSED".failNel
+    }
+
   }
 
   // If there's ever a desire for teachers to access logs, this could be useful.  Until then... it probably shouldn't exist.
