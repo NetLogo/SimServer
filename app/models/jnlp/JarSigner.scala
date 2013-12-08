@@ -24,6 +24,9 @@ object JarSigner {
 
     signAndPack(jarFile)
 
+    manifestFile.delete()
+    tempJarDir.deleteRecursively()
+
   }
 
   private def extractJar(jarPath: String)(implicit temp: File): Unit =
@@ -91,5 +94,17 @@ object JarSigner {
 
   private def shell(cmd: String)(implicit context: File = new File(System.getProperty("user.home"))): String =
     Process(cmd, context).!!
+
+  private implicit class SuperFile(file: File) {
+    def deleteRecursively(): Unit = {
+      def helper(f: File): Unit =
+        Option(f) foreach {
+          inner =>
+            Option(inner.listFiles) getOrElse Array() foreach helper
+            inner.delete()
+        }
+      helper(file)
+    }
+  }
 
 }
