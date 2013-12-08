@@ -28,10 +28,10 @@ object Validator {
         }
     }
 
-  def validateUserID    (userID: String) = ensureNotEmpty(userID,   "user ID")
-  def validatePeriodID(periodID: String) = ensureNotEmpty(periodID, "period ID")
-  def validateRunID      (runID: String) = ensureNotEmpty(runID,    "run ID")
-  def validateType      (`type`: String) =    ensureWordy(`type`,   "type")
+  def validateUserID(userID: String)     = ensureWordyHyphen(userID,   "user ID")
+  def validatePeriodID(periodID: String) = ensureWordyHyphen(periodID, "period ID")
+  def validateRunID(runID: String)       = ensureWordyHyphen(runID,    "run ID")
+  def validateType(`type`: String)       = ensureWordy      (`type`,   "type")
 
   protected val ErrorMessageTemplate = "Invalid value given for %s; %s".format(_: String, _: String)
 
@@ -45,6 +45,9 @@ object Validator {
 
   def ensureNonNegative[T <% AnyVal { def <=(x: Int): Boolean }](data: T, dataName: String): V[T] =
     ensure(data, dataName)("value is too small")(_ <= 0)
+
+  def ensureWordyHyphen(data: String, dataName: String): V[String] =
+    ensure(data, dataName)("may only contain word characters (alphanumerics and underscores) and hyphens)")(x => !(x matches "[\\w-]+"))
 
   def ensureWordy(data: String, dataName: String): V[String] =
     ensure(data, dataName)("may only contain word characters (alphanumerics and underscores))")(x => !(x matches "\\w+"))
