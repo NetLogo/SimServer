@@ -1,7 +1,18 @@
 package controllers
 
 import
-  play.api.mvc.{ Action, Controller }
+  java.{ io, nio },
+    io.{ File, FilenameFilter, PrintWriter },
+    nio.file.{ attribute, Files },
+      attribute.BasicFileAttributes
+
+import
+  scala.concurrent.duration._
+
+import
+  play.{ api, libs },
+    api.mvc.{ Action, Controller },
+    libs.Akka
 
 import
   controllers.action.APIAction
@@ -17,6 +28,40 @@ object Application extends Controller {
    saying that we'll accept pretty much any request--cross-domain, or not
    */
   def options(nonsense: String) = APIAction { Ok }
+
+  def init(): Unit = {
+
+    def findCreationTime(file: File): Long =
+      Files.readAttributes(file.toPath, classOf[BasicFileAttributes]).creationTime().toMillis
+
+    val fileFilter = new FilenameFilter {
+      override def accept(dir: File, name: String) = name.matches("""sbt\d+\.log""")
+    }
+
+    val tempDir  = new File(System.getProperty("java.io.tmpdir"))
+    val files    = tempDir.listFiles(fileFilter)
+    val headFile = files.headOption getOrElse (throw new Exception("Somehow, there isn't an SBT log file present for us..."))
+
+    // Grab the most recent log
+    val logFile = files.tail.foldLeft((headFile, findCreationTime(headFile))) {
+      case ((file, time), x) =>
+        val xTime = findCreationTime(x)
+        if (xTime > time)
+          (x, xTime)
+        else
+          (file, time)
+    }._1
+
+    import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+    // Clear the file every ten minutes
+    Akka.system.scheduler.schedule(0 seconds, 10 minutes) {
+      val writer = new PrintWriter(logFile)
+      writer.write("")
+      writer.close()
+    }
+
+  }
 
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
