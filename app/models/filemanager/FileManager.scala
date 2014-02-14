@@ -20,7 +20,8 @@ import
 
 
 import
-  models.{ Get, Delete, Initialize, util, Write },
+  models.{ FileActorMessage, util },
+    FileActorMessage._,
     util.FileUtil
 
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
