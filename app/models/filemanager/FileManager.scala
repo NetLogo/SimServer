@@ -82,9 +82,15 @@ trait FileManager extends Delayer {
 
     }
 
-    file.toString.replace(PublicPath, AssetPath)
+    genPath(file)
 
   }
+
+  def genPath(basis: String): String =
+    genPath(new File(s"$PublicPath${File.separator}$basis"))
+
+  def genPath(file: File): String =
+    file.toString.replace(PublicPath, AssetPath)
 
   def retrieveFile(fileNameBasis: String): File = {
     implicit val timeout = Timeout(3 seconds)

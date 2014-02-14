@@ -7,6 +7,11 @@ import
   scala.concurrent.duration._
 
 import
+  akka.{ actor, pattern },
+    actor._,
+    pattern.ask
+
+import
   models.filemanager.FileManager
 
 /**
@@ -22,35 +27,53 @@ object JNLPFileManager extends FileManager {
   protected override lazy val LifeSpan     = 1000 days
   protected override lazy val SystemName   = "JNLPFiles"
 
+  private val writer = system.actorOf(Props[Writer])
+
   // Don't sign any applications external to us! --JAB (11/12/13)
-  def registerAndSign(jnlp: JNLP, uuid: String, defaultCodebase: String): String =
-    if (defaultCodebase == jnlp.codebaseURI.toString)
-      signJNLP(jnlp, uuid)
-    else
-      registerJNLP(jnlp, uuid)
+  def registerAndSign(jnlp: JNLP, uuid: String, defaultCodebase: String): String = {
+    val msg =
+      if (defaultCodebase == jnlp.codebaseURI.toString)
+        Sign(jnlp, uuid)
+      else
+        Register(jnlp, uuid)
+    writer ! msg
+    genPath(genFilename(uuid))
+  }
 
   def genFilename(basis: String): String =
     s"$MyFolderName/${basis}.jnlp"
 
-  protected def registerJNLP(jnlp: JNLP, uuid: String): String = {
-    val filenameBasis = genFilename(uuid)
-    registerFile(jnlp.toXMLStr.getBytes, filenameBasis)
-  }
+  private case class Register(jnlp: JNLP, uuid: String)
+  private case class Sign    (jnlp: JNLP, uuid: String)
 
-  protected def signJNLP(jnlp: JNLP, uuid: String): String = {
+  private class Writer extends Actor {
 
-    val baseJar    = new File(s"./public/deps/${jnlp.mainJar.jarName}")
-    val targetPath = s"shims/$uuid/${baseJar.getName}"
-    val targetJar  = new File("./public", targetPath)
-    targetJar.getParentFile().mkdirs()
+    override def receive = {
+      case Register(jnlp, uuid) => registerJNLP(jnlp, uuid)
+      case Sign    (jnlp, uuid) => signJNLP    (jnlp, uuid)
+    }
 
-    val newJNLP = jnlp replaceMainJar targetPath
+    protected def registerJNLP(jnlp: JNLP, uuid: String): String = {
+      val filenameBasis = genFilename(uuid)
+      registerFile(jnlp.toXMLStr.getBytes, filenameBasis)
+    }
 
-    val path = registerJNLP(newJNLP, uuid)
+    protected def signJNLP(jnlp: JNLP, uuid: String): String = {
 
-    JarSigner(baseJar, retrieveFile(genFilename(uuid)), targetJar, newJNLP.codebaseURI.toString, newJNLP.applicationName)
+      val baseJar    = new File(s"./public/deps/${jnlp.mainJar.jarName}")
+      val targetPath = s"shims/$uuid/${baseJar.getName}"
+      val targetJar  = new File("./public", targetPath)
+      targetJar.getParentFile().mkdirs()
 
-    path
+      val newJNLP = jnlp replaceMainJar targetPath
+
+      val path = registerJNLP(newJNLP, uuid)
+
+      JarSigner(baseJar, retrieveFile(genFilename(uuid)), targetJar, newJNLP.codebaseURI.toString, newJNLP.applicationName)
+
+      path
+
+    }
 
   }
 
