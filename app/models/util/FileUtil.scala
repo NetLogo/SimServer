@@ -38,7 +38,7 @@ object FileUtil {
       else
         data
     }
-    using (new FileOutputStream(filename))(_.write(bytes))
+    using(new FileOutputStream(filename))(_.write(bytes))
   }
 
   def using[A <: { def close() }, B](param: A)(f: A => B): B = {
