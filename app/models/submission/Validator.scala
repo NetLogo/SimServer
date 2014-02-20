@@ -47,10 +47,10 @@ object Validator {
     ensure(data, dataName)("value is too small")(_ <= 0)
 
   def ensureWordyHyphen(data: String, dataName: String): V[String] =
-    ensure(data, dataName)("may only contain word characters (alphanumerics and underscores) and hyphens)")(x => !(x matches "[\\w-]+"))
+    ensure(data, dataName)("may only contain word characters (alphanumerics and underscores) and hyphens")(x => !(x matches "[\\w-]+"))
 
   def ensureWordy(data: String, dataName: String): V[String] =
-    ensure(data, dataName)("may only contain word characters (alphanumerics and underscores))")(x => !(x matches "\\w+"))
+    ensure(data, dataName)("may only contain word characters (alphanumerics and underscores)")(x => !(x matches "\\w+"))
 
   protected def failUnderCond[T](param: T, failureCond: (T) => Boolean, errorStr: => String): V[T] = param match {
     case x if failureCond(x) => deny(errorStr)
