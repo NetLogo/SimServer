@@ -54,6 +54,7 @@ object JNLPFileManager extends FileManager {
     }
 
     protected def registerJNLP(jnlp: JNLP, uuid: String): String = {
+      Thread.sleep(300) // See commit message
       val filenameBasis = genFilename(uuid)
       registerFile(jnlp.toXMLStr.getBytes, filenameBasis)
     }
