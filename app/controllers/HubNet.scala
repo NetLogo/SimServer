@@ -87,12 +87,11 @@ object HubNet extends Controller {
     settingsMaybe flatMap {
       case HubNetSettings(modelNameOpt, username, isHeadless, teacherName, preferredPortOpt, isLogging) =>
 
-        val ipPortMaybe = {
+        val ipPortMaybe =
           if (isTeacher)
             ("", preferredPortOpt getOrElse HubNetDefaultPort).successNel
           else
             HubNetServerRegistry.getPortByTeacherName(teacherName)
-        }
 
         val programName = modelNameOpt getOrElse "NetLogo"
         val roleStr     = if (isTeacher) "Server" else "Client"
@@ -105,14 +104,13 @@ object HubNet extends Controller {
         val properties       = Seq()
         val otherJars        = Seq()
 
-        val args = {
+        val args =
           if (isTeacher)
             ipPortMaybe.fold({_ => Seq()}, { case (_, port) => generatePortArgs(port) })
           else
             ipPortMaybe map {
               case (ip, port) => generateUserIDArgs(username) ++ generateIPArgs(ip) ++ generatePortArgs(port)
             } getOrElse Seq()
-        }
 
         val jsonMaybe = paramsToJson(appName, desc, shortDesc, isOfflineAllowed, isTeacher, isLogging, modelURLOpt, args, properties, otherJars)
         jsonMaybe flatMap (JNLPFromJSONGenerator(_, request.host))
