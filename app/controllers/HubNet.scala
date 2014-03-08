@@ -30,6 +30,20 @@ import
 
 object HubNet extends Controller {
 
+  def getTeacherInfo = Action {
+    request =>
+
+      val bundle         = PlayUtil.extractBundle(request)
+      val teacherNameMaybe = bundle.stringParams.get(HubNetSettings.TeacherNameKey).
+        fold(s"'${HubNetSettings.TeacherNameKey}' parameter is required".failNel[String])(_.successNel)
+
+      teacherNameMaybe flatMap HubNetServerRegistry.getPortByTeacherName fold (
+          nel             => ExpectationFailed(nel.list.mkString("\n")),
+        { case (ip, port) => Ok(s"""{ "ip": "$ip", "port": $port }""") }
+      )
+
+  }
+
   def registerTeacherAddress = Action {
     request =>
       val bundle      = PlayUtil.extractBundle(request)

@@ -11,6 +11,8 @@ POST           /http                             controllers.Application.display
 GET            /logging                          controllers.Logging.startLogging
 POST           /logging/:id                      controllers.Logging.logData(id)
 
+GET            /hublookup                        controllers.HubNet.getTeacherInfo
+
 POST           /hubregister                      controllers.HubNet.registerTeacherAddress
 
 GET            /hubtest                          controllers.HubNet.hubTest
