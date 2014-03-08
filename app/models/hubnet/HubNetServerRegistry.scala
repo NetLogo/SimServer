@@ -19,8 +19,8 @@ import
 
 object HubNetServerRegistry {
 
-  private val NotFoundFormat   = "Teacher %s has not attempted to start any HubNet servers recently.".format(_: String)
-  private val NotStartedFormat = "There is no existing HubNet server for teacher %s.  Please ask your teacher to connect to the activity and then try again.\n".format(_: String)
+  private val NotFoundFormat   = "Teacher '%s' has not attempted to start any HubNet servers recently.".format(_: String)
+  private val NotStartedFormat = "There is no existing HubNet server for teacher '%s'.  Please ask your teacher to connect to the activity and then try again.\n".format(_: String)
 
   private val registryMap   = MMap[String, RegistryBundle]()
   private val expiryManager = new ExpiryManager(removeEntry _, "hubnet-registry")
