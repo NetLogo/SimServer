@@ -12,6 +12,6 @@ import
 
 object PermFileManager extends FileManager {
             override lazy val MyFolderName = "perm"
-  protected override lazy val LifeSpan     = 3650 days // Permanent enough for me...
+  protected override lazy val LifeSpanOpt  = None
   protected override lazy val SystemName   = "PermanentFiles"
 }

@@ -16,7 +16,7 @@ import
 object SubmissionFileManager extends FileManager {
 
   override           def MyFolderName = "uploads"
-  override protected def LifeSpan     = 3650 days
+  override protected def LifeSpanOpt  = None
   override protected def SystemName   = "SubmissionFiles"
 
   def formatFilePath(fileNameBasis: String, bundle: TypeBundle): String =

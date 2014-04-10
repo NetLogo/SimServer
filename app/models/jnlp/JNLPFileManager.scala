@@ -24,7 +24,7 @@ import
 object JNLPFileManager extends FileManager {
 
             override lazy val MyFolderName = "gen"
-  protected override lazy val LifeSpan     = 1000 days
+  protected override lazy val LifeSpanOpt  = None
   protected override lazy val SystemName   = "JNLPFiles"
 
   private val writer = system.actorOf(Props[Writer])

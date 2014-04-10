@@ -40,8 +40,8 @@ trait FileManager extends Delayer {
   def MyFolderName: String
 
   protected val CharEncoding = "UTF-8"
-  protected def LifeSpan:   FiniteDuration
-  protected def SystemName: String
+  protected def LifeSpanOpt: Option[FiniteDuration]
+  protected def SystemName:  String
 
   protected lazy val system     = ActorSystem(SystemName)
   protected lazy val fileFolder = new File(PublicPath + File.separator + MyFolderName)
@@ -78,7 +78,7 @@ trait FileManager extends Delayer {
         // Kill the actor on termination so our scheduled "delete" task doesn't go off
         // The temp gen file is accessible for <LifeSpan> before being deleted
         Akka.system.registerOnTermination { actor ! PoisonPill }
-        Akka.system.scheduler.scheduleOnce(LifeSpan) { actor ! Delete }
+        LifeSpanOpt map (Akka.system.scheduler.scheduleOnce(_) { actor ! Delete })
 
     }
 
