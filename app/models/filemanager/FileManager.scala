@@ -112,7 +112,7 @@ trait FileManager extends Delayer {
 class FileActor(file: File) extends Actor {
   override def receive = {
     case Get             => sender ! file
-    case Delete          => file.delete(); self ! PoisonPill // Terminate self after file is gone
+    case Delete          => Logger.warn(s"Deleting managed file: ${file.getAbsolutePath}"); file.delete(); self ! PoisonPill // Terminate self after file is gone
     case Initialize      => file.getParentFile.mkdirs(); file.delete(); file.createNewFile()
     case Write(contents) => FileUtil.printBytesToFile(file.getAbsolutePath)(contents)
   }
