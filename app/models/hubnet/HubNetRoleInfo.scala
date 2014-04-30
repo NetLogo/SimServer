@@ -58,7 +58,8 @@ object StudentInfo extends InfoCompanion[StudentInfo] {
     Form(
       mapping(
         "User Name"    -> RequiredText,
-        "Teacher Name" -> RequiredText.verifying("No registry entry found for this teacher name", HubNetServerRegistry.getPortByTeacherName(_).isSuccess)
+        "Teacher Name" -> RequiredText.verifying("No registry entry found for this teacher name",
+                                                 tn => (HubNetServerRegistry.getIPAndPortByTeacherName(tn) orElse UnsafeHubNetServerRegistry.getIPAndPortByTeacherName(tn)).isSuccess)
       )(StudentInfo.apply)(StudentInfo.unapply)
     )
   }

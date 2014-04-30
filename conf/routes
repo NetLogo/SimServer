@@ -12,8 +12,10 @@ GET            /logging                          controllers.Logging.startLoggin
 POST           /logging/:id                      controllers.Logging.logData(id)
 
 GET            /hublookup                        controllers.HubNet.getTeacherInfo
+GET            /unsecure/hublookup               controllers.HubNet.unsafeGetTeacherInfo
 
 POST           /hubregister                      controllers.HubNet.registerTeacherAddress
+POST           /unsecure/hubregister             controllers.HubNet.unsafeRegisterTeacherAddress
 
 GET            /hubtest                          controllers.HubNet.hubTest
 GET            /bindstudent                      controllers.HubNet.bindStudent
@@ -30,6 +32,9 @@ POST           /jnlp/gen                         controllers.JNLP.generateJNLP
 
 GET            /jnlp/gen/hubnet/:tName           controllers.SecureJNLP.generateHubNetServerJNLP(tName)
 POST           /jnlp/gen/hubnet/:tName           controllers.SecureJNLP.generateHubNetServerJNLP(tName)
+
+GET            /jnlp/gen/hubnet/unsecure/:tName  controllers.UnsafeJNLP.generateHubNetServerJNLP(tName)
+POST           /jnlp/gen/hubnet/unsecure/:tName  controllers.UnsafeJNLP.generateHubNetServerJNLP(tName)
 
 GET            /work-type/create                 controllers.Submission.viewTypeCreationForm
 POST           /work-type/create                 controllers.Submission.createType

@@ -1,9 +1,6 @@
 package controllers
 
 import
-  org.apache.commons.codec.binary.Base64
-
-import
   scalaz.{ Scalaz, ValidationNel },
     Scalaz.ToValidationV
 
@@ -17,7 +14,7 @@ import
 
 import
   models.{ hubnet, jnlp, util },
-    hubnet.{ HubNetSettings, HubNetServerRegistry, StudentInfo, TeacherInfo },
+    hubnet.{ HubNetSettings, HubNetServerRegistry, StudentInfo, TeacherInfo, UnsafeHubNetServerRegistry },
     jnlp.{ HubNetJNLP, HubNetKeys, Jar, JNLPFromJSONGenerator, JNLPKeys, NetLogoKeys },
     util.PlayUtil
 
@@ -37,7 +34,22 @@ object HubNet extends Controller {
       val teacherNameMaybe = bundle.stringParams.get(HubNetSettings.TeacherNameKey).
         fold(s"'${HubNetSettings.TeacherNameKey}' parameter is required".failNel[String])(_.successNel)
 
-      teacherNameMaybe flatMap HubNetServerRegistry.getPortByTeacherName fold (
+      teacherNameMaybe flatMap HubNetServerRegistry.getIPAndPortByTeacherName fold (
+          nel             => ExpectationFailed(nel.list.mkString("\n")),
+        { case (ip, port) => Ok(s"""{ "ip": "$ip", "port": $port }""") }
+      )
+
+  }
+
+  // I would be more tempted to fix this duplication of code if I still cared about this depressing project... --JAB (4/30/14)
+  def unsafeGetTeacherInfo = Action {
+    request =>
+
+      val bundle           = PlayUtil.extractBundle(request)
+      val teacherNameMaybe = bundle.stringParams.get(HubNetSettings.TeacherNameKey).
+        fold(s"'${HubNetSettings.TeacherNameKey}' parameter is required".failNel[String])(_.successNel)
+
+      teacherNameMaybe flatMap UnsafeHubNetServerRegistry.getIPAndPortByTeacherName fold (
           nel             => ExpectationFailed(nel.list.mkString("\n")),
         { case (ip, port) => Ok(s"""{ "ip": "$ip", "port": $port }""") }
       )
@@ -49,8 +61,16 @@ object HubNet extends Controller {
       val bundle      = PlayUtil.extractBundle(request)
       val teacherName = bundle.stringParams(SecureJNLP.HTTPParams.TeacherNameKey)
       val data        = bundle.stringParams(SecureJNLP.HTTPParams.DataKey)
-      val decodedData = Base64.decodeBase64(data.getBytes)
-      HubNetServerRegistry.registerLookupAddress(teacherName, decodedData)
+      HubNetServerRegistry.registerLookupAddress(teacherName, data)
+      Ok
+  }
+
+  def unsafeRegisterTeacherAddress = Action {
+    request =>
+      val bundle      = PlayUtil.extractBundle(request)
+      val teacherName = bundle.stringParams(UnsafeJNLP.HTTPParams.TeacherNameKey)
+      val data        = bundle.stringParams(UnsafeJNLP.HTTPParams.DataKey)
+      UnsafeHubNetServerRegistry.registerLookupAddress(teacherName, data)
       Ok
   }
 
@@ -104,8 +124,8 @@ object HubNet extends Controller {
         val ipPortMaybe =
           if (isTeacher)
             ("", preferredPortOpt getOrElse HubNetDefaultPort).successNel
-          else
-            HubNetServerRegistry.getPortByTeacherName(teacherName)
+          else // Bad --JAB (4/30/14)
+            HubNetServerRegistry.getIPAndPortByTeacherName(teacherName) orElse UnsafeHubNetServerRegistry.getIPAndPortByTeacherName(teacherName)
 
         val programName = modelNameOpt getOrElse "NetLogo"
         val roleStr     = if (isTeacher) "Server" else "Client"
