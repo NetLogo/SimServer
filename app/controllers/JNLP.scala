@@ -21,7 +21,7 @@ import
 object JNLP extends Controller {
 
   def generateJNLP = APIAction {
-    handleJNLPGeneration(_)
+    NotFound("Page temporarily disabled due to heavy load.") // handleJNLPGeneration(_)
   }
 
   def getParamFormats = APIAction {

@@ -27,22 +27,23 @@ object SecureJNLP extends Controller {
   }
 
   def generateHubNetServerJNLP(teacherName: String) = RestrictedAction(SecureDomains) {
-
-    implicit request =>
-
-    import HTTPParams._
-
-    val (modulus, exponent) = HubNetServerRegistry.registerTeacher(teacherName)
-    val secureParams = Map(
-      "netlogo.registry.http.teacher_name_key" -> TeacherNameKey,
-      "netlogo.registry.http.data_key"         -> DataKey,
-      "netlogo.registry.teacher_name"          -> teacherName,
-      "netlogo.registry.register_url"          -> routes.HubNet.registerTeacherAddress.absoluteURL(),
-      "netlogo.registry.public_key.modulus"    -> modulus,
-      "netlogo.registry.public_key.exponent"   -> exponent
-    )
-
-    JNLP.handleJNLPGeneration(request, secureParams)
+    NotFound("Page temporarily disabled due to heavy load.") // handleJNLPGeneration(_)
+//
+//    implicit request =>
+//
+//    import HTTPParams._
+//
+//    val (modulus, exponent) = HubNetServerRegistry.registerTeacher(teacherName)
+//    val secureParams = Map(
+//      "netlogo.registry.http.teacher_name_key" -> TeacherNameKey,
+//      "netlogo.registry.http.data_key"         -> DataKey,
+//      "netlogo.registry.teacher_name"          -> teacherName,
+//      "netlogo.registry.register_url"          -> routes.HubNet.registerTeacherAddress.absoluteURL(),
+//      "netlogo.registry.public_key.modulus"    -> modulus,
+//      "netlogo.registry.public_key.exponent"   -> exponent
+//    )
+//
+//    JNLP.handleJNLPGeneration(request, secureParams)
 
   }
 
