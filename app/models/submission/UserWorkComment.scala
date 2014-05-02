@@ -45,7 +45,7 @@ object UserWorkComment extends FromMapParser with FromBundleParser {
   protected def validate(refID: String, userID: String, comment: String): ValidationNel[FailType, ConsTuple] = {
 
     val refIDMaybe     = Validator.validateRefID(refID)
-    val userIDMaybe    = Validator.validateUserID(userID)
+    val userIDMaybe    = Validator.ensureNotEmpty(userID, "user_id")
     val commentMaybe   = Validator.ensureNotEmpty(comment, "comment")
 
     (refIDMaybe |@| userIDMaybe |@| commentMaybe) {
