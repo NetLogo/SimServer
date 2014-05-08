@@ -1,7 +1,11 @@
 import
-  play.api.{ Application => PlayApp, GlobalSettings }
+  controllers.filter.LoggingFilter
 
-object Global extends GlobalSettings {
+import
+  play.api.{ Application => PlayApp, mvc },
+    mvc.WithFilters
+
+object Global extends WithFilters(LoggingFilter) {
   override def onStart(app: PlayApp) : Unit = {
     controllers.Application.init()
   }
