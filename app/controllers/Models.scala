@@ -35,7 +35,7 @@ object Models extends Controller {
   protected[controllers] def getHubNetModelURL(modelName: String)(implicit request: RequestHeader): String = {
     val name = urlify(ModelMapper.unalias(modelName))
     val ModelAssetURLFormat = "models/hubnet/%s.nlogo".format(_: String)
-    routes.Assets.at(ModelAssetURLFormat(name)).absoluteURL(false)
+    routes.LameAssets.at(ModelAssetURLFormat(name)).absoluteURL(false)
   }
 
   // Takes model names and converts them to something that can be referenced as a URL
