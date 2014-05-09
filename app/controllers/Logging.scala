@@ -23,7 +23,7 @@ object Logging extends Controller {
   val LoggingDataKey = "logging_data"
 
   def startLogging = APIAction {
-    Ok("/" + LoggingHandler.createNewLog())
+    Ok("/1")
   }
 
   // For use in testing only
@@ -32,17 +32,7 @@ object Logging extends Controller {
   //  }
 
   def logData(id: String) = APIAction {
-    request =>
-      val paramBundle      = PlayUtil.extractBundle(request)
-      val logDataOpt       = paramBundle.stringParams.get(LoggingDataKey)
-      val responseMaybeOpt = logDataOpt map (LoggingHandler.log(id.toLong, _))
-      val response         =
-        responseMaybeOpt map {
-          _ fold (failMsg => RequestTimeout(failMsg.list.mkString("\n")), successMsg => Ok(successMsg))
-        } getOrElse (
-          BadRequest("ERROR_IN_PARSING")
-        )
-      response
+    Ok("Logging temporarily disabled")
   }
 
 }
