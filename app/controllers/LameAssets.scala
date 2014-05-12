@@ -71,7 +71,7 @@ object LameAssets extends Controller {
     val resourceName = Option(properPath).map(name => if (name startsWith "/") name else s"/$name").get
     val resourceFile = new File(properPath)
 
-    if (resourceFile.exists() && !resourceFile.isDirectory())
+    if (!resourceFile.isDirectory())
       Some(resourceName)
     else
       None
