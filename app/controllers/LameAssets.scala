@@ -34,7 +34,7 @@ object LameAssets extends Controller {
 
   def at(filepath: String) = Action {
     val urlFromResourceCache = resourceNameOptAt("public", filepath) flatMap Play.resource
-    val urlFromDisk          = fileOptAt("public", filepath) map (_.toURI.toURL)
+    lazy val urlFromDisk     = fileOptAt("public", filepath) map (_.toURI.toURL)
     val urlOpt               = urlFromResourceCache orElse urlFromDisk
     val resultOpt            = urlOpt flatMap buildResultOpt(filepath)
     resultOpt getOrElse NotFound
