@@ -17,7 +17,7 @@ object ApplicationBuild extends Build {
 
     val appDependencies = Seq(
       anorm, jdbc,
-      "org.scalaz" %% "scalaz-core" % "7.0-SNAPSHOT",
+      "org.scalaz" %% "scalaz-core" % "7.0.6",
       "mysql" % "mysql-connector-java" % "5.1.18",
       "org.bizzle.datastructure" % "DataStructure" % "8e9e5ce" from
         "https://ccl.northwestern.edu/devel/jason/DataStructure-8e9e5ce.jar"
